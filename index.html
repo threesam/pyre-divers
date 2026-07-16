@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pyre divers</title>
+<meta name="description" content="Live, unpolished conversations with the trailblazers making asymmetric bets. Two builders, one fire. First dive: August 2026.">
+<meta name="theme-color" content="#e25822">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg stroke='%23212614' stroke-width='2.6' stroke-linecap='round' fill='none'%3E%3Ccircle cx='16' cy='7' r='3.4'/%3E%3Cpath d='M16 10.5 L16 20 M16 13 L9 17 M16 13 L23 17 M16 20 L11 27 M16 20 L21 27'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+  @font-face{font-family:'Comfortaa';font-weight:700;font-style:normal;src:url(data:font/woff2;base64,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) format('woff2');}
+  html, body { height: 100%; }
+  body {
+    margin: 0; overflow: hidden;
+    /* the ground also lives in CSS so the page reads right before (or without) JS */
+    background-color: #e25822;
+    background-image:
+      radial-gradient(circle at 16% 84%, #b91c1c 0%, rgba(185, 28, 28, 0) 72%),
+      radial-gradient(circle at 78% 16%, #f5b942 0%, rgba(245, 185, 66, 0) 66%);
+  }
+  #sea { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+  .wordmark {
+    position: fixed; inset: 0; margin: 0;
+    display: grid; place-items: center;
+    pointer-events: none; user-select: none;
+    font-family: 'Comfortaa', ui-rounded, system-ui, sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.2rem, min(15vmax, 14vw), 17rem); /* cover-proportioned, fits any width */
+    word-spacing: -0.06em;
+    line-height: 1;
+  }
+  .wordmark .line { white-space: nowrap; } /* single grid item → single line */
+  .wordmark .w { color: #ffffff; }
+  .wordmark .k { color: #212614; }
+</style>
+</head>
+<body>
+<canvas id="sea" aria-hidden="true"></canvas>
+<h1 class="wordmark"><span class="line"><span class="w">pyre </span><span class="k">divers</span></span></h1>
+
+<script>
+(() => {
+  // ── seeded rng: the same souls every load
+  function mulberry32(a) {
+    return () => {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const TAU = Math.PI * 2, PI = Math.PI;
+  const INK = '#212614';
+
+  // geometry — matched to the cover artwork
+  const LANES = 3;
+  const R_START = 0.72;                        // spiral starts past every corner
+  const K = 0.02124;                           // log-spiral pitch
+  const H_MIN = 0.005;                         // size floor — the clot forms where it kicks in
+  const GAP = 1 - Math.exp(-TAU * K / LANES);  // ring gap as a fraction of r
+  const R_LIVE = 0.15;                         // animated bodies vanish here…
+  const R_FADE = 0.18;                         // …fading from here (the clot takes over)
+  const PHI_A = Math.log(R_START / R_LIVE) / K; // animated span, ~74 rad
+  const PHI_T = Math.log(R_START / 0.004) / K;  // full span down the drain
+  const OMEGA = TAU / 16;                       // shared current: one revolution per 16 s
+  const DENS = 15.4;                            // bodies per lane per radian — cover density
+
+  // ── pose library: diver / spread-eagle / arms-up / reach / tuck, all jittered
+  function makePose(rand) {
+    const t = rand();
+    const J = () => (rand() - 0.5) * 0.26;
+    let aL, aR, lL, lR, arm = 1, leg = 1;
+    if (t < 0.30)      { aL =  PI * 0.66; aR =  PI * 0.34; lL = PI * 0.5 + 0.18; lR = PI * 0.5 - 0.18; }
+    else if (t < 0.50) { aL = -PI * 0.78; aR = -PI * 0.22; lL = PI * 0.5 + 0.34; lR = PI * 0.5 - 0.34; }
+    else if (t < 0.70) { aL = -PI * 0.60; aR = -PI * 0.40; lL = PI * 0.5 + 0.12; lR = PI * 0.5 - 0.12; }
+    else if (t < 0.90) { aL = -PI * 0.55; aR =  PI * 0.42; lL = PI * 0.5 + 0.10; lR = PI * 0.5 - 0.26; }
+    else               { aL =  PI * 0.80; aR =  PI * 0.20; lL = PI * 0.5 + 0.46; lR = PI * 0.5 - 0.46; arm = leg = 0.62; }
+    return {
+      aL: aL + J(), aR: aR + J(), lL: lL + J(), lR: lR + J(),
+      arm: arm * (0.88 + rand() * 0.24), leg: leg * (0.88 + rand() * 0.24),
+    };
+  }
+
+  function dress(b, rand) { // the parts that re-roll when a body respawns at the rim
+    b.drift = ((rand() + rand()) - 1) * 0.8 * GAP;
+    b.aJit = (rand() - 0.5) * 0.03;
+    b.hJit = (rand() - 0.5) * 0.55 + (rand() < 0.07 ? (rand() - 0.5) * 2.4 : 0);
+    b.size = 0.86 + rand() * 0.26;
+    b.pose = makePose(rand);
+    return b;
+  }
+
+  // even-φ jittered conveyor per lane over [phi0, phi1)
+  function spawn(rand, phi0, phi1) {
+    const out = [];
+    for (let lane = 0; lane < LANES; lane++) {
+      const n = Math.round(DENS * (phi1 - phi0));
+      const w = Array.from({ length: n }, () => 0.78 + rand() * 0.44);
+      const total = w.reduce((a, b) => a + b, 0);
+      let acc = 0;
+      for (let i = 0; i < n; i++) {
+        acc += w[i];
+        out.push(dress({ lane, phi: phi0 + (acc / total) * (phi1 - phi0) }, rand));
+      }
+    }
+    return out;
+  }
+
+  const live = spawn(mulberry32(420), 0, PHI_A);        // ~3.4k bodies riding the current
+  const rngS = mulberry32(4200);
+  const clot = spawn(rngS, PHI_A, PHI_T);               // ~7.9k concentrated at the drain — static
+  for (let i = 0; i < 60; i++) {                        // the pile that covers dead center
+    clot.push(dress({ lane: 0, phi: PHI_T, pileA: rngS() * TAU, pileR: 0.018 * Math.pow(rngS(), 0.7) }, rngS));
+  }
+
+  // ── drawing
+  const canvas = document.getElementById('sea');
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+  let W = 0, H = 0, S = 0, CX = 0, CY = 0, bg = null;
+
+  function geom(b) {
+    const r0 = R_START * Math.exp(-K * b.phi);
+    if (b.pileR !== undefined) {
+      return { r0, r: b.pileR, ang: b.pileA, h: H_MIN * b.size };
+    }
+    const r = r0 * (1 + b.drift);
+    return { r0, r, ang: b.phi + b.lane * (TAU / LANES) + b.aJit, h: Math.max(0.052 * r, H_MIN) * b.size };
+  }
+
+  function drawBody(c, b, alpha) {
+    const g = geom(b);
+    const px = CX + Math.cos(g.ang) * g.r * S;
+    const py = CY + Math.sin(g.ang) * g.r * S;
+    const h = g.h * S;
+    if (px < -h * 2 || px > W + h * 2 || py < -h * 2 || py > H + h * 2) return;
+    const rot = (b.pileR !== undefined ? g.ang * 7 : g.ang + PI + Math.atan(K)) + b.hJit;
+    const co = Math.cos(rot), si = Math.sin(rot);
+    c.setTransform(co, si, -si, co, px, py);
+    c.globalAlpha = alpha;
+    c.lineWidth = Math.max(S * 0.0008, h * 0.09);
+
+    const head = h * 0.22, spine = h * 0.42;
+    const armL = h * 0.36 * b.pose.arm, legL = h * 0.36 * b.pose.leg;
+    const p = b.pose;
+    c.beginPath();
+    c.arc(0, -spine / 2 - head / 2, head / 2, 0, TAU);
+    c.moveTo(0, -spine / 2); c.lineTo(0, spine / 2);
+    c.moveTo(0, -spine / 4); c.lineTo(Math.cos(p.aL) * armL, -spine / 4 + Math.sin(p.aL) * armL);
+    c.moveTo(0, -spine / 4); c.lineTo(Math.cos(p.aR) * armL, -spine / 4 + Math.sin(p.aR) * armL);
+    c.moveTo(0, spine / 2);  c.lineTo(Math.cos(p.lL) * legL, spine / 2 + Math.sin(p.lL) * legL);
+    c.moveTo(0, spine / 2);  c.lineTo(Math.cos(p.lR) * legL, spine / 2 + Math.sin(p.lR) * legL);
+    c.stroke();
+  }
+
+  function paintGround(c) {
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.globalAlpha = 1;
+    c.fillStyle = '#e25822';
+    c.fillRect(0, 0, W, H);
+    let g = c.createRadialGradient(W * 0.16, H * 0.84, 0, W * 0.16, H * 0.84, S * 1.05);
+    g.addColorStop(0, '#b91c1c'); g.addColorStop(1, 'rgba(185,28,28,0)');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    g = c.createRadialGradient(W * 0.78, H * 0.16, 0, W * 0.78, H * 0.16, S * 0.95);
+    g.addColorStop(0, '#f5b942'); g.addColorStop(1, 'rgba(245,185,66,0)');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+  }
+
+  function fit() {
+    W = Math.round(innerWidth * dpr);
+    H = Math.round(innerHeight * dpr);
+    S = Math.round(0.70 * Math.hypot(W, H)); // diagonal-based: corners stay covered
+                                             // (0.72·S ≥ half-diagonal) at any aspect ratio
+    CX = W / 2; CY = H / 2;
+    canvas.width = W; canvas.height = H;
+    // bake ground + the ~8k-body clot into one static layer — the center never re-renders
+    bg = document.createElement('canvas');
+    bg.width = W; bg.height = H;
+    const c = bg.getContext('2d');
+    paintGround(c);
+    c.strokeStyle = INK; c.lineCap = 'round'; c.lineJoin = 'round';
+    for (const b of clot) drawBody(c, b, 1);
+    c.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  function frame(c) {
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.globalAlpha = 1;
+    c.drawImage(bg, 0, 0);
+    c.strokeStyle = INK; c.lineCap = 'round'; c.lineJoin = 'round';
+    for (const b of live) {
+      const r0 = R_START * Math.exp(-K * b.phi);
+      const alpha = Math.min(Math.max((r0 - R_LIVE) / (R_FADE - R_LIVE), 0), 1);
+      if (alpha > 0) drawBody(c, b, alpha);
+    }
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.globalAlpha = 1;
+  }
+
+  fit();
+  addEventListener('resize', () => { fit(); if (still) frame(ctx); });
+
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (still) {
+    frame(ctx);
+  } else {
+    let last = performance.now();
+    const loop = now => {
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      const rand = Math.random; // wrap re-dressing doesn't need to be seeded
+      for (const b of live) {
+        b.phi += OMEGA * dt;                       // one shared current
+        if (b.phi >= PHI_A) { b.phi -= PHI_A; dress(b, rand); } // vanish at the clot, resurface at the rim
+      }
+      frame(ctx);
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>
