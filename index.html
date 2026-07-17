@@ -28,19 +28,13 @@
     font-size: clamp(2.2rem, min(15vmax, 14vw), 17rem); /* cover-proportioned, fits any width */
     word-spacing: -0.06em;
     line-height: 1;
-    /* the letters are windows: filled with the exact ground gradient (this layer
-       spans the viewport, same as body, so the stacks align pixel-perfect) —
-       invisible against the background, revealed only by divers vanishing under them */
-    background-color: #e25822;
-    background-image:
-      radial-gradient(circle at 16% 84%, #b91c1c 0%, rgba(185, 28, 28, 0) 72%),
-      radial-gradient(circle at 78% 16%, #f5b942 0%, rgba(245, 185, 66, 0) 66%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
   }
   .wordmark .line { white-space: nowrap; transform: translateY(-0.05em); } /* one line, optically centered */
-  .wordmark .w, .wordmark .k { color: transparent; }
+  /* "pyre" is white and PHYSICAL — the crowd collides with it and parts around
+     it, bunching at its edges (garden-style). "divers" is plain ink the crowd
+     swims beneath. */
+  .wordmark .w { color: #ffffff; }
+  .wordmark .k { color: #212614; }
 </style>
 </head>
 <body>
@@ -65,15 +59,13 @@
   // geometry — matched to the cover artwork
   const LANES = 3;
   const R_START = 0.72;                        // spiral starts past every corner
-  const R_END = 0.004;                         // …and dies at the drain
   const K = 0.02124;                           // log-spiral pitch
-  const H_MIN = 0.005;                         // size floor — the clot forms where it kicks in
+  const H_MIN = 0.005;                         // size floor
   const GAP = 1 - Math.exp(-TAU * K / LANES);  // ring gap as a fraction of r
-  const PHI_T = Math.log(R_START / R_END) / K; // full span, rim → drain (~39 turns)
-  const OMEGA = TAU / 64;                      // fallback rotation: one revolution per 64 s
-  const DENS = 15.4;                           // bodies per lane per radian — cover density
-  const TILT = PI + Math.atan(K);              // heading: tangent, tilted by the spiral pitch
-  const HEAD_PX = 9;                           // bodies at least this tall get a head drawn
+  const PHI_T = Math.log(R_START / 0.004) / K; // fallback: full span rim → drain
+  const OMEGA = TAU / 64;                      // fallback rotation: one rev per 64 s
+  const TILT = PI + Math.atan(K);              // rail heading: tangent + pitch
+  const HEAD_PX = 9;                           // bodies at least this tall get a head
 
   // ── pose library: diver / spread-eagle / arms-up / reach / tuck, all jittered
   function makePose(rand) {
@@ -99,7 +91,9 @@
       b.r0 = R_START * Math.exp(-K * b.phi);
     }
     const hJit = (rand() - 0.5) * 0.55 + (rand() < 0.07 ? (rand() - 0.5) * 2.4 : 0);
+    b.hJit = hJit;
     b.cR = Math.cos(TILT + hJit); b.sR = Math.sin(TILT + hJit);
+    b.cJ = Math.cos(hJit); b.sJ = Math.sin(hJit); // jitter alone, for velocity-oriented bodies
     const p = makePose(rand);
     b.arm = 0.36 * p.arm; b.leg = 0.36 * p.leg;
     b.aLx = Math.cos(p.aL); b.aLy = Math.sin(p.aL);
@@ -109,12 +103,12 @@
     return b;
   }
 
-  // even-φ jittered conveyor per lane — the whole spiral, rim to drain
+  // full-spiral rail population — used by the Canvas2D fallback only
   const bodies = [];
   {
     const rand = mulberry32(420);
     for (let lane = 0; lane < LANES; lane++) {
-      const n = Math.round(DENS * PHI_T);
+      const n = Math.round(15.4 * PHI_T);
       const w = Array.from({ length: n }, () => 0.78 + rand() * 0.44);
       const total = w.reduce((a, b) => a + b, 0);
       let acc = 0;
@@ -124,7 +118,6 @@
       }
     }
   }
-  // the pile that hides the drain's pinhole — it orbits with the current
   const pile = [];
   {
     const rand = mulberry32(4200);
@@ -133,37 +126,33 @@
     }
   }
 
-  // ── the field decelerates CONSTANTLY: each body sheds linear speed at the same
-  // steady rate as it spirals down (v² linear in r keeps the strands invariant),
-  // arriving at the disc edge moving exactly at the core's spin — no ravine drop,
-  // no seam. Speed itself is the conveyor variable: w falls linearly in time.
-  const W_CORE = TAU / 24;                 // the disc's spin — halved again per review
-  const V_RIM = (TAU / 70) * R_START;      // lazy at the rim, decelerating all the way in
-  // the disc is sized off the wordmark itself: a bit bigger than the "d",
-  // reaching halfway to the "i" — so the core radius and the deceleration ramp
-  // are (re)derived from the rendered font size in fit()
-  let R_CORE = 0.05, R_E = 0.046, V_E = 0.012, C2 = 0.02, MU = 0.0002, W_SPAN = 0.05;
-  function tune(fontDevPx) {
+  // ── flow model (shared by sim + fallback tuning): constant deceleration —
+  // v² = V_E² + C2·(r − R_E), so every body sheds speed at one steady rate and
+  // arrives at the disc edge moving at the disc's spin speed.
+  const W_CORE = TAU / 24;                 // the disc's spin
+  const V_RIM_W = (TAU / 70) * R_START;    // angular pace anchor at the rim
+  let R_CORE = 0.05, R_E = 0.046, V_E = 0.012, C2 = 0.02;
+  function tune(fontDevPx, S) {
     R_CORE = 0.315 * fontDevPx / S;
     R_E = 0.92 * R_CORE;
     V_E = W_CORE * R_E;
-    C2 = (V_RIM * V_RIM - V_E * V_E) / (R_START - R_E);
-    MU = K * C2 / 2;                       // dw/dt — the one shared deceleration
-    W_SPAN = V_RIM - V_E;
+    C2 = (V_RIM_W * V_RIM_W - V_E * V_E) / (R_START - R_E);
   }
+  const speedN = rn => Math.sqrt(Math.max(V_E * V_E + C2 * (rn - R_E), 0.25 * V_E * V_E));
+
+  // field styles (physics-driven bodies)
   const field = [];
   {
     const rand = mulberry32(777);
-    const N_F = 3400;
-    for (let i = 0; i < N_F; i++) {
+    const N = 6000; // dense enough that the carved letterforms stay crisp
+    for (let i = 0; i < N; i++) {
       const b = dress({ lane: i % LANES, phi: 0 }, rand);
-      b.frac = (i + 0.25 + rand() * 0.5) / N_F; // even in w-fraction + jitter
+      b.frac = (i + 0.25 + rand() * 0.5) / N;
       field.push(b);
     }
   }
-  // phyllotaxis (sunflower) core: golden-angle packing fills the whole disc evenly —
-  // no clot, no rings, no hole. Regenerated whenever the disc is re-sized, count
-  // tied to area so the packing density stays readable.
+
+  // phyllotaxis (sunflower) core — regenerated whenever the disc is re-sized
   function makeCore() {
     const rand = mulberry32(4200);
     const n = Math.max(60, Math.round(PI * R_CORE * R_CORE / Math.pow(1.16 * H_MIN, 2)));
@@ -181,40 +170,140 @@
   const canvas = document.getElementById('sea');
   const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let W = 0, H = 0, S = 0;
+  let W = 0, H = 0, S = 0;      // device px
+  let cw = 0, ch = 0, Scss = 0; // css px (sim space)
 
   function measure() {
-    W = Math.round(innerWidth * dpr);
-    H = Math.round(innerHeight * dpr);
+    cw = innerWidth; ch = innerHeight;
+    W = Math.round(cw * dpr);
+    H = Math.round(ch * dpr);
     S = Math.round(0.70 * Math.hypot(W, H)); // diagonal-based: corners covered at any aspect
+    Scss = S / dpr;
     canvas.width = W; canvas.height = H;
   }
 
   // ════════════════════════════════════════════════════════════════════════
-  // WebGL2: true descent. Each body's spiral position is computed in the
-  // vertex shader from one clock uniform — per frame the CPU updates a float
-  // and issues two instanced draw calls. Bodies really shrink down the drain
-  // and wrap to the rim, forever.
+  // WebGL2: the field is a real particle sim (transform feedback, garden-style).
+  // The vortex is a steering force; "pyre" is a collision obstacle — bodies
+  // deflect off the letterforms, so the word stays carved out of the crowd.
+  // Per frame the CPU issues one update pass + two instanced draws.
   // ════════════════════════════════════════════════════════════════════════
   function startGL(gl) {
+    measure();
+    const N_F = field.length;
+    const REPEL_R = Math.max(110, Math.min(190, cw * 0.12));
+
+    const SIM_VS = `#version 300 es
+    precision highp float;
+    in vec2 a_position;
+    in vec2 a_velocity;
+    uniform vec2 u_res;        // css px
+    uniform vec2 u_mouse;      // css px, (-1,-1) = none
+    uniform float u_dt;        // 60fps-frame units
+    uniform vec2 u_center;
+    uniform float u_Scss;
+    uniform float u_VE;
+    uniform float u_C2;
+    uniform float u_RE;
+    uniform float u_time;
+    uniform sampler2D u_coll;
+    out vec2 v_position;
+    out vec2 v_velocity;
+    const float K = ${K};
+
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+
+    void main() {
+      vec2 pos = a_position;
+      vec2 vel = a_velocity;
+
+      // cursor brushes the divers aside (garden-tuned)
+      if (u_mouse.x >= 0.0) {
+        vec2 diff = pos - u_mouse;
+        float d2 = dot(diff, diff);
+        float rr = ${REPEL_R.toFixed(1)};
+        if (d2 < rr * rr && d2 > 0.5) {
+          float d = sqrt(d2);
+          float fall = 1.0 - d / rr;
+          vel += (diff / d) * (fall * fall * 1.5 * u_dt);
+        }
+      }
+
+      // steer toward the decelerating current (px per frame)
+      vec2 rel = pos - u_center;
+      float r = max(length(rel), 1e-3);
+      float rn = r / u_Scss;
+      vec2 radial = rel / r;
+      vec2 tang = vec2(-radial.y, radial.x);
+      float vmag = sqrt(max(u_VE * u_VE + u_C2 * (rn - u_RE), 0.25 * u_VE * u_VE));
+      vec2 vdes = normalize(tang - radial * K) * vmag * u_Scss / 60.0;
+      vel += (vdes - vel) * min(0.16 * u_dt, 1.0); // firm steering — the flow closes behind the letters
+      // turbulent diffusion: bodies wander across streamlines, so wakes refill
+      // and the carved word stays crisp instead of casting a shadow downstream
+      vel += (vec2(hash(pos * 0.71 + u_time), hash(pos * 1.31 - u_time)) - 0.5) * 0.35 * u_dt;
+
+      pos += vel * u_dt;
+      vel *= pow(0.97, u_dt); // bleed cursor impulse; steering re-energizes
+
+      // "pyre" is solid: reflect off the letterform's edge gradient
+      vec2 uv = pos / u_res;
+      if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0) {
+        float here = texture(u_coll, uv).r;
+        if (here > 0.5) {
+          vec2 st = 2.0 / u_res;
+          float rgt = texture(u_coll, uv + vec2(st.x, 0.0)).r;
+          float lft = texture(u_coll, uv - vec2(st.x, 0.0)).r;
+          float dwn = texture(u_coll, uv + vec2(0.0, st.y)).r;
+          float up  = texture(u_coll, uv - vec2(0.0, st.y)).r;
+          vec2 nrm = vec2(lft - rgt, up - dwn);
+          float nl = length(nrm);
+          if (nl > 0.001) {
+            nrm /= nl;
+            vel = reflect(vel, nrm) * 0.5; // gentle: slide around the glyph, don't ricochet
+            pos += nrm * 1.5;
+          }
+        }
+      }
+
+      // swallowed by the disc (or lost past the rim) → resurface at the rim
+      float rn2 = length(pos - u_center) / u_Scss;
+      if (rn2 < u_RE * 0.98 || rn2 > 0.745) {
+        float a = hash(pos + vel) * 6.2831853;
+        vec2 dir = vec2(cos(a), sin(a));
+        pos = u_center + dir * ${R_START} * u_Scss;
+        vec2 t2 = vec2(-dir.y, dir.x);
+        vel = normalize(t2 - dir * K) * sqrt(u_VE * u_VE + u_C2 * (${R_START} - u_RE)) * u_Scss / 60.0;
+      }
+
+      v_position = pos;
+      v_velocity = vel;
+      gl_Position = vec4(0.0);
+    }`;
+
+    const SIM_FS = `#version 300 es
+    precision mediump float;
+    out vec4 o;
+    void main() { o = vec4(0.0); }`;
+
     const VS = `#version 300 es
     precision highp float;
-    uniform vec2 uRes;
-    uniform float uS;
-    uniform float uDrop;   // how much speed every field body has shed so far
-    uniform float uSpin;   // disc rotation angle
+    uniform vec2 uRes;      // device px
+    uniform float uS;       // device px
+    uniform float uDpr;
+    uniform float uSpin;
     uniform float uCore;
-    uniform float uVE;     // arrival speed at the disc edge
-    uniform float uWSPAN;  // rim speed − arrival speed
-    uniform float uC2;     // v² = uVE² + uC2·(r − uRE)
-    uniform float uRE;     // where field bodies dissolve
-    uniform float uRCORE;  // disc radius
-    uniform float uFadeW;
+    uniform float uRCORE;
+    uniform float uRE;
+    uniform float uFadeBand;
+    uniform sampler2D uColl;
+    uniform vec2 uCollRes;  // css px
     layout(location=0) in vec3 aTpl;  // segId, end(0|1), side(-1|1)
-    layout(location=1) in vec4 aA;    // u0/angle0, angOff/radius, drift, size
-    layout(location=2) in vec4 aB;    // rotC, rotS, armLen, legLen
+    layout(location=1) in vec4 aA;    // core: ang0, radFrac, 0, size · field: 0,0,0,size
+    layout(location=2) in vec4 aB;    // core: rotC, rotS · field: cos(jit), sin(jit) · zw: armLen, legLen
     layout(location=3) in vec4 aC;    // armL dir, armR dir
     layout(location=4) in vec4 aD;    // legL dir, legR dir
+    layout(location=5) in vec2 aPos;  // field only: css px (instanced, from the sim)
+    layout(location=6) in vec2 aVel;  // field only
     out vec2 vLocal;
     out float vHalfLen;
     out float vHalfW;
@@ -222,46 +311,52 @@
     out float vFade;
 
     const float K = ${K};
-    const float R_START = ${R_START};
     const float H_MIN = ${H_MIN};
 
     void main() {
-      float ang, r, h;
+      vec2 center;
+      float h, cR, sR;
       vFade = 1.0;
       if (uCore > 0.5) {
-        ang = aA.x + uSpin;          // the phyllotaxis disc spins as one
-        r = aA.y * uRCORE;
+        float ang = aA.x + uSpin;            // the phyllotaxis disc spins as one
+        float r = aA.y * uRCORE;
+        float ca = cos(ang), sa = sin(ang);
+        center = uRes * 0.5 + vec2(ca, sa) * r * uS;
+        h = max(0.052 * r, H_MIN) * aA.w * uS;
+        cR = ca * aB.x - sa * aB.y;
+        sR = sa * aB.x + ca * aB.y;
+        // the disc must not leak into the carved word
+        vec2 cuv = center / uDpr / uCollRes;
+        if (cuv.x >= 0.0 && cuv.x <= 1.0 && cuv.y >= 0.0 && cuv.y <= 1.0 &&
+            texture(uColl, cuv).r > 0.4) h = 0.0;
       } else {
-        // speed falls linearly in time for every body: constant deceleration,
-        // arriving at the disc edge at exactly the disc's spin speed
-        float w = uVE + mod(aA.x * uWSPAN - uDrop, uWSPAN);
-        float r0 = uRE + (w * w - uVE * uVE) / uC2;
-        float phi = log(R_START / r0) / K;   // stay on your strand
-        r = r0 * (1.0 + aA.z);
-        ang = phi + aA.y;
-        vFade = smoothstep(uVE, uVE + uFadeW, w); // dissolve gently into the disc
+        vec2 pC = aPos * uDpr;
+        vec2 rel = pC - uRes * 0.5;
+        float rn = max(length(rel), 1e-3) / uS;
+        center = pC;
+        h = max(0.052 * rn, H_MIN) * aA.w * uS;
+        // head-first along the velocity, plus the personal jitter
+        vec2 vdir = normalize(aVel + vec2(1e-5, 0.0));
+        float c0 = -vdir.y, s0 = vdir.x;
+        cR = c0 * aB.x - s0 * aB.y;
+        sR = s0 * aB.x + c0 * aB.y;
+        vFade = smoothstep(uRE, uRE + uFadeBand, rn); // dissolve into the disc
       }
-      h = max(0.052 * r, H_MIN) * aA.w * uS;
-      float ca = cos(ang), sa = sin(ang);
-      float cR = ca * aB.x - sa * aB.y;   // rot = ang + precomputed offset
-      float sR = sa * aB.x + ca * aB.y;
-      vec2 center = vec2(uRes) * 0.5 + vec2(ca, sa) * r * uS;
 
-      float w = max(uS * 0.0008, 0.09 * h);   // stroke width
-      float halfW = w * 0.5 + 1.0;            // + AA apron
+      float w = max(uS * 0.0008, 0.09 * h);
+      float halfW = w * 0.5 + 1.0;
       vHalfW = w * 0.5;
 
       int seg = int(aTpl.x + 0.5);
       vHead = seg == 5 ? 1.0 : 0.0;
 
-      // body-space endpoints (unit height), limbs from pose vectors
       vec2 p0, p1;
       if      (seg == 0) { p0 = vec2(0.0, -0.21); p1 = vec2(0.0, 0.21); }
       else if (seg == 1) { p0 = vec2(0.0, -0.105); p1 = p0 + aC.xy * aB.z; }
       else if (seg == 2) { p0 = vec2(0.0, -0.105); p1 = p0 + aC.zw * aB.z; }
       else if (seg == 3) { p0 = vec2(0.0, 0.21);  p1 = p0 + aD.xy * aB.w; }
       else if (seg == 4) { p0 = vec2(0.0, 0.21);  p1 = p0 + aD.zw * aB.w; }
-      else               { p0 = vec2(0.0, -0.32); p1 = p0; }  // head center
+      else               { p0 = vec2(0.0, -0.32); p1 = p0; }
 
       mat2 R = mat2(cR, sR, -sR, cR);
       vec2 W0 = center + R * (p0 * h);
@@ -270,11 +365,10 @@
       vec2 pos;
       if (seg == 5) {
         float headR = 0.11 * h;
-        vHalfLen = headR;                      // ring radius rides this varying
+        vHalfLen = headR;
         float ext = headR + halfW;
         vLocal = vec2(aTpl.z, aTpl.y * 2.0 - 1.0) * ext;
         pos = W0 + vLocal;
-        // heads only above the size cutoff — collapse the quad otherwise
         if (h < float(${HEAD_PX})) pos = W0;
       } else {
         vec2 d = W1 - W0;
@@ -301,14 +395,14 @@
     void main() {
       float d;
       if (vHead > 0.5) {
-        d = abs(length(vLocal) - vHalfLen);          // ring
+        d = abs(length(vLocal) - vHalfLen);
       } else {
         vec2 q = vec2(max(abs(vLocal.x) - vHalfLen, 0.0), vLocal.y);
-        d = length(q);                                // capsule — round caps for free
+        d = length(q);
       }
       float a = (1.0 - smoothstep(vHalfW - 0.75, vHalfW + 0.75, d)) * vFade;
       if (a <= 0.001) discard;
-      frag = vec4(uInk * a, a);                       // premultiplied
+      frag = vec4(uInk * a, a);
     }`;
 
     function compile(type, src) {
@@ -317,12 +411,17 @@
       if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
       return s;
     }
-    const prog = gl.createProgram();
-    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
-    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
-    gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
-    gl.useProgram(prog);
+    function link(vs, fs, tf) {
+      const p = gl.createProgram();
+      gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
+      gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
+      if (tf) gl.transformFeedbackVaryings(p, tf, gl.SEPARATE_ATTRIBS);
+      gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+      return p;
+    }
+    const simProg = link(SIM_VS, SIM_FS, ['v_position', 'v_velocity']);
+    const prog = link(VS, FS);
 
     // template: 6 segments × two triangles
     const tpl = [];
@@ -333,15 +432,13 @@
     const tplBuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, tplBuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tpl), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 12, 0);
 
-    function instanceBuffer(list, pack) {
+    function styleBuffer(list, pack) {
       const f = new Float32Array(list.length * 16);
       let o = 0;
       for (const b of list) {
         pack(b, f, o); o += 4;
-        f[o++] = b.cR; f[o++] = b.sR; f[o++] = b.arm; f[o++] = b.leg;
+        f[o++] = b.cJ; f[o++] = b.sJ; f[o++] = b.arm; f[o++] = b.leg;
         f[o++] = b.aLx; f[o++] = b.aLy; f[o++] = b.aRx; f[o++] = b.aRy;
         f[o++] = b.lLx; f[o++] = b.lLy; f[o++] = b.lRx; f[o++] = b.lRy;
       }
@@ -350,79 +447,250 @@
       gl.bufferData(gl.ARRAY_BUFFER, f, gl.STATIC_DRAW);
       return { buf, count: list.length };
     }
-    const flow = instanceBuffer(field, (b, f, o) => { f[o] = b.frac; f[o + 1] = b.off; f[o + 2] = b.drift; f[o + 3] = b.size; });
+    // field style: jitter-oriented (cJ/sJ); core style: rail-oriented (cR/sR)
+    const flowStyle = styleBuffer(field, (b, f, o) => { f[o + 3] = b.size; });
     let drain = null;
     function rebuildCore() {
-      drain = instanceBuffer(makeCore(), (b, f, o) => { f[o] = b.ang0; f[o + 1] = b.radFrac; f[o + 2] = 0; f[o + 3] = b.size; });
+      const list = makeCore();
+      const f = new Float32Array(list.length * 16);
+      let o = 0;
+      for (const b of list) {
+        f[o] = b.ang0; f[o + 1] = b.radFrac; f[o + 3] = b.size; o += 4;
+        f[o++] = b.cR; f[o++] = b.sR; f[o++] = b.arm; f[o++] = b.leg;
+        f[o++] = b.aLx; f[o++] = b.aLy; f[o++] = b.aRx; f[o++] = b.aRy;
+        f[o++] = b.lLx; f[o++] = b.lLy; f[o++] = b.lRx; f[o++] = b.lRy;
+      }
+      if (!drain) drain = { buf: gl.createBuffer(), count: 0 };
+      gl.bindBuffer(gl.ARRAY_BUFFER, drain.buf);
+      gl.bufferData(gl.ARRAY_BUFFER, f, gl.STATIC_DRAW);
+      drain.count = list.length;
     }
 
-    function bindInstances(inst) {
-      gl.bindBuffer(gl.ARRAY_BUFFER, inst.buf);
+    // particle state (ping-pong) + collision mask
+    const posBufs = [gl.createBuffer(), gl.createBuffer()];
+    const velBufs = [gl.createBuffer(), gl.createBuffer()];
+    let active = 0;
+    let collTex = gl.createTexture();
+    let mask = null; // Uint8 alpha at css res, for spawn rejection
+
+    function buildCollision() {
+      const c2d = document.createElement('canvas');
+      c2d.width = cw; c2d.height = ch;
+      const c = c2d.getContext('2d', { willReadFrequently: true });
+      const span = document.querySelector('.wordmark .w');
+      const rect = span.getBoundingClientRect();
+      const fontPx = parseFloat(getComputedStyle(span).fontSize);
+      c.font = '700 ' + fontPx + "px 'Comfortaa', ui-rounded, system-ui, sans-serif";
+      c.textBaseline = 'middle';
+      c.fillStyle = '#fff';
+      c.fillText('pyre', rect.left, rect.top + rect.height / 2);
+      const data = c.getImageData(0, 0, cw, ch).data;
+      mask = new Uint8Array(cw * ch);
+      for (let i = 0; i < mask.length; i++) mask[i] = data[i * 4 + 3];
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, collTex);
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, cw, ch, 0, gl.RED, gl.UNSIGNED_BYTE, mask);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+
+    function seedParticles() {
+      const rand = mulberry32(99);
+      const P = new Float32Array(N_F * 2);
+      const V = new Float32Array(N_F * 2);
+      const cx = cw / 2, cy = ch / 2;
+      for (let i = 0; i < N_F; i++) {
+        const b = field[i];
+        let px = 0, py = 0;
+        for (let tries = 0; tries < 12; tries++) {
+          const frac = tries === 0 ? b.frac : rand();
+          const w = V_E + (V_RIM_W - V_E) * frac;
+          const r0 = R_E + (w * w - V_E * V_E) / C2;
+          const rn = r0 * (1 + b.drift);
+          const ang = Math.log(R_START / r0) / K + b.off;
+          px = cx + Math.cos(ang) * rn * Scss;
+          py = cy + Math.sin(ang) * rn * Scss;
+          const mx = Math.floor(px), my = Math.floor(py);
+          if (mx < 0 || mx >= cw || my < 0 || my >= ch || mask[my * cw + mx] < 50) break;
+        }
+        P[i * 2] = px; P[i * 2 + 1] = py;
+        const rel = [px - cx, py - cy];
+        const r = Math.max(Math.hypot(rel[0], rel[1]), 1e-3);
+        const rn = r / Scss;
+        const tang = [-rel[1] / r, rel[0] / r];
+        const rad = [rel[0] / r, rel[1] / r];
+        let dx = tang[0] - rad[0] * K, dy = tang[1] - rad[1] * K;
+        const dl = Math.hypot(dx, dy);
+        const v = speedN(rn) * Scss / 60;
+        V[i * 2] = (dx / dl) * v; V[i * 2 + 1] = (dy / dl) * v;
+      }
+      for (let i = 0; i < 2; i++) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBufs[i]);
+        gl.bufferData(gl.ARRAY_BUFFER, P, gl.DYNAMIC_COPY);
+        gl.bindBuffer(gl.ARRAY_BUFFER, velBufs[i]);
+        gl.bufferData(gl.ARRAY_BUFFER, V, gl.DYNAMIC_COPY);
+      }
+    }
+
+    // VAOs — sim reads pos/vel (locations queried: that shader has no layouts);
+    // render adds template + style + instanced state
+    const sPosLoc = gl.getAttribLocation(simProg, 'a_position');
+    const sVelLoc = gl.getAttribLocation(simProg, 'a_velocity');
+    const simVaos = [gl.createVertexArray(), gl.createVertexArray()];
+    for (let i = 0; i < 2; i++) {
+      gl.bindVertexArray(simVaos[i]);
+      gl.bindBuffer(gl.ARRAY_BUFFER, posBufs[i]);
+      gl.enableVertexAttribArray(sPosLoc);
+      gl.vertexAttribPointer(sPosLoc, 2, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, velBufs[i]);
+      gl.enableVertexAttribArray(sVelLoc);
+      gl.vertexAttribPointer(sVelLoc, 2, gl.FLOAT, false, 0, 0);
+    }
+    function bindCommon(styleBuf) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, tplBuf);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 12, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, styleBuf);
       for (let loc = 1; loc <= 4; loc++) {
         gl.enableVertexAttribArray(loc);
         gl.vertexAttribPointer(loc, 4, gl.FLOAT, false, 64, (loc - 1) * 16);
         gl.vertexAttribDivisor(loc, 1);
       }
     }
+    const renderVaos = [gl.createVertexArray(), gl.createVertexArray()];
+    for (let i = 0; i < 2; i++) {
+      gl.bindVertexArray(renderVaos[i]);
+      bindCommon(flowStyle.buf);
+      gl.bindBuffer(gl.ARRAY_BUFFER, posBufs[i]);
+      gl.enableVertexAttribArray(5);
+      gl.vertexAttribPointer(5, 2, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(5, 1);
+      gl.bindBuffer(gl.ARRAY_BUFFER, velBufs[i]);
+      gl.enableVertexAttribArray(6);
+      gl.vertexAttribPointer(6, 2, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(6, 1);
+    }
+    let coreVao = null;
+    function rebuildCoreVao() {
+      if (!coreVao) coreVao = gl.createVertexArray();
+      gl.bindVertexArray(coreVao);
+      bindCommon(drain.buf);
+      gl.bindVertexArray(null);
+    }
 
-    const U = n => gl.getUniformLocation(prog, n);
-    const uRes = U('uRes'), uS = U('uS'), uDrop = U('uDrop'), uSpin = U('uSpin'), uCore = U('uCore');
-    const uVE = U('uVE'), uWSPAN = U('uWSPAN'), uC2 = U('uC2'), uRE = U('uRE'), uRCORE = U('uRCORE'), uFadeW = U('uFadeW');
-    gl.uniform3fv(U('uInk'), INK);
+    // uniforms
+    const sU = {};
+    for (const n of ['u_res', 'u_mouse', 'u_dt', 'u_center', 'u_Scss', 'u_VE', 'u_C2', 'u_RE', 'u_time', 'u_coll'])
+      sU[n] = gl.getUniformLocation(simProg, n);
+    const rU = {};
+    for (const n of ['uRes', 'uS', 'uDpr', 'uSpin', 'uCore', 'uRCORE', 'uRE', 'uFadeBand', 'uColl', 'uCollRes', 'uInk'])
+      rU[n] = gl.getUniformLocation(prog, n);
+
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // premultiplied over the CSS ground
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.clearColor(0, 0, 0, 0);
 
-    let drop = 0, spin = 0;
+    let mouseX = -1, mouseY = -1;
+    addEventListener('pointermove', e => { mouseX = e.clientX; mouseY = e.clientY; }, { passive: true });
+    addEventListener('pointerleave', () => { mouseX = -1; mouseY = -1; });
+
+    let spin = 0;
+    function step(dt) {
+      gl.useProgram(simProg);
+      gl.uniform2f(sU.u_res, cw, ch);
+      gl.uniform2f(sU.u_mouse, mouseX, mouseY);
+      gl.uniform1f(sU.u_dt, dt);
+      gl.uniform2f(sU.u_center, cw / 2, ch / 2);
+      gl.uniform1f(sU.u_Scss, Scss);
+      gl.uniform1f(sU.u_VE, V_E);
+      gl.uniform1f(sU.u_C2, C2);
+      gl.uniform1f(sU.u_RE, R_E);
+      gl.uniform1f(sU.u_time, performance.now() * 0.001);
+      gl.uniform1i(sU.u_coll, 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, collTex);
+      const out = 1 - active;
+      gl.bindVertexArray(simVaos[active]);
+      gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, posBufs[out]);
+      gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, velBufs[out]);
+      gl.enable(gl.RASTERIZER_DISCARD);
+      gl.beginTransformFeedback(gl.POINTS);
+      gl.drawArrays(gl.POINTS, 0, N_F);
+      gl.endTransformFeedback();
+      gl.disable(gl.RASTERIZER_DISCARD);
+      gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, null);
+      gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, null);
+      active = out;
+    }
+
     function draw() {
+      gl.useProgram(prog);
       gl.viewport(0, 0, W, H);
-      gl.uniform2f(uRes, W, H);
-      gl.uniform1f(uS, S);
-      gl.uniform1f(uDrop, drop);
-      gl.uniform1f(uSpin, spin);
-      gl.uniform1f(uVE, V_E);
-      gl.uniform1f(uWSPAN, W_SPAN);
-      gl.uniform1f(uC2, C2);
-      gl.uniform1f(uRE, R_E);
-      gl.uniform1f(uRCORE, R_CORE);
-      gl.uniform1f(uFadeW, 0.12 * W_SPAN);
+      gl.uniform2f(rU.uRes, W, H);
+      gl.uniform1f(rU.uS, S);
+      gl.uniform1f(rU.uDpr, dpr);
+      gl.uniform1f(rU.uSpin, spin);
+      gl.uniform1f(rU.uRCORE, R_CORE);
+      gl.uniform1f(rU.uRE, R_E);
+      gl.uniform1f(rU.uFadeBand, 0.35 * R_E);
+      gl.uniform1i(rU.uColl, 0);
+      gl.uniform2f(rU.uCollRes, cw, ch);
+      gl.uniform3fv(rU.uInk, INK);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, collTex);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform1f(uCore, 0);
-      bindInstances(flow);
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, flow.count);
-      gl.uniform1f(uCore, 1);
-      bindInstances(drain);
+      gl.uniform1f(rU.uCore, 0);
+      gl.bindVertexArray(renderVaos[active]);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, N_F);
+      gl.uniform1f(rU.uCore, 1);
+      gl.bindVertexArray(coreVao);
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, drain.count);
+      gl.bindVertexArray(null);
     }
 
     function fit() {
       measure();
       const fontPx = parseFloat(getComputedStyle(document.querySelector('.wordmark')).fontSize);
-      tune(fontPx * dpr);
+      tune(fontPx * dpr, S);
+      buildCollision();
+      seedParticles();
       rebuildCore();
+      rebuildCoreVao();
     }
-    fit();
-    addEventListener('resize', () => { fit(); draw(); });
 
-    draw();
-    if (!still) {
-      let last = performance.now();
-      const loop = now => {
-        const dt = Math.min((now - last) / 1000, 0.05);
-        last = now;
-        drop += MU * dt; spin += W_CORE * dt; // the only per-frame CPU work
-        draw();
+    const boot = () => {
+      fit();
+      draw();
+      if (!still) {
+        let last = performance.now();
+        const loop = now => {
+          const dt = Math.min((now - last) / 16.67, 3); // 60fps-frame units
+          last = now;
+          step(dt);
+          spin += W_CORE * dt / 60;
+          draw();
+          requestAnimationFrame(loop);
+        };
         requestAnimationFrame(loop);
-      };
-      requestAnimationFrame(loop);
-    }
+      }
+      let rT;
+      addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { fit(); draw(); }, 150); });
+    };
+    // the collision mask needs the real font — wait for it, then build
+    if (document.fonts && document.fonts.load) {
+      document.fonts.load("700 100px 'Comfortaa'").then(boot, boot);
+    } else boot();
   }
 
   // ════════════════════════════════════════════════════════════════════════
   // Canvas2D fallback: bake the crowd once, rotate the image — a spinning
-  // log-spiral reads as suction. For the rare browser without WebGL2.
+  // log-spiral reads as suction. No carving here, so "pyre" paints white.
   // ════════════════════════════════════════════════════════════════════════
   function startCanvas2D(ctx) {
+    document.documentElement.classList.add('no-gl');
     let ground = null, baked = null, L = 0, CX = 0, CY = 0;
     const CUTS = [18, 30, 48, 72];
 
