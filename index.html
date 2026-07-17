@@ -195,14 +195,12 @@
   function startGL(gl) {
     measure();
     const N_F = field.length;
-    const REPEL_R = Math.max(110, Math.min(190, cw * 0.12));
 
     const SIM_VS = `#version 300 es
     precision highp float;
     in vec2 a_position;
     in vec2 a_velocity;
     uniform vec2 u_res;        // css px
-    uniform vec2 u_mouse;      // css px, (-1,-1) = none
     uniform float u_dt;        // 60fps-frame units
     uniform vec2 u_center;
     uniform float u_Scss;
@@ -220,18 +218,6 @@
     void main() {
       vec2 pos = a_position;
       vec2 vel = a_velocity;
-
-      // cursor brushes the divers aside (garden-tuned)
-      if (u_mouse.x >= 0.0) {
-        vec2 diff = pos - u_mouse;
-        float d2 = dot(diff, diff);
-        float rr = ${REPEL_R.toFixed(1)};
-        if (d2 < rr * rr && d2 > 0.5) {
-          float d = sqrt(d2);
-          float fall = 1.0 - d / rr;
-          vel += (diff / d) * (fall * fall * 1.5 * u_dt);
-        }
-      }
 
       // steer toward the decelerating current (px per frame)
       vec2 rel = pos - u_center;
@@ -594,7 +580,7 @@
 
     // uniforms
     const sU = {};
-    for (const n of ['u_res', 'u_mouse', 'u_dt', 'u_center', 'u_Scss', 'u_VE', 'u_C2', 'u_RE', 'u_time', 'u_coll'])
+    for (const n of ['u_res', 'u_dt', 'u_center', 'u_Scss', 'u_VE', 'u_C2', 'u_RE', 'u_time', 'u_coll'])
       sU[n] = gl.getUniformLocation(simProg, n);
     const rU = {};
     for (const n of ['uRes', 'uS', 'uDpr', 'uSpin', 'uCore', 'uRCORE', 'uRE', 'uFadeBand', 'uColl', 'uCollRes', 'uInk'])
@@ -604,15 +590,10 @@
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.clearColor(0, 0, 0, 0);
 
-    let mouseX = -1, mouseY = -1;
-    addEventListener('pointermove', e => { mouseX = e.clientX; mouseY = e.clientY; }, { passive: true });
-    addEventListener('pointerleave', () => { mouseX = -1; mouseY = -1; });
-
     let spin = 0;
     function step(dt) {
       gl.useProgram(simProg);
       gl.uniform2f(sU.u_res, cw, ch);
-      gl.uniform2f(sU.u_mouse, mouseX, mouseY);
       gl.uniform1f(sU.u_dt, dt);
       gl.uniform2f(sU.u_center, cw / 2, ch / 2);
       gl.uniform1f(sU.u_Scss, Scss);
