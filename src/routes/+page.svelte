@@ -142,7 +142,7 @@
   <canvas id="sea" aria-hidden="true"></canvas>
   <h1 class="wordmark">
     <span class="line"
-      ><span class="w">pyre </span><span class="k">divers</span></span
+      ><span class="w">pyre</span> <span class="k">divers</span></span
     >
   </h1>
   <a class="down" href="#join" aria-label="scroll down — join the list">
