@@ -9,9 +9,6 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    // the sim (page-fx.js) is verbatim generative-art code — untyped by
-    // design, same documented waiver the old tsconfig gate carried
-    "noImplicitAny": false,
     "moduleResolution": "bundler"
   }
   // Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias

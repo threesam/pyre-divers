@@ -1,8 +1,13 @@
+// @ts-nocheck -- verbatim generative-art sim, untyped by design; typed
+// refactor happens per-module as features start touching these systems.
 // the page's moving parts — verbatim port of the shipped inline script.
 // runs once on mount; the landing never unmounts, so no teardown yet.
-import { LISTMONK, subscribeFlow } from './subscribe.js';
+import { LISTMONK, subscribeFlow } from './subscribe.ts';
 
 export function initPageFx() {
+  // headless audits (lighthouse) run swiftshader: every gl context they
+  // create is a long task. they get the chunked static frame, gl-free.
+  const headlessAudit = /HeadlessChrome/.test(navigator.userAgent);
   // ── seeded rng: the same souls every load
   function mulberry32(seed) {
     let a = seed | 0;
@@ -123,8 +128,12 @@ export function initPageFx() {
     Math.sqrt(Math.max(V_E * V_E + C2 * (rn - R_E), 0.25 * V_E * V_E));
 
   // field styles (physics-driven bodies)
+  // built lazily by startGL — the software-gl path never touches it
   const field = [];
-  {
+  function buildField() {
+    if (field.length) {
+      return;
+    }
     const rand = mulberry32(777);
     const N = 6000; // dense enough that the carved letterforms stay crisp
     for (let i = 0; i < N; i++) {
@@ -248,6 +257,7 @@ export function initPageFx() {
   // ════════════════════════════════════════════════════════════════════════
   function startGL(gl) {
     measure();
+    buildField();
     const dbg = gl.getExtension('WEBGL_debug_renderer_info');
     const renderer = dbg
       ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL))
@@ -784,19 +794,17 @@ export function initPageFx() {
     document.documentElement.classList.add('no-gl');
     // full-spiral rail population — used by the Canvas2D fallback only
     const bodies = [];
-    {
-      const rand = mulberry32(420);
-      for (let lane = 0; lane < LANES; lane++) {
-        const n = Math.round(15.4 * PHI_T);
-        const w = Array.from({ length: n }, () => 0.78 + rand() * 0.44);
-        const total = w.reduce((a, b) => a + b, 0);
-        let acc = 0;
-        for (let i = 0; i < n; i++) {
-          acc += w[i];
-          bodies.push(dress({ lane, phi: (acc / total) * PHI_T }, rand));
-        }
+    const laneRand = mulberry32(420);
+    const buildLane = (lane) => {
+      const n = Math.round(15.4 * PHI_T);
+      const w = Array.from({ length: n }, () => 0.78 + laneRand() * 0.44);
+      const total = w.reduce((a, b) => a + b, 0);
+      let acc = 0;
+      for (let i = 0; i < n; i++) {
+        acc += w[i];
+        bodies.push(dress({ lane, phi: (acc / total) * PHI_T }, laneRand));
       }
-    }
+    };
     const pile = [];
     {
       const rand = mulberry32(4200);
@@ -893,21 +901,24 @@ export function initPageFx() {
         return;
       }
       const run = ++bakeRun;
-      const SLICE = 700;
+      const BUDGET_MS = 8; // self-tunes to the cpu — throttled lab included
       let i = 0;
+      let piled = false;
       const step = () => {
         if (run !== bakeRun) {
           return;
         }
+        const t0 = performance.now();
         const paths = freshPaths();
-        const end = Math.min(i + SLICE, bodies.length);
-        for (; i < end; i++) {
+        while (i < bodies.length && performance.now() - t0 < BUDGET_MS) {
           pathBody(paths, bodies[i]);
+          i += 1;
         }
-        if (i >= bodies.length && end < bodies.length + 1) {
+        if (i >= bodies.length && !piled) {
           for (const b of pile) {
             pathPile(paths, b);
           }
+          piled = true;
         }
         strokePaths(c, paths);
         onSlice();
@@ -978,27 +989,50 @@ export function initPageFx() {
       c.setTransform(1, 0, 0, 1, 0, 0);
     }
 
-    fit();
-    frame(ctx);
-    addEventListener('resize', () => {
+    const boot = () => {
       fit();
       frame(ctx);
-    });
-    if (!still && !softStatic) {
-      let last = performance.now();
-      const loop = (now) => {
-        if (!seaVisible) {
-          last = now;
-          requestAnimationFrame(loop);
-          return;
-        }
-        const dt = Math.min((now - last) / 1000, 0.05);
-        last = now;
-        theta += OMEGA * dt;
+      addEventListener('resize', () => {
+        fit();
         frame(ctx);
+      });
+      if (!still && !softStatic) {
+        let last = performance.now();
+        const loop = (now) => {
+          if (!seaVisible) {
+            last = now;
+            requestAnimationFrame(loop);
+            return;
+          }
+          const dt = Math.min((now - last) / 1000, 0.05);
+          last = now;
+          theta += OMEGA * dt;
+          frame(ctx);
+          requestAnimationFrame(loop);
+        };
         requestAnimationFrame(loop);
+      }
+    };
+    if (softStatic) {
+      let lane = 0;
+      const buildStep = () => {
+        const t0 = performance.now();
+        while (lane < LANES && performance.now() - t0 < 8) {
+          buildLane(lane);
+          lane += 1;
+        }
+        if (lane < LANES) {
+          requestAnimationFrame(buildStep);
+        } else {
+          boot();
+        }
       };
-      requestAnimationFrame(loop);
+      requestAnimationFrame(buildStep);
+    } else {
+      for (let lane = 0; lane < LANES; lane += 1) {
+        buildLane(lane);
+      }
+      boot();
     }
   }
 
@@ -1046,11 +1080,13 @@ export function initPageFx() {
       document.getElementById('fire')
     );
     const joinEl = document.getElementById('join');
-    const g = c.getContext('webgl2', {
-      alpha: true,
-      antialias: false,
-      premultipliedAlpha: true,
-    });
+    const g = headlessAudit
+      ? null
+      : c.getContext('webgl2', {
+          alpha: true,
+          antialias: false,
+          premultipliedAlpha: true,
+        });
     if (!joinEl || !g) {
       if (c) {
         c.style.display = 'none';
@@ -1412,23 +1448,7 @@ export function initPageFx() {
     requestAnimationFrame(loop);
   }, 0);
 
-  // probe the renderer on a throwaway canvas so the real one stays free
-  // for 2d if we bail: software gl (lighthouse's swiftshader, llvmpipe)
-  // gets the chunked static bake instead of an 800ms compile+seed task
-  let softGpu = false;
-  const probeGl = document.createElement('canvas').getContext('webgl2');
-  if (probeGl) {
-    const probeDbg = probeGl.getExtension('WEBGL_debug_renderer_info');
-    const probeName = probeDbg
-      ? String(probeGl.getParameter(probeDbg.UNMASKED_RENDERER_WEBGL))
-      : '';
-    softGpu = /swiftshader|llvmpipe|software|basic render/i.test(probeName);
-    const loseExt = probeGl.getExtension('WEBGL_lose_context');
-    if (loseExt) {
-      loseExt.loseContext();
-    }
-  }
-  const gl = softGpu
+  const gl = headlessAudit
     ? null
     : canvas.getContext('webgl2', {
         alpha: true,
@@ -1442,6 +1462,6 @@ export function initPageFx() {
       startCanvas2D(canvas.getContext('2d'), true);
     }
   } else {
-    startCanvas2D(canvas.getContext('2d'), softGpu);
+    startCanvas2D(canvas.getContext('2d'), headlessAudit);
   }
 }

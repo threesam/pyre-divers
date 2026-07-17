@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { subscribeFlow } from '../src/lib/subscribe.js';
+import { subscribeFlow } from '../src/lib/subscribe.ts';
 import { test } from 'node:test';
 
 const CFG = { url: 'https://list.example.com', list: 'uuid-123' };
