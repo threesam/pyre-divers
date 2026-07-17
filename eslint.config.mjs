@@ -1,6 +1,7 @@
 import globals from 'globals';
 import js from '@eslint/js';
 import svelte from 'eslint-plugin-svelte';
+import ts from 'typescript-eslint';
 
 // js.configs.all = every core rule on. The waivers below are the deliberate
 // exceptions a generative-art page earns — each one documented, nothing silent.
@@ -46,6 +47,27 @@ const waivers = {
 export default [
   { ignores: ['node_modules/**', '.svelte-kit/**', '.vercel/**', 'static/**'] },
   ...svelte.configs.recommended,
+  {
+    // ts inside .svelte script blocks
+    files: ['**/*.svelte'],
+    languageOptions: { parserOptions: { parser: ts.parser } },
+  },
+  {
+    files: ['**/*.ts'],
+    languageOptions: {
+      parser: ts.parser,
+      globals: { ...globals.node, ...globals.browser },
+    },
+    plugins: { '@typescript-eslint': ts.plugin },
+    rules: {
+      ...js.configs.all.rules,
+      ...waivers,
+      // the ts compiler owns undefined-name and unused checks for .ts
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'error',
+    },
+  },
   {
     files: ['src/**/*.js'],
     languageOptions: { globals: { ...globals.browser } },
