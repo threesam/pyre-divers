@@ -1,8 +1,11 @@
-<script>
-  import { initPageFx } from '$lib/page-fx.js';
+<script lang="ts">
+  import { initPageFx } from '$lib/page-fx';
 
   $effect(() => {
-    initPageFx();
+    // detach the sim kickoff from the hydration flush — separate tasks
+    // keep each under the long-task line on throttled cpus
+    const t = setTimeout(initPageFx, 0);
+    return () => clearTimeout(t);
   });
 
   const jsonLdTag = 'script';

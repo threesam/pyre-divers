@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "svelte-kit sync && npm run lint && svelte-check --tsconfig ./jsconfig.json && npm run format:check && npm test"
+    "check": "svelte-kit sync && npm run lint && svelte-check --tsconfig ./tsconfig.json && npm run format:check && npm test"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
