@@ -29,7 +29,7 @@
     word-spacing: -0.06em;
     line-height: 1;
   }
-  .wordmark .line { white-space: nowrap; } /* single grid item → single line */
+  .wordmark .line { white-space: nowrap; transform: translateY(-0.05em); } /* one line, optically centered */
   .wordmark .w { color: #ffffff; }
   .wordmark .k { color: #212614; }
 </style>
@@ -61,7 +61,7 @@
   const H_MIN = 0.005;                         // size floor — the clot forms where it kicks in
   const GAP = 1 - Math.exp(-TAU * K / LANES);  // ring gap as a fraction of r
   const PHI_T = Math.log(R_START / R_END) / K; // full span, rim → drain (~39 turns)
-  const OMEGA = TAU / 32;                      // fallback rotation: one revolution per 32 s
+  const OMEGA = TAU / 64;                      // fallback rotation: one revolution per 64 s
   const DENS = 15.4;                           // bodies per lane per radian — cover density
   const TILT = PI + Math.atan(K);              // heading: tangent, tilted by the spiral pitch
   const HEAD_PX = 9;                           // bodies at least this tall get a head drawn
@@ -124,23 +124,25 @@
     }
   }
 
-  // ── Rankine split for the GL path: differential-speed field around a rigid,
-  // fast-spinning core — what real vortices do. Field bodies ride u = √(r/R):
-  // u falls linearly in time for every body, so the spiral pattern is invariant
-  // while inner bodies visibly outpace outer ones. That's the parallax.
-  const P_EXP = 0.5;
-  const R_CORE = 0.125;                          // inside here: solid-body spin
-  const U_KILL = Math.sqrt(0.115 / R_START);     // field bodies dissolve across the disc edge
-  const W_EDGE = TAU / 14;                       // field angular speed at the core's edge
-  const LAMBDA = P_EXP * K * U_KILL * W_EDGE;    // du/dt, shared by the whole field
-  const W_CORE = TAU / 12;                       // the drain whips — at half tempo
+  // ── the field decelerates CONSTANTLY: each body sheds linear speed at the same
+  // steady rate as it spirals down (v² linear in r keeps the strands invariant),
+  // arriving at the disc edge moving exactly at the core's spin — no ravine drop,
+  // no seam. Speed itself is the conveyor variable: w falls linearly in time.
+  const R_CORE = 0.125;                    // inside here: the phyllotaxis disc, solid-body spin
+  const W_CORE = TAU / 24;                 // the disc's spin — halved again per review
+  const R_E = 0.115;                       // where field bodies dissolve into the disc
+  const V_E = W_CORE * R_E;                // arrival speed — matches the disc, seamlessly
+  const V_RIM = (TAU / 70) * R_START;      // lazy at the rim, decelerating all the way in
+  const C2 = (V_RIM * V_RIM - V_E * V_E) / (R_START - R_E);
+  const MU = K * C2 / 2;                   // dw/dt — the one shared deceleration
+  const W_SPAN = V_RIM - V_E;
   const field = [];
   {
     const rand = mulberry32(777);
     const N_F = 3400;
     for (let i = 0; i < N_F; i++) {
       const b = dress({ lane: i % LANES, phi: 0 }, rand);
-      b.u0 = U_KILL + (1 - U_KILL) * ((i + 0.25 + rand() * 0.5) / N_F); // even in u + jitter
+      b.w0 = V_E + W_SPAN * ((i + 0.25 + rand() * 0.5) / N_F); // even in w + jitter
       field.push(b);
     }
   }
@@ -199,21 +201,26 @@
     const float K = ${K};
     const float R_START = ${R_START};
     const float H_MIN = ${H_MIN};
-    const float U_KILL = ${U_KILL};
+    const float R_E = ${R_E};
+    const float V_E = ${V_E};
+    const float C2 = ${C2};
+    const float W_SPAN = ${W_SPAN};
 
     void main() {
       float ang, r, h;
       vFade = 1.0;
       if (uCore > 0.5) {
-        ang = aA.x + uSpin;          // solid-body core: the clot spins fast, as one
+        ang = aA.x + uSpin;          // the phyllotaxis disc spins as one
         r = aA.y;
       } else {
-        // u falls linearly for everyone → angular speed ∝ 1/√r: inner laps outer
-        float u = U_KILL + mod(aA.x - U_KILL - uDrop, 1.0 - U_KILL);
-        float phi = -2.0 * log(u) / K;
-        r = R_START * u * u * (1.0 + aA.z);
+        // speed falls linearly in time for every body: constant deceleration,
+        // arriving at the disc edge at exactly the disc's spin speed
+        float w = V_E + mod(aA.x - V_E - uDrop, W_SPAN);
+        float r0 = R_E + (w * w - V_E * V_E) / C2;
+        float phi = log(R_START / r0) / K;   // stay on your strand
+        r = r0 * (1.0 + aA.z);
         ang = phi + aA.y;
-        vFade = smoothstep(U_KILL, U_KILL + 0.05, u); // slip quietly into the core
+        vFade = smoothstep(V_E, V_E + 0.008, w); // dissolve gently into the disc
       }
       h = max(0.052 * r, H_MIN) * aA.w * uS;
       float ca = cos(ang), sa = sin(ang);
@@ -324,7 +331,7 @@
       gl.bufferData(gl.ARRAY_BUFFER, f, gl.STATIC_DRAW);
       return { buf, count: list.length };
     }
-    const flow = instanceBuffer(field, (b, f, o) => { f[o] = b.u0; f[o + 1] = b.off; f[o + 2] = b.drift; f[o + 3] = b.size; });
+    const flow = instanceBuffer(field, (b, f, o) => { f[o] = b.w0; f[o + 1] = b.off; f[o + 2] = b.drift; f[o + 3] = b.size; });
     const drain = instanceBuffer(core,  (b, f, o) => { f[o] = b.ang0; f[o + 1] = b.rad; f[o + 2] = 0; f[o + 3] = b.size; });
 
     function bindInstances(inst) {
@@ -347,7 +354,7 @@
       gl.viewport(0, 0, W, H);
       gl.uniform2f(uRes, W, H);
       gl.uniform1f(uS, S);
-      gl.uniform1f(uDrop, LAMBDA * t);
+      gl.uniform1f(uDrop, MU * t);
       gl.uniform1f(uSpin, W_CORE * t);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(uCore, 0);
