@@ -829,6 +829,34 @@
     btn.disabled = false;
   });
 
+  // ── hard paging between the two screens: wheel + keys flip exactly one page;
+  // touch keeps native mandatory snap (already one-screen-per-swipe)
+  {
+    const scroller = document.scrollingElement || document.documentElement;
+    const pages = [document.getElementById('splash'), document.getElementById('join')];
+    let lock = false, cur = 0;
+    const go = i => {
+      i = Math.max(0, Math.min(pages.length - 1, i));
+      if (i === cur) return;
+      lock = true; cur = i;
+      pages[i].scrollIntoView({ behavior: still ? 'auto' : 'smooth' });
+      setTimeout(() => { lock = false; }, 750);
+    };
+    addEventListener('wheel', e => {
+      e.preventDefault();
+      if (lock || Math.abs(e.deltaY) < 12) return;
+      go(cur + (e.deltaY > 0 ? 1 : -1));
+    }, { passive: false });
+    addEventListener('keydown', e => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') && e.key === ' ') return;
+      if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+      else if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+    });
+    addEventListener('scroll', () => {
+      if (!lock) cur = Math.round(scroller.scrollTop / document.documentElement.clientHeight);
+    }, { passive: true });
+  }
+
   // ── screen two: white divers falling through the black
   (function rain() {
     const c = document.getElementById('rain');
