@@ -294,7 +294,7 @@
       if (uCore > 0.5) {
         float ang = aA.x + uSpin;            // the sunflower disc spins as one
         float r = aA.y * uRCORE;
-        vFade = smoothstep(0.05, 0.95, aA.y); // melt to clean ground at the eye
+        vFade = smoothstep(0.45, 0.98, aA.y); // hard melt — clear from mid-disc in
         float ca = cos(ang), sa = sin(ang);
         center = uRes * 0.5 + vec2(ca, sa) * r * uS;
         h = max(0.052 * r, H_MIN) * aA.w * uS;
@@ -564,7 +564,7 @@
       gl.uniform1f(rU.uSpin, spin);
       gl.uniform1f(rU.uRCORE, R_CORE);
       gl.uniform1f(rU.uRE, R_E);
-      gl.uniform1f(rU.uFadeBand, 0.35 * R_E);
+      gl.uniform1f(rU.uFadeBand, 0.9 * R_E);
       gl.uniform3fv(rU.uInk, INK);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(rU.uCore, 0);
