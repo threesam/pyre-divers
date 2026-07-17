@@ -12,7 +12,7 @@
   html, body { height: 100%; }
   body {
     margin: 0; overflow: hidden;
-    /* the ground also lives in CSS so the page reads right before (or without) JS */
+    /* the ember ground lives in CSS — the GL canvas is transparent ink on top */
     background-color: #e25822;
     background-image:
       radial-gradient(circle at 16% 84%, #b91c1c 0%, rgba(185, 28, 28, 0) 72%),
@@ -40,6 +40,7 @@
 
 <script>
 (() => {
+  'use strict';
   // ── seeded rng: the same souls every load
   function mulberry32(a) {
     return () => {
@@ -50,7 +51,7 @@
     };
   }
   const TAU = Math.PI * 2, PI = Math.PI;
-  const INK = '#212614';
+  const INK = [0x21 / 255, 0x26 / 255, 0x14 / 255]; // olive-black
 
   // geometry — matched to the cover artwork
   const LANES = 3;
@@ -60,7 +61,7 @@
   const H_MIN = 0.005;                         // size floor — the clot forms where it kicks in
   const GAP = 1 - Math.exp(-TAU * K / LANES);  // ring gap as a fraction of r
   const PHI_T = Math.log(R_START / R_END) / K; // full span, rim → drain (~39 turns)
-  const OMEGA = TAU / 16;                      // shared current: one revolution per 16 s
+  const OMEGA = TAU / 32;                      // fallback rotation: one revolution per 32 s
   const DENS = 15.4;                           // bodies per lane per radian — cover density
   const TILT = PI + Math.atan(K);              // heading: tangent, tilted by the spiral pitch
   const HEAD_PX = 9;                           // bodies at least this tall get a head drawn
@@ -81,15 +82,13 @@
     };
   }
 
-  function dress(b, rand) { // the parts that re-roll when a body resurfaces at the rim
+  function dress(b, rand) {
     b.drift = ((rand() + rand()) - 1) * 0.8 * GAP;
     b.size = 0.86 + rand() * 0.26;
     if (b.lane !== undefined) {
       b.off = b.lane * (TAU / LANES) + (rand() - 0.5) * 0.03;
       b.r0 = R_START * Math.exp(-K * b.phi);
     }
-    // precompute the rotation offset (tilt + personal heading jitter) as a unit vector,
-    // and each limb's local direction — the frame loop then needs only 2 trig calls per body
     const hJit = (rand() - 0.5) * 0.55 + (rand() < 0.07 ? (rand() - 0.5) * 2.4 : 0);
     b.cR = Math.cos(TILT + hJit); b.sR = Math.sin(TILT + hJit);
     const p = makePose(rand);
@@ -125,117 +124,357 @@
     }
   }
 
-  // ── drawing
-  const canvas = document.getElementById('sea');
-  const ctx = canvas.getContext('2d');
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
-  let W = 0, H = 0, S = 0, CX = 0, CY = 0, ground = null;
-
-  function paintGround(c) {
-    c.fillStyle = '#e25822';
-    c.fillRect(0, 0, W, H);
-    let g = c.createRadialGradient(W * 0.16, H * 0.84, 0, W * 0.16, H * 0.84, S * 1.05);
-    g.addColorStop(0, '#b91c1c'); g.addColorStop(1, 'rgba(185,28,28,0)');
-    c.fillStyle = g; c.fillRect(0, 0, W, H);
-    g = c.createRadialGradient(W * 0.78, H * 0.16, 0, W * 0.78, H * 0.16, S * 0.95);
-    g.addColorStop(0, '#f5b942'); g.addColorStop(1, 'rgba(245,185,66,0)');
-    c.fillStyle = g; c.fillRect(0, 0, W, H);
+  // ── Rankine split for the GL path: differential-speed field around a rigid,
+  // fast-spinning core — what real vortices do. Field bodies ride u = √(r/R):
+  // u falls linearly in time for every body, so the spiral pattern is invariant
+  // while inner bodies visibly outpace outer ones. That's the parallax.
+  const P_EXP = 0.5;
+  const R_CORE = 0.125;                          // inside here: solid-body spin
+  const U_KILL = Math.sqrt(0.095 / R_START);     // field bodies die deep INSIDE the core,
+                                                 // so the handoff seam is buried in the dark
+  const W_EDGE = TAU / 14;                       // field angular speed at the core's edge
+  const LAMBDA = P_EXP * K * U_KILL * W_EDGE;    // du/dt, shared by the whole field
+  const W_CORE = TAU / 12;                       // the drain whips — at half tempo
+  const field = [];
+  {
+    const rand = mulberry32(777);
+    const N_F = 3400;
+    for (let i = 0; i < N_F; i++) {
+      const b = dress({ lane: i % LANES, phi: 0 }, rand);
+      b.u0 = U_KILL + (1 - U_KILL) * ((i + 0.25 + rand() * 0.5) / N_F); // even in u + jitter
+      field.push(b);
+    }
   }
+  const core = [];
+  for (const b of bodies) {
+    const r = b.r0 * (1 + b.drift);
+    if (r <= R_CORE) core.push({ ...b, ang0: b.phi + b.off, rad: r }); // the approved clot, verbatim
+  }
+  for (const b of pile) core.push({ ...b, ang0: b.a, rad: b.r });
 
-  function fit() {
+  const canvas = document.getElementById('sea');
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W = 0, H = 0, S = 0;
+
+  function measure() {
     W = Math.round(innerWidth * dpr);
     H = Math.round(innerHeight * dpr);
-    S = Math.round(0.70 * Math.hypot(W, H)); // diagonal-based: corners stay covered
-                                             // (0.72·S ≥ half-diagonal) at any aspect ratio
-    CX = W / 2; CY = H / 2;
+    S = Math.round(0.70 * Math.hypot(W, H)); // diagonal-based: corners covered at any aspect
     canvas.width = W; canvas.height = H;
-    ground = document.createElement('canvas');
-    ground.width = W; ground.height = H;
-    paintGround(ground.getContext('2d'));
   }
 
-  // one body, in world coordinates, appended to a shared path — no transforms, no state
-  function addBody(p, px, py, cR, sR, h, b, withHead) {
-    const fx = -sR, fy = cR;          // "down the body" in world coords
-    const s2 = h * 0.21;              // half-spine
-    p.moveTo(px - fx * s2, py - fy * s2); p.lineTo(px + fx * s2, py + fy * s2);
-    if (withHead) {
-      const hd = h * 0.11, hx0 = px - fx * (s2 + hd), hy0 = py - fy * (s2 + hd);
-      p.moveTo(hx0 + hd, hy0); p.arc(hx0, hy0, hd, 0, TAU);
+  // ════════════════════════════════════════════════════════════════════════
+  // WebGL2: true descent. Each body's spiral position is computed in the
+  // vertex shader from one clock uniform — per frame the CPU updates a float
+  // and issues two instanced draw calls. Bodies really shrink down the drain
+  // and wrap to the rim, forever.
+  // ════════════════════════════════════════════════════════════════════════
+  function startGL(gl) {
+    const VS = `#version 300 es
+    precision highp float;
+    uniform vec2 uRes;
+    uniform float uS;
+    uniform float uDrop;   // λ·t — how far every field body has fallen in u
+    uniform float uSpin;   // core rotation angle
+    uniform float uCore;
+    layout(location=0) in vec3 aTpl;  // segId, end(0|1), side(-1|1)
+    layout(location=1) in vec4 aA;    // u0/angle0, angOff/radius, drift, size
+    layout(location=2) in vec4 aB;    // rotC, rotS, armLen, legLen
+    layout(location=3) in vec4 aC;    // armL dir, armR dir
+    layout(location=4) in vec4 aD;    // legL dir, legR dir
+    out vec2 vLocal;
+    out float vHalfLen;
+    out float vHalfW;
+    out float vHead;
+    out float vFade;
+
+    const float K = ${K};
+    const float R_START = ${R_START};
+    const float H_MIN = ${H_MIN};
+    const float U_KILL = ${U_KILL};
+
+    void main() {
+      float ang, r, h;
+      vFade = 1.0;
+      if (uCore > 0.5) {
+        ang = aA.x + uSpin;          // solid-body core: the clot spins fast, as one
+        r = aA.y;
+      } else {
+        // u falls linearly for everyone → angular speed ∝ 1/√r: inner laps outer
+        float u = U_KILL + mod(aA.x - U_KILL - uDrop, 1.0 - U_KILL);
+        float phi = -2.0 * log(u) / K;
+        r = R_START * u * u * (1.0 + aA.z);
+        ang = phi + aA.y;
+        vFade = smoothstep(U_KILL, U_KILL + 0.05, u); // slip quietly into the core
+      }
+      h = max(0.052 * r, H_MIN) * aA.w * uS;
+      float ca = cos(ang), sa = sin(ang);
+      float cR = ca * aB.x - sa * aB.y;   // rot = ang + precomputed offset
+      float sR = sa * aB.x + ca * aB.y;
+      vec2 center = vec2(uRes) * 0.5 + vec2(ca, sa) * r * uS;
+
+      float w = max(uS * 0.0008, 0.09 * h);   // stroke width
+      float halfW = w * 0.5 + 1.0;            // + AA apron
+      vHalfW = w * 0.5;
+
+      int seg = int(aTpl.x + 0.5);
+      vHead = seg == 5 ? 1.0 : 0.0;
+
+      // body-space endpoints (unit height), limbs from pose vectors
+      vec2 p0, p1;
+      if      (seg == 0) { p0 = vec2(0.0, -0.21); p1 = vec2(0.0, 0.21); }
+      else if (seg == 1) { p0 = vec2(0.0, -0.105); p1 = p0 + aC.xy * aB.z; }
+      else if (seg == 2) { p0 = vec2(0.0, -0.105); p1 = p0 + aC.zw * aB.z; }
+      else if (seg == 3) { p0 = vec2(0.0, 0.21);  p1 = p0 + aD.xy * aB.w; }
+      else if (seg == 4) { p0 = vec2(0.0, 0.21);  p1 = p0 + aD.zw * aB.w; }
+      else               { p0 = vec2(0.0, -0.32); p1 = p0; }  // head center
+
+      mat2 R = mat2(cR, sR, -sR, cR);
+      vec2 W0 = center + R * (p0 * h);
+      vec2 W1 = center + R * (p1 * h);
+
+      vec2 pos;
+      if (seg == 5) {
+        float headR = 0.11 * h;
+        vHalfLen = headR;                      // ring radius rides this varying
+        float ext = headR + halfW;
+        vLocal = vec2(aTpl.z, aTpl.y * 2.0 - 1.0) * ext;
+        pos = W0 + vLocal;
+        // heads only above the size cutoff — collapse the quad otherwise
+        if (h < float(${HEAD_PX})) pos = W0;
+      } else {
+        vec2 d = W1 - W0;
+        float len = max(length(d), 1e-4);
+        vec2 t = d / len;
+        vec2 nrm = vec2(-t.y, t.x);
+        vHalfLen = len * 0.5;
+        float along = mix(-(vHalfLen + halfW), vHalfLen + halfW, aTpl.y);
+        vLocal = vec2(along, aTpl.z * halfW);
+        pos = (W0 + W1) * 0.5 + t * along + nrm * (aTpl.z * halfW);
+      }
+      gl_Position = vec4(pos.x / uRes.x * 2.0 - 1.0, 1.0 - pos.y / uRes.y * 2.0, 0.0, 1.0);
+    }`;
+
+    const FS = `#version 300 es
+    precision highp float;
+    uniform vec3 uInk;
+    in vec2 vLocal;
+    in float vHalfLen;
+    in float vHalfW;
+    in float vHead;
+    in float vFade;
+    out vec4 frag;
+    void main() {
+      float d;
+      if (vHead > 0.5) {
+        d = abs(length(vLocal) - vHalfLen);          // ring
+      } else {
+        vec2 q = vec2(max(abs(vLocal.x) - vHalfLen, 0.0), vLocal.y);
+        d = length(q);                                // capsule — round caps for free
+      }
+      float a = (1.0 - smoothstep(vHalfW - 0.75, vHalfW + 0.75, d)) * vFade;
+      if (a <= 0.001) discard;
+      frag = vec4(uInk * a, a);                       // premultiplied
+    }`;
+
+    function compile(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      return s;
     }
-    const sx = px - fx * h * 0.105, sy = py - fy * h * 0.105; // shoulders
-    const hx = px + fx * s2, hy = py + fy * s2;               // hips
-    const aL = h * b.arm, lL = h * b.leg;
-    p.moveTo(sx, sy); p.lineTo(sx + (b.aLx * cR - b.aLy * sR) * aL, sy + (b.aLx * sR + b.aLy * cR) * aL);
-    p.moveTo(sx, sy); p.lineTo(sx + (b.aRx * cR - b.aRy * sR) * aL, sy + (b.aRx * sR + b.aRy * cR) * aL);
-    p.moveTo(hx, hy); p.lineTo(hx + (b.lLx * cR - b.lLy * sR) * lL, hy + (b.lLx * sR + b.lLy * cR) * lL);
-    p.moveTo(hx, hy); p.lineTo(hx + (b.lRx * cR - b.lRy * sR) * lL, hy + (b.lRx * sR + b.lRy * cR) * lL);
-  }
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    gl.useProgram(prog);
 
-  // ── the trick that makes this cheap: everyone shares one current, so the crowd
-  // moves as a rigid body along the spiral family — and a rotating log-spiral IS
-  // the suction. Bake all ~11k bodies once; per frame, rotate the baked image.
-  // Strands slide along themselves, the drain spins, corners churn. One blit.
-  const CUTS = [18, 30, 48, 72];
-  let baked = null, L = 0;
-
-  function bake() {
-    L = Math.ceil(1.44 * S) + 8; // the full spiral disc, valid at any rotation angle
-    baked = document.createElement('canvas');
-    baked.width = baked.height = L;
-    const c = baked.getContext('2d');
-    const paths = [new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D()];
-    for (const b of bodies) {
-      const r = b.r0 * (1 + b.drift);
-      const ang = b.phi + b.off;
-      const ca = Math.cos(ang), sa = Math.sin(ang);
-      const px = L / 2 + ca * r * S, py = L / 2 + sa * r * S;
-      const h = Math.max(0.052 * r, H_MIN) * b.size * S;
-      const cR = ca * b.cR - sa * b.sR, sR = sa * b.cR + ca * b.sR; // rot = ang + offset
-      const k = h < CUTS[0] ? 0 : h < CUTS[1] ? 1 : h < CUTS[2] ? 2 : h < CUTS[3] ? 3 : 4;
-      addBody(paths[k], px, py, cR, sR, h, b, h >= HEAD_PX);
+    // template: 6 segments × two triangles
+    const tpl = [];
+    for (let seg = 0; seg < 6; seg++) {
+      const c = [[0, -1], [0, 1], [1, -1], [1, 1]];
+      for (const i of [0, 1, 2, 2, 1, 3]) tpl.push(seg, c[i][0], c[i][1]);
     }
-    for (const b of pile) {
-      const rot = b.a * 7;
-      addBody(paths[0], L / 2 + Math.cos(b.a) * b.r * S, L / 2 + Math.sin(b.a) * b.r * S,
-              Math.cos(rot), Math.sin(rot), H_MIN * b.size * S, b, false);
+    const tplBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, tplBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tpl), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 12, 0);
+
+    function instanceBuffer(list, pack) {
+      const f = new Float32Array(list.length * 16);
+      let o = 0;
+      for (const b of list) {
+        pack(b, f, o); o += 4;
+        f[o++] = b.cR; f[o++] = b.sR; f[o++] = b.arm; f[o++] = b.leg;
+        f[o++] = b.aLx; f[o++] = b.aLy; f[o++] = b.aRx; f[o++] = b.aRy;
+        f[o++] = b.lLx; f[o++] = b.lLy; f[o++] = b.lRx; f[o++] = b.lRy;
+      }
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, f, gl.STATIC_DRAW);
+      return { buf, count: list.length };
     }
-    c.strokeStyle = INK; c.lineJoin = 'round';
-    const widths = [S * 8e-4, Math.max(S * 8e-4, 2.2 * dpr), 3.5 * dpr, 5.3 * dpr, 7.8 * dpr];
-    for (let k = 0; k < 5; k++) {
-      c.lineWidth = widths[k];
-      c.lineCap = k < 2 ? 'butt' : 'round'; // round caps only where they're visible
-      c.stroke(paths[k]);
+    const flow = instanceBuffer(field, (b, f, o) => { f[o] = b.u0; f[o + 1] = b.off; f[o + 2] = b.drift; f[o + 3] = b.size; });
+    const drain = instanceBuffer(core,  (b, f, o) => { f[o] = b.ang0; f[o + 1] = b.rad; f[o + 2] = 0; f[o + 3] = b.size; });
+
+    function bindInstances(inst) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, inst.buf);
+      for (let loc = 1; loc <= 4; loc++) {
+        gl.enableVertexAttribArray(loc);
+        gl.vertexAttribPointer(loc, 4, gl.FLOAT, false, 64, (loc - 1) * 16);
+        gl.vertexAttribDivisor(loc, 1);
+      }
     }
-  }
 
-  let theta = 0;
-  function frame(c) {
-    c.setTransform(1, 0, 0, 1, 0, 0);
-    c.drawImage(ground, 0, 0);
-    c.translate(CX, CY);
-    c.rotate(theta);
-    c.drawImage(baked, -L / 2, -L / 2);
-    c.setTransform(1, 0, 0, 1, 0, 0);
-  }
+    const U = n => gl.getUniformLocation(prog, n);
+    const uRes = U('uRes'), uS = U('uS'), uDrop = U('uDrop'), uSpin = U('uSpin'), uCore = U('uCore');
+    gl.uniform3fv(U('uInk'), INK);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // premultiplied over the CSS ground
+    gl.clearColor(0, 0, 0, 0);
 
-  fit();
-  bake();
-  addEventListener('resize', () => { fit(); bake(); frame(ctx); });
+    function draw(t) {
+      gl.viewport(0, 0, W, H);
+      gl.uniform2f(uRes, W, H);
+      gl.uniform1f(uS, S);
+      gl.uniform1f(uDrop, LAMBDA * t);
+      gl.uniform1f(uSpin, W_CORE * t);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.uniform1f(uCore, 0);
+      bindInstances(flow);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, flow.count);
+      gl.uniform1f(uCore, 1);
+      bindInstances(drain);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, drain.count);
+    }
 
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (still) {
-    frame(ctx);
-  } else {
-    let last = performance.now();
-    const loop = now => {
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-      theta += OMEGA * dt; // the sea turns; the spiral's geometry does the diving
-      frame(ctx);
+    measure();
+    addEventListener('resize', () => { measure(); draw(t); });
+
+    let t = 0;
+    draw(0);
+    if (!still) {
+      let last = performance.now();
+      const loop = now => {
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+        t += dt; // the only per-frame CPU work: this line
+        draw(t);
+        requestAnimationFrame(loop);
+      };
       requestAnimationFrame(loop);
-    };
-    requestAnimationFrame(loop);
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // Canvas2D fallback: bake the crowd once, rotate the image — a spinning
+  // log-spiral reads as suction. For the rare browser without WebGL2.
+  // ════════════════════════════════════════════════════════════════════════
+  function startCanvas2D(ctx) {
+    let ground = null, baked = null, L = 0, CX = 0, CY = 0;
+    const CUTS = [18, 30, 48, 72];
+
+    function addBody(p, px, py, cR, sR, h, b, withHead) {
+      const fx = -sR, fy = cR;
+      const s2 = h * 0.21;
+      p.moveTo(px - fx * s2, py - fy * s2); p.lineTo(px + fx * s2, py + fy * s2);
+      if (withHead) {
+        const hd = h * 0.11, hx0 = px - fx * (s2 + hd), hy0 = py - fy * (s2 + hd);
+        p.moveTo(hx0 + hd, hy0); p.arc(hx0, hy0, hd, 0, TAU);
+      }
+      const sx = px - fx * h * 0.105, sy = py - fy * h * 0.105;
+      const hx = px + fx * s2, hy = py + fy * s2;
+      const aL = h * b.arm, lL = h * b.leg;
+      p.moveTo(sx, sy); p.lineTo(sx + (b.aLx * cR - b.aLy * sR) * aL, sy + (b.aLx * sR + b.aLy * cR) * aL);
+      p.moveTo(sx, sy); p.lineTo(sx + (b.aRx * cR - b.aRy * sR) * aL, sy + (b.aRx * sR + b.aRy * cR) * aL);
+      p.moveTo(hx, hy); p.lineTo(hx + (b.lLx * cR - b.lLy * sR) * lL, hy + (b.lLx * sR + b.lLy * cR) * lL);
+      p.moveTo(hx, hy); p.lineTo(hx + (b.lRx * cR - b.lRy * sR) * lL, hy + (b.lRx * sR + b.lRy * cR) * lL);
+    }
+
+    function bake() {
+      L = Math.ceil(1.44 * S) + 8;
+      baked = document.createElement('canvas');
+      baked.width = baked.height = L;
+      const c = baked.getContext('2d');
+      const paths = [new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D()];
+      for (const b of bodies) {
+        const r = b.r0 * (1 + b.drift);
+        const ang = b.phi + b.off;
+        const ca = Math.cos(ang), sa = Math.sin(ang);
+        const px = L / 2 + ca * r * S, py = L / 2 + sa * r * S;
+        const h = Math.max(0.052 * r, H_MIN) * b.size * S;
+        const cR = ca * b.cR - sa * b.sR, sR = sa * b.cR + ca * b.sR;
+        const k = h < CUTS[0] ? 0 : h < CUTS[1] ? 1 : h < CUTS[2] ? 2 : h < CUTS[3] ? 3 : 4;
+        addBody(paths[k], px, py, cR, sR, h, b, h >= HEAD_PX);
+      }
+      for (const b of pile) {
+        const rot = b.a * 7;
+        addBody(paths[0], L / 2 + Math.cos(b.a) * b.r * S, L / 2 + Math.sin(b.a) * b.r * S,
+                Math.cos(rot), Math.sin(rot), H_MIN * b.size * S, b, false);
+      }
+      c.strokeStyle = '#212614'; c.lineJoin = 'round';
+      const widths = [S * 8e-4, Math.max(S * 8e-4, 2.2 * dpr), 3.5 * dpr, 5.3 * dpr, 7.8 * dpr];
+      for (let k = 0; k < 5; k++) {
+        c.lineWidth = widths[k];
+        c.lineCap = k < 2 ? 'butt' : 'round';
+        c.stroke(paths[k]);
+      }
+    }
+
+    function paintGround(c) {
+      c.fillStyle = '#e25822';
+      c.fillRect(0, 0, W, H);
+      let g = c.createRadialGradient(W * 0.16, H * 0.84, 0, W * 0.16, H * 0.84, S * 1.05);
+      g.addColorStop(0, '#b91c1c'); g.addColorStop(1, 'rgba(185,28,28,0)');
+      c.fillStyle = g; c.fillRect(0, 0, W, H);
+      g = c.createRadialGradient(W * 0.78, H * 0.16, 0, W * 0.78, H * 0.16, S * 0.95);
+      g.addColorStop(0, '#f5b942'); g.addColorStop(1, 'rgba(245,185,66,0)');
+      c.fillStyle = g; c.fillRect(0, 0, W, H);
+    }
+
+    function fit() {
+      measure();
+      CX = W / 2; CY = H / 2;
+      ground = document.createElement('canvas');
+      ground.width = W; ground.height = H;
+      paintGround(ground.getContext('2d'));
+      bake();
+    }
+
+    let theta = 0;
+    function frame(c) {
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.drawImage(ground, 0, 0);
+      c.translate(CX, CY);
+      c.rotate(theta);
+      c.drawImage(baked, -L / 2, -L / 2);
+      c.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
+    fit();
+    frame(ctx);
+    addEventListener('resize', () => { fit(); frame(ctx); });
+    if (!still) {
+      let last = performance.now();
+      const loop = now => {
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+        theta += OMEGA * dt;
+        frame(ctx);
+        requestAnimationFrame(loop);
+      };
+      requestAnimationFrame(loop);
+    }
+  }
+
+  const gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: true });
+  if (gl) {
+    try { startGL(gl); } catch (e) { startCanvas2D(canvas.getContext('2d')); }
+  } else {
+    startCanvas2D(canvas.getContext('2d'));
   }
 })();
 </script>
