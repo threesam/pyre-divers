@@ -1079,13 +1079,28 @@ export function initPageFx() {
       cooldownUntil = performance.now() + 250; // swallow leftover inertia
     };
     const fly = (target) => {
+      // own the whole animation: ua smooth-scroll easings drag their tails
+      // and proximity snap can grab the wheel mid-ride — both read as a
+      // stall near the end. a fixed tween with snap parked = one motion.
       flying = true;
-      target.scrollIntoView({ behavior: 'smooth' });
-      if ('onscrollend' in window) {
-        addEventListener('scrollend', releaseFlight, { once: true });
-      } else {
-        setTimeout(releaseFlight, 900);
-      }
+      const s = document.scrollingElement || document.documentElement;
+      const from = s.scrollTop;
+      const to = target.offsetTop;
+      const dur = 620;
+      const t0 = performance.now();
+      document.documentElement.style.scrollSnapType = 'none';
+      const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (2 - 2 * t) ** 3 / 2);
+      const step = (now) => {
+        const p = Math.min((now - t0) / dur, 1);
+        s.scrollTop = from + (to - from) * ease(p);
+        if (p < 1) {
+          requestAnimationFrame(step);
+        } else {
+          document.documentElement.style.scrollSnapType = '';
+          releaseFlight();
+        }
+      };
+      requestAnimationFrame(step);
     };
     addEventListener(
       'wheel',
