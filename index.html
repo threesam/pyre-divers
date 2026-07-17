@@ -48,11 +48,16 @@
     position: absolute; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%;
     transform: translateX(-50%);
     color: #ffffff; z-index: 2; line-height: 0; padding: 6px;
-    animation: bob 2.2s ease-in-out infinite;
+    transition: opacity 0.35s;
   }
   .down:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 8px; }
-  @keyframes bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 8px); } }
-  @media (prefers-reduced-motion: reduce) { .down { animation: none; } }
+  .down path { opacity: 0.25; animation: chev 1.5s ease-in-out infinite; }
+  .down path:nth-of-type(2) { animation-delay: 0.22s; }
+  .down path:nth-of-type(3) { animation-delay: 0.44s; }
+  @keyframes chev { 0%, 60%, 100% { opacity: 0.25; } 30% { opacity: 1; } }
+  .down.away { opacity: 0; pointer-events: none; }
+  .down.away path { animation-play-state: paused; }
+  @media (prefers-reduced-motion: reduce) { .down path { animation: none; opacity: 0.9; } }
   #join { display: grid; place-items: center; background: #10120a; padding: 1.25rem; }
   #rain { position: absolute; inset: 0; width: 100%; height: 100%; }
   /* divers emerge and dissolve smoothly — olive gradient veils at the screen's edges */
@@ -114,7 +119,7 @@
 <canvas id="sea" aria-hidden="true"></canvas>
 <h1 class="wordmark"><span class="line"><span class="w">pyre </span><span class="k">divers</span></span></h1>
 <a class="down" href="#join" aria-label="scroll down — join the list">
-<svg width="34" height="30" viewBox="0 0 34 30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4 L17 13 L29 4"/><path d="M5 15 L17 24 L29 15"/></svg>
+<svg width="34" height="42" viewBox="0 0 34 42" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4 L17 13 L29 4"/><path d="M5 15 L17 24 L29 15"/><path d="M5 26 L17 35 L29 26"/></svg>
 </a>
 </section>
 <section id="join">
@@ -874,6 +879,16 @@
       btn.disabled = false;
     });
   }
+
+  // the chevrons sequence only while parked at the top
+  const downEl = document.querySelector('.down');
+  const syncDown = () => {
+    if (!downEl) {return;}
+    const s = document.scrollingElement || document.documentElement;
+    downEl.classList.toggle('away', s.scrollTop > 0);
+  };
+  addEventListener('scroll', syncDown, { passive: true });
+  syncDown();
 
   // ── screen two: white divers falling through the black
   (function rain() {
