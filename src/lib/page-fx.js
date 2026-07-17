@@ -1066,6 +1066,59 @@ export function initPageFx() {
   addEventListener('scroll', syncDown, { passive: true });
   syncDown();
 
+  // ── desktop wheel flight: one deliberate flick = one smooth, unbroken
+  // ride to the other screen. proximity snap alone waits for the trackpad
+  // momentum to die (~80% of the way) before animating the rest — that
+  // read as a stall. reduced-motion users keep native scrolling.
+  const fineQ = matchMedia('(min-width: 769px) and (pointer: fine)');
+  if (!still) {
+    let flying = false;
+    let cooldownUntil = 0;
+    const releaseFlight = () => {
+      flying = false;
+      cooldownUntil = performance.now() + 250; // swallow leftover inertia
+    };
+    const fly = (target) => {
+      flying = true;
+      target.scrollIntoView({ behavior: 'smooth' });
+      if ('onscrollend' in window) {
+        addEventListener('scrollend', releaseFlight, { once: true });
+      } else {
+        setTimeout(releaseFlight, 900);
+      }
+    };
+    addEventListener(
+      'wheel',
+      (e) => {
+        if (!fineQ.matches) {
+          return;
+        }
+        if (flying || performance.now() < cooldownUntil) {
+          e.preventDefault();
+          return;
+        }
+        if (Math.abs(e.deltaY) < 6) {
+          return;
+        }
+        const s = document.scrollingElement || document.documentElement;
+        const vh = document.documentElement.clientHeight;
+        const splashTarget = document.getElementById('splash');
+        const joinTarget = document.getElementById('join');
+        if (!splashTarget || !joinTarget) {
+          return;
+        }
+        if (e.deltaY > 0 && s.scrollTop < vh * 0.5) {
+          e.preventDefault();
+          fly(joinTarget);
+        } else if (e.deltaY < 0 && s.scrollTop > vh * 0.5) {
+          e.preventDefault();
+          fly(splashTarget);
+        }
+      },
+      { passive: false },
+    );
+  }
+
   // ── screen two: the pyre. A GLSL flame burns at a third of the width;
   // white divers and glowing flecks rise out of it (desktop) or drift up
   // from the deep (mobile).
