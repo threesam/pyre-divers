@@ -1,4 +1,4 @@
-index.html
 node_modules
-.tscheck
+.svelte-kit
 package-lock.json
+static/
