@@ -1018,11 +1018,17 @@
     const ctx2 = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d'));
     const rand = mulberry32(77);
     const seedDrop = (b, initial) => {
-      if (initial) {
-        // ambient start everywhere; respawns converge to the source
+      if (initial && deskQ.matches) {
+        // seed along the plume: as if each body already rose from the flame —
+        // the higher it is, the further it has drifted
+        const rise = rand();
+        b.y = FLAME_BASE - rise * (FLAME_BASE + 0.1);
+        b.x = FLAME_X + (rand() - 0.5) * (0.05 + rise * 0.22);
+        b.vx = (rand() - 0.5) * 0.02;
+      } else if (initial) {
         b.x = rand();
-        b.y = rand() * (deskQ.matches ? FLAME_BASE : 1);
-        b.vx = (rand() - 0.5) * 0.01;
+        b.y = rand();
+        b.vx = (rand() - 0.5) * 0.006;
       } else if (deskQ.matches) {
         b.x = FLAME_X + (rand() - 0.5) * 0.08;
         b.y = FLAME_BASE - rand() * 0.04;
