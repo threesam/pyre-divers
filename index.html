@@ -15,7 +15,7 @@
     overflow-y: auto; overflow-x: hidden;
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
-    background: #0b0a08; color: #e7e2da;
+    background: #000; color: #e7e2da;
     font-family: ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
   }
   section { position: relative; height: 100vh; height: 100dvh; scroll-snap-align: start; scroll-snap-stop: always; overflow: hidden; }
@@ -48,8 +48,10 @@
   .down:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 8px; }
   @keyframes bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 8px); } }
   @media (prefers-reduced-motion: reduce) { .down { animation: none; } }
-  #join { display: grid; place-items: center; background: #0b0a08; padding: 1.25rem; }
+  #join { display: grid; place-items: center; background: #000; padding: 1.25rem; }
+  #rain { position: absolute; inset: 0; width: 100%; height: 100%; }
   .card {
+    position: relative; z-index: 1; background: #000;
     max-width: 26rem; width: 100%;
     border: 2px solid #57492f;
     border-radius: 255px 18px 225px 18px / 18px 225px 18px 255px;
@@ -73,7 +75,7 @@
   }
   .fieldwrap input {
     width: 100%; box-sizing: border-box; display: block;
-    background: #0b0a08; color: #e7e2da;
+    background: #000; color: #e7e2da;
     border: none; outline: none;
     border-radius: 198px 12px 178px 12px / 12px 178px 12px 198px;
     padding: 0.85rem 1rem; font: inherit; font-size: 1rem;
@@ -89,6 +91,7 @@
   }
   button.join:focus-visible { outline: 2px solid #f5b942; outline-offset: 3px; }
   .tiny { font-size: 0.78rem; color: #7d745f; }
+  @media (max-width: 768px) { .card { border: none; padding: 1.2rem 0.6rem; } }
 </style>
 </head>
 <body>
@@ -100,6 +103,7 @@
 </a>
 </section>
 <section id="join">
+<canvas id="rain" aria-hidden="true"></canvas>
 <div class="card">
 <h2 class="fire">come sit by the fire</h2>
 <p>Live, unpolished conversations with trailblazers making asymmetric bets. Two builders, one fire. First dive: August 2026.</p>
@@ -196,6 +200,23 @@
     for (let i = 0; i < 60; i++) {
       pile.push(dress({ a: rand() * TAU, r: 0.018 * Math.pow(rand(), 0.7) }, rand));
     }
+  }
+
+  function addBody(p, px, py, cR, sR, h, b, withHead) {
+    const fx = -sR, fy = cR;
+    const s2 = h * 0.21;
+    p.moveTo(px - fx * s2, py - fy * s2); p.lineTo(px + fx * s2, py + fy * s2);
+    if (withHead) {
+      const hd = h * 0.11, hx0 = px - fx * (s2 + hd), hy0 = py - fy * (s2 + hd);
+      p.moveTo(hx0 + hd, hy0); p.arc(hx0, hy0, hd, 0, TAU);
+    }
+    const sx = px - fx * h * 0.105, sy = py - fy * h * 0.105;
+    const hx = px + fx * s2, hy = py + fy * s2;
+    const aL = h * b.arm, lL = h * b.leg;
+    p.moveTo(sx, sy); p.lineTo(sx + (b.aLx * cR - b.aLy * sR) * aL, sy + (b.aLx * sR + b.aLy * cR) * aL);
+    p.moveTo(sx, sy); p.lineTo(sx + (b.aRx * cR - b.aRy * sR) * aL, sy + (b.aRx * sR + b.aRy * cR) * aL);
+    p.moveTo(hx, hy); p.lineTo(hx + (b.lLx * cR - b.lLy * sR) * lL, hy + (b.lLx * sR + b.lLy * cR) * lL);
+    p.moveTo(hx, hy); p.lineTo(hx + (b.lRx * cR - b.lRy * sR) * lL, hy + (b.lRx * sR + b.lRy * cR) * lL);
   }
 
   // ── flow model (shared by sim + fallback tuning): constant deceleration —
@@ -708,23 +729,6 @@
     let ground = null, baked = null, L = 0, CX = 0, CY = 0;
     const CUTS = [18, 30, 48, 72];
 
-    function addBody(p, px, py, cR, sR, h, b, withHead) {
-      const fx = -sR, fy = cR;
-      const s2 = h * 0.21;
-      p.moveTo(px - fx * s2, py - fy * s2); p.lineTo(px + fx * s2, py + fy * s2);
-      if (withHead) {
-        const hd = h * 0.11, hx0 = px - fx * (s2 + hd), hy0 = py - fy * (s2 + hd);
-        p.moveTo(hx0 + hd, hy0); p.arc(hx0, hy0, hd, 0, TAU);
-      }
-      const sx = px - fx * h * 0.105, sy = py - fy * h * 0.105;
-      const hx = px + fx * s2, hy = py + fy * s2;
-      const aL = h * b.arm, lL = h * b.leg;
-      p.moveTo(sx, sy); p.lineTo(sx + (b.aLx * cR - b.aLy * sR) * aL, sy + (b.aLx * sR + b.aLy * cR) * aL);
-      p.moveTo(sx, sy); p.lineTo(sx + (b.aRx * cR - b.aRy * sR) * aL, sy + (b.aRx * sR + b.aRy * cR) * aL);
-      p.moveTo(hx, hy); p.lineTo(hx + (b.lLx * cR - b.lLy * sR) * lL, hy + (b.lLx * sR + b.lLy * cR) * lL);
-      p.moveTo(hx, hy); p.lineTo(hx + (b.lRx * cR - b.lRy * sR) * lL, hy + (b.lRx * sR + b.lRy * cR) * lL);
-    }
-
     function bake() {
       L = Math.ceil(1.44 * S) + 8;
       baked = document.createElement('canvas');
@@ -824,6 +828,60 @@
     }
     btn.disabled = false;
   });
+
+  // ── screen two: white divers falling through the black
+  (function rain() {
+    const c = document.getElementById('rain');
+    const ctx2 = c.getContext('2d');
+    const rand = mulberry32(77);
+    const drops = [];
+    for (let i = 0; i < 70; i++) {
+      const b = dress({}, rand);
+      b.x = rand(); b.y = rand();
+      b.v = 0.02 + rand() * 0.035;            // viewport-heights per second
+      b.swayPh = rand() * TAU; b.swayA = 6 + rand() * 12;
+      b.rot = PI + (rand() - 0.5) * 0.5;      // head-first down, loosely
+      drops.push(b);
+    }
+    let rw = 0, rh = 0;
+    function sizeRain() {
+      const de = document.documentElement;
+      rw = Math.round(de.clientWidth * dpr); rh = Math.round(de.clientHeight * dpr);
+      c.width = rw; c.height = rh;
+      c.style.width = de.clientWidth + 'px'; c.style.height = de.clientHeight + 'px';
+    }
+    sizeRain();
+    addEventListener('resize', sizeRain);
+    let joinVisible = false;
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(es => { joinVisible = es[0].isIntersecting; }, { threshold: 0.02 })
+        .observe(document.getElementById('join'));
+    } else joinVisible = true;
+    function drawRain(t) {
+      ctx2.clearRect(0, 0, rw, rh);
+      ctx2.strokeStyle = '#ffffff'; ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
+      ctx2.globalAlpha = 0.92;
+      const h0 = 0.02 * S; // same visual scale as the vortex crowd
+      const path = new Path2D();
+      for (const b of drops) {
+        const px = b.x * rw + Math.sin(t * 0.6 + b.swayPh) * b.swayA * dpr;
+        addBody(path, px, b.y * rh, Math.cos(b.rot), Math.sin(b.rot), h0 * b.size, b, h0 * b.size >= HEAD_PX);
+      }
+      ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.09);
+      ctx2.stroke(path);
+    }
+    if (still) { drawRain(8); return; }
+    let last = performance.now();
+    const loop = now => {
+      if (!joinVisible) { last = now; requestAnimationFrame(loop); return; }
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      for (const b of drops) { b.y += b.v * dt; if (b.y > 1.06) { b.y = -0.08; b.x = rand(); } }
+      drawRain(now / 1000);
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  })();
 
   const gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: true });
   if (gl) {
