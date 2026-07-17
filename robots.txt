@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://pyre-divers.vercel.app/sitemap.xml
+Sitemap: https://pyredivers.com/sitemap.xml

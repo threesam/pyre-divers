@@ -8,5 +8,5 @@ the site is a single-page signup: a WebGL whirlpool of hand-drawn stick
 figures ("divers") and an email list. no other content yet — rss and episodes
 arrive with the first dive.
 
-- signup: https://pyre-divers.vercel.app/
+- signup: https://pyredivers.com/
 - sam: https://threesam.com
