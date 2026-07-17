@@ -142,15 +142,24 @@
   }
   .card p { margin: 0; color: #b7ad9d; font-size: 0.95rem; line-height: 1.55; }
   .card form { display: grid; gap: 0.8rem; }
+  /* hand-drawn: the ring/slab live on wobble-filtered layers behind the
+     crisp text; no filter support = the old smooth-radius look */
   .fieldwrap {
-    padding: 2px;
+    position: relative;
+    padding: 2.5px;
+  }
+  .fieldwrap::before {
+    content: '';
+    position: absolute; inset: 0; z-index: 0;
     border-radius: 200px 14px 180px 14px / 14px 180px 14px 200px;
     background: #57492f; /* resting ring = the hand-drawn border */
+    filter: url(#wobble-a);
   }
-  .fieldwrap:focus-within {
+  .fieldwrap:focus-within::before {
     background: linear-gradient(100deg, #f5b942, #e25822, #b91c1c); /* the fire ring */
   }
   .fieldwrap input {
+    position: relative; z-index: 1;
     width: 100%; box-sizing: border-box; display: block;
     background: #10120a; color: #e7e2da;
     border: none; outline: none;
@@ -159,12 +168,20 @@
   }
   .fieldwrap input::placeholder { color: #6d6450; }
   button.join {
+    position: relative; isolation: isolate;
     font: inherit; font-weight: 700; font-size: 1rem;
     border: none; cursor: pointer;
-    border-radius: 200px 14px 180px 14px / 14px 180px 14px 200px;
     padding: 0.85rem 1rem;
-    background: linear-gradient(100deg, #f5b942, #e25822, #b91c1c);
+    background: none;
     color: #1c1917;
+  }
+  button.join::before {
+    content: '';
+    position: absolute; inset: 0; z-index: -1;
+    border-radius: 200px 14px 180px 14px / 14px 180px 14px 200px;
+    background: linear-gradient(100deg, #f5b942, #e25822, #b91c1c);
+    filter: url(#wobble-b);
+    transform: rotate(-0.3deg);
   }
   button.join:focus-visible { outline: 2px solid #f5b942; outline-offset: 3px; }
   .tiny { font-size: 0.78rem; color: #7d745f; }
@@ -172,6 +189,16 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<filter id="wobble-a" x="-8%" y="-40%" width="116%" height="180%">
+<feTurbulence type="fractalNoise" baseFrequency="0.011 0.045" numOctaves="2" seed="11" result="n"/>
+<feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+</filter>
+<filter id="wobble-b" x="-8%" y="-40%" width="116%" height="180%">
+<feTurbulence type="fractalNoise" baseFrequency="0.014 0.04" numOctaves="2" seed="4" result="n"/>
+<feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+</filter>
+</svg>
 <section id="splash" aria-label="pyre divers — the whirlpool">
 <canvas id="sea" aria-hidden="true"></canvas>
 <h1 class="wordmark"><span class="line"><span class="w">pyre </span><span class="k">divers</span></span></h1>
