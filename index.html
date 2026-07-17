@@ -9,35 +9,109 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg stroke='%23212614' stroke-width='2.6' stroke-linecap='round' fill='none'%3E%3Ccircle cx='16' cy='7' r='3.4'/%3E%3Cpath d='M16 10.5 L16 20 M16 13 L9 17 M16 13 L23 17 M16 20 L11 27 M16 20 L21 27'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   @font-face{font-family:'Comfortaa';font-weight:700;font-style:normal;src:url(data:font/woff2;base64,d09GMgABAAAAAAZcAA8AAAAAC5gAAAYCAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGhwbggIcgUoGYD9TVEFUKgBkEQgKiHyHFgscAAE2AiQDNAQgBYRQByAbkQnIxAdwW/+2MU7SBu1ZRdrBJZ6CgWdk4/8Nl90f8Ef3/v/9ZkX0dELz1mgRLhe9/31EHzATaeIlWNpCE/W40rYqGmJc3VqbJ4EiYhNMOr/weK4+CABCKF5S4gQo4DT4AJfX5yMQKpDZuXN0ELdV93XQEDh3ugRGrdb6ng7YpQ7fkgMSdiBSJIytOuzHUthhBixr9mNE2I/Lo9hvw27QZ6kXOjn2zWbciZekKS4EOSN25KWAqFsi998H0IL4rcApIcAFzTM4mLF7XRv2K0tuDtAZhhwGmVkFOgaJszMMDFS6DB2DcF3BbAb+2DBOrKSUpJ/AzoWjjdal2zpr2xAfylXySHkwMasikiLKuE5GIZ5FQ+jiLXgCjLvn5hQ4pIm8CJrmkCayhAuz4zmICqgIzZFJtgbYdCqOltfJKi3IwVYwGKa6WQlpQ9PEHAbEluPlAZSIEfO+4GwpwCWs6wVysLGpb4kCudICgiYvPhXAHloxqjXnIB9SDnC4tDSDejSjC70YwDAuKQZ1NUXPDuw37CZ2PbuaXcWuYJfh0MOpS4BgWdhzEvESDwCOSskCgLhEyW1OcOBthZbg4/uC8BSEg5ATKnWIEEsdHMTRrkKxUGDaT9BTBwQi8z5wjHv5Rab9xNQBgXkfjHt1IlpYWt7sRMSeA0eIqct800UY9/LVhaenBWarFcajF0NXboSCapPNJkVSqM5fShotliLz9DQxZbPxTRYLjFbrPT7rMFOEhCh++7VFBebpkDVnXHdtCjxrWZV7lNBefUmc7vRCFgvfZEsljXvLxqaycZ/7yG3lzp2S25anKBngLNUmW+rqLSF7TrnuswrMTzw3PC5ayqGiVm10WXlasv8+33QXxn33cqzWa5OU1ppkhvXtb+Veyi/bcCZo1ya3ko16k+S8vPVIwrnIprVlO0973HykdRsrTZeJqSsC8yUYL+Y7veZ4zvE1J5vTkOM5xyGnb6Zc3nV1ec/FO9ej92NXD62+d81R7+j9zsvih5Sn72tM2IUwR52jA/lj5aE5mmBFRGZAcHp4UL/pxXOfODnmYD41b0yjGddqM8d6NTOTahXuYukDifSC9K5WMz6qmVuq1iqi9DGxUYVahVqVr5AVxsbI9PkKGKhCY65mbH5B9thwrnZeZ3bikNZ5rcuK/KVmImheTpQqIV8ZVhQXp9QXKxN80yWpXzP3xc5Cjzo/rJE8lFySPpBIL0gvSS5i4VeSh5K7mJc3PqqZpx3VaMa12syVbF+jCBNLLt5NU2sVMl1MrEw3vyZKp43S/QNM+uTEitq45OTdLVHiwuv/1rsekCn1bmvdr7itc3N/zf2K2+tgqNyBcPygEabVvU/OYmSJt0SiA3NFdc4GbaI6KbOcUWfWh1k+cPrn7zPfvbosOPKRt1PkgGGWuChqQahMMbMiAk7wxRuXu66G2kUYb+1X3NhvnB0qPdb1xuUPceEHvvVEouJowrbrScojlw10iHD5p8eXfxwS4vXC28eXZ2LLqGeDp2eDp2eDp2cDuMHgAOBC+Ae4weAAuePj8urV+FtUHP7my291M8rjo1Oz7PdW2if/ZkdRX96Vaws94s5WfM83T8sG/H+SpmhafIGTQQDCZ/4+bMC/q2jqmz+ciOxGEHkFqWQ7UgkZ9IQMdfERySswEJ/DQPoimgzEDNITNBHUnip4QxEMoDEg7Ls5jCP8fRNCKsjhQcaveD83EHDCQzjv2E1qoKDCcgMHXhgw0PDAAgMXXkjXixENoUCcw0iJHo+KxWBZI5rQ59fsQxcSIZfLelGLHoFY0odeyMyrNKMNMnSiB42QQ4tczEEWOtGOhgu8D9XGwlHIRCfaUIci1FPo81qd6AADNWRQQoEYWc10a+FNgrJSFCAn7eccLqOP28BSXRjeA+7vNzNQQQEllGCgQxPqwazEm8/rdqIF9ajtkcpAPzpwu6oXDEKRYr2QakTzTd6PGoNqx2srRzXaUI8hhCsGUA35xR4zNQxDJBgM9q3LoAD16MWtZAD1qGOUix6soWweqtG+4oH8IeUP2elmV2djN0IFBwA=) format('woff2');}
-  html, body { height: 100%; }
+  html { height: 100%; }
   body {
-    margin: 0; overflow: hidden;
-    /* the ember ground lives in CSS — the GL canvas is transparent ink on top */
+    margin: 0; height: 100%;
+    overflow-y: auto; overflow-x: hidden;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    background: #0b0a08; color: #e7e2da;
+    font-family: ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+  }
+  section { position: relative; height: 100vh; height: 100dvh; scroll-snap-align: start; scroll-snap-stop: always; overflow: hidden; }
+  #splash {
     background-color: #e25822;
     background-image:
       radial-gradient(circle at 16% 84%, #b91c1c 0%, rgba(185, 28, 28, 0) 72%),
       radial-gradient(circle at 78% 16%, #f5b942 0%, rgba(245, 185, 66, 0) 66%);
   }
-  #sea { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block; }
+  #sea { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   .wordmark {
-    position: fixed; inset: 0; margin: 0;
+    position: absolute; inset: 0; margin: 0;
     display: grid; place-items: center;
     pointer-events: none; user-select: none;
     font-family: 'Comfortaa', ui-rounded, system-ui, sans-serif;
     font-weight: 700;
-    font-size: clamp(2.2rem, min(15vmax, 14vw), 17rem); /* cover-proportioned, fits any width */
+    font-size: clamp(2.2rem, min(15vmax, 14vw), 17rem);
     word-spacing: -0.06em;
     line-height: 1;
   }
-  .wordmark .line { white-space: nowrap; transform: translateY(-0.05em); } /* one line, optically centered */
-  /* both words are plain paint above the sea — the crowd swims beneath */
+  .wordmark .line { white-space: nowrap; transform: translateY(-0.05em); }
   .wordmark .w { color: #ffffff; }
   .wordmark .k { color: #212614; }
+  .down {
+    position: absolute; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%;
+    transform: translateX(-50%);
+    color: #ffffff; z-index: 2; line-height: 0; padding: 6px;
+    animation: bob 2.2s ease-in-out infinite;
+  }
+  .down:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 8px; }
+  @keyframes bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 8px); } }
+  @media (prefers-reduced-motion: reduce) { .down { animation: none; } }
+  #join { display: grid; place-items: center; background: #0b0a08; padding: 1.25rem; }
+  .card {
+    max-width: 26rem; width: 100%;
+    border: 2px solid #57492f;
+    border-radius: 255px 18px 225px 18px / 18px 225px 18px 255px;
+    padding: 2rem 1.6rem 1.7rem;
+    display: grid; gap: 1rem;
+  }
+  .fire {
+    margin: 0; font-size: 1.9rem; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance;
+    background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .card p { margin: 0; color: #b7ad9d; font-size: 0.95rem; line-height: 1.55; }
+  .card form { display: grid; gap: 0.8rem; }
+  .fieldwrap {
+    padding: 2px;
+    border-radius: 200px 14px 180px 14px / 14px 180px 14px 200px;
+    background: #57492f; /* resting ring = the hand-drawn border */
+  }
+  .fieldwrap:focus-within {
+    background: linear-gradient(100deg, #f5b942, #e25822, #b91c1c); /* the fire ring */
+  }
+  .fieldwrap input {
+    width: 100%; box-sizing: border-box; display: block;
+    background: #0b0a08; color: #e7e2da;
+    border: none; outline: none;
+    border-radius: 198px 12px 178px 12px / 12px 178px 12px 198px;
+    padding: 0.85rem 1rem; font: inherit; font-size: 1rem;
+  }
+  .fieldwrap input::placeholder { color: #6d6450; }
+  button.join {
+    font: inherit; font-weight: 700; font-size: 1rem;
+    border: none; cursor: pointer;
+    border-radius: 200px 14px 180px 14px / 14px 180px 14px 200px;
+    padding: 0.85rem 1rem;
+    background: linear-gradient(100deg, #f5b942, #e25822, #b91c1c);
+    color: #1c1917;
+  }
+  button.join:focus-visible { outline: 2px solid #f5b942; outline-offset: 3px; }
+  .tiny { font-size: 0.78rem; color: #7d745f; }
 </style>
 </head>
 <body>
+<section id="splash" aria-label="pyre divers — the whirlpool">
 <canvas id="sea" aria-hidden="true"></canvas>
 <h1 class="wordmark"><span class="line"><span class="w">pyre </span><span class="k">divers</span></span></h1>
+<a class="down" href="#join" aria-label="scroll down — join the list">
+<svg width="34" height="30" viewBox="0 0 34 30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4 L17 13 L29 4"/><path d="M5 15 L17 24 L29 15"/></svg>
+</a>
+</section>
+<section id="join">
+<div class="card">
+<h2 class="fire">come sit by the fire</h2>
+<p>Live, unpolished conversations with trailblazers making asymmetric bets. Two builders, one fire. First dive: August 2026.</p>
+<form id="join-form" novalidate>
+<div class="fieldwrap">
+<input name="email" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" aria-label="email address" required>
+</div>
+<button class="join" type="submit">join the list</button>
+</form>
+<p class="tiny">no noise — just new dives. rss soon.</p>
+</div>
+</section>
 
 <script>
 (() => {
@@ -169,6 +243,11 @@
 
   const canvas = document.getElementById('sea');
   const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+  let seaVisible = true;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(es => { seaVisible = es[0].isIntersecting; }, { threshold: 0.02 })
+      .observe(document.getElementById('splash'));
+  }
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let W = 0, H = 0, S = 0;      // device px
   let cw = 0, ch = 0, Scss = 0; // css px (sim space)
@@ -594,6 +673,7 @@
       if (!still) {
         let last = performance.now();
         const loop = now => {
+          if (!seaVisible) { last = now; requestAnimationFrame(loop); return; }
           const dt = Math.min((now - last) / 16.67, 3); // 60fps-frame units
           last = now;
           step(dt);
@@ -711,6 +791,7 @@
     if (!still) {
       let last = performance.now();
       const loop = now => {
+        if (!seaVisible) { last = now; requestAnimationFrame(loop); return; }
         const dt = Math.min((now - last) / 1000, 0.05);
         last = now;
         theta += OMEGA * dt;
@@ -720,6 +801,29 @@
       requestAnimationFrame(loop);
     }
   }
+
+  // ── the list (listmonk) — fill url + list uuid once the box is live
+  const LISTMONK = { url: '', list: '' };
+  const joinForm = document.getElementById('join-form');
+  joinForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = joinForm.email.value.trim();
+    const btn = joinForm.querySelector('button');
+    if (!email || !email.includes('@')) { btn.textContent = 'needs a real email'; return; }
+    if (!LISTMONK.url) { btn.textContent = "you're early — list opens with episode one"; return; }
+    btn.disabled = true; btn.textContent = 'joining…';
+    try {
+      const r = await fetch(LISTMONK.url + '/api/public/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, list_uuids: [LISTMONK.list] }),
+      });
+      btn.textContent = r.ok ? 'in. see you at the fire' : 'hmm — try again?';
+    } catch (err) {
+      btn.textContent = 'hmm — try again?';
+    }
+    btn.disabled = false;
+  });
 
   const gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: true });
   if (gl) {
