@@ -42,27 +42,40 @@ test('reports early when no listmonk is configured', async () => {
   assert.equal(res.message, 'you’re early. list opens with episode one.');
 });
 
-test('posts the trimmed email and list uuid as a no-cors form submission', async () => {
+test('posts the trimmed email and list uuid as json to the public api', async () => {
   assert.ok(subscribeFlow, 'subscribeFlow not found in index.html');
   const calls = [];
   const fetchFn = (url, opts) => {
     calls.push({ url, opts });
-    return Promise.resolve({ type: 'opaque' });
+    return Promise.resolve({ ok: true });
   };
   await subscribeFlow('  sam@sixtom.com  ', CFG, fetchFn);
   assert.equal(calls.length, 1);
-  // listmonk's form endpoint: urlencoded body, no preflight, opaque response
-  assert.equal(calls[0].url, 'https://list.example.com/subscription/form');
+  // listmonk's public json api: caddy answers the preflight, response is readable
+  assert.equal(calls[0].url, 'https://list.example.com/api/public/subscription');
   assert.equal(calls[0].opts.method, 'POST');
-  assert.equal(calls[0].opts.mode, 'no-cors');
-  assert.equal(String(calls[0].opts.body), 'email=sam%40sixtom.com&l=uuid-123');
+  assert.equal(calls[0].opts.headers['Content-Type'], 'application/json');
+  assert.equal(calls[0].opts.mode, undefined);
+  assert.deepEqual(JSON.parse(calls[0].opts.body), {
+    email: 'sam@sixtom.com',
+    // eslint-disable-next-line camelcase -- listmonk's wire format
+    list_uuids: ['uuid-123'],
+  });
 });
 
-test('joined when the send resolves (opaque response — sent is success)', async () => {
+test('joined only when the api says ok', async () => {
   assert.ok(subscribeFlow, 'subscribeFlow not found in index.html');
-  const res = await subscribeFlow('sam@sixtom.com', CFG, () => Promise.resolve({ type: 'opaque' }));
+  const res = await subscribeFlow('sam@sixtom.com', CFG, () => Promise.resolve({ ok: true }));
   assert.equal(res.state, 'joined');
   assert.equal(res.message, 'you’re in. see you at the fire.');
+});
+
+test('failed when the api rejects the request', async () => {
+  assert.ok(subscribeFlow, 'subscribeFlow not found in index.html');
+  const res = await subscribeFlow('sam@sixtom.com', CFG, () =>
+    Promise.resolve({ ok: false, status: 400 }),
+  );
+  assert.equal(res.state, 'failed');
 });
 
 test('failed when the network throws', async () => {
