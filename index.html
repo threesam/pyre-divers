@@ -125,7 +125,15 @@
     display: grid; gap: 0.8rem;
   }
   .patch {
-    background: rgba(16, 18, 10, 0.95); /* the 95% olive, element by element */
+    /* the 95% olive, element by element — soft top/bottom edges so the
+       divers fade through instead of hitting a hard rectangle */
+    background: linear-gradient(
+      to bottom,
+      rgba(16, 18, 10, 0) 0%,
+      rgba(16, 18, 10, 0.95) 0.55rem,
+      rgba(16, 18, 10, 0.95) calc(100% - 0.55rem),
+      rgba(16, 18, 10, 0) 100%
+    );
     padding: 0.55rem 0.85rem;
     border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
     width: fit-content;
@@ -179,6 +187,8 @@
     background: linear-gradient(100deg, #f5b942, #e25822, #b91c1c);
     filter: url(#wobble-b);
     transform: rotate(-0.3deg);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 0.6rem);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 0.6rem);
   }
   button.join:focus-visible { outline: 2px solid #f5b942; outline-offset: 3px; }
   .tiny { font-size: 0.78rem; color: #7d745f; }
