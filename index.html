@@ -597,19 +597,47 @@
       const k = document.querySelector('.wordmark .k');
       const rect = k.getBoundingClientRect();
       const fontPx = parseFloat(getComputedStyle(k).fontSize);
-      const c = document.createElement('canvas').getContext('2d');
-      c.font = '700 ' + fontPx + "px 'Comfortaa', ui-rounded, system-ui, sans-serif";
-      const md = c.measureText('d');
+      // exact baseline: a zero-size inline-block's box sits on the text baseline
+      let probe = k.querySelector('.bl-probe');
+      if (!probe) {
+        probe = document.createElement('span');
+        probe.className = 'bl-probe';
+        probe.style.cssText = 'display:inline-block;width:0;height:0';
+        k.appendChild(probe);
+      }
+      const baselineY = probe.getBoundingClientRect().top;
+      // rasterize the real glyph and scan for the counter's actual gap
+      const font = '700 ' + fontPx + "px 'Comfortaa', ui-rounded, system-ui, sans-serif";
+      const cnv = document.createElement('canvas');
+      cnv.width = Math.ceil(fontPx * 1.4); cnv.height = Math.ceil(fontPx * 1.7);
+      const c = cnv.getContext('2d', { willReadFrequently: true });
+      c.font = font; c.textBaseline = 'alphabetic'; c.fillStyle = '#fff';
+      const ox = Math.ceil(fontPx * 0.2), oy = Math.ceil(fontPx * 1.2);
+      c.fillText('d', ox, oy);
+      const img = c.getImageData(0, 0, cnv.width, cnv.height).data;
+      const inkAt = (x, y) => img[(y * cnv.width + x) * 4 + 3] > 60;
+      const gapOn = (fixed, lo, hi, horiz) => {
+        let runs = [], inInk = false, start = 0;
+        for (let t = lo; t < hi; t++) {
+          const ink = horiz ? inkAt(t, fixed) : inkAt(fixed, t);
+          if (ink && !inInk) { inInk = true; if (runs.length) runs[runs.length - 1].end = t; }
+          else if (!ink && inInk) { inInk = false; runs.push({ start: t, end: hi }); }
+        }
+        return runs.length ? runs[0] : null; // first gap after first ink run
+      };
       const mx = c.measureText('x');
-      const xh = mx.actualBoundingBoxAscent || 0.52 * fontPx;
-      const A = md.fontBoundingBoxAscent || 0.98 * fontPx;
-      const D = md.fontBoundingBoxDescent || 0.26 * fontPx;
-      const baseline = rect.top + (fontPx - (A + D)) / 2 + A;
-      const inkLeft = md.actualBoundingBoxLeft <= 0 ? -md.actualBoundingBoxLeft : 0;
-      const cx = (rect.left + inkLeft + xh / 2) * dpr;
-      const cy = (baseline - xh / 2) * dpr;
-      const r = Math.max(2, xh / 2 - 0.095 * fontPx) * dpr;
-      hole = { x: cx, y: H - cy, r }; // pre-flipped for gl_FragCoord
+      const scanY = Math.round(oy - (mx.actualBoundingBoxAscent || 0.52 * fontPx) / 2);
+      const gx = gapOn(scanY, 0, cnv.width, true);
+      if (!gx) { hole = { x: -9999, y: -9999, r: 0 }; return; }
+      const cxP = (gx.start + gx.end) / 2;
+      const gy = gapOn(Math.round(cxP), 0, cnv.height, false);
+      if (!gy) { hole = { x: -9999, y: -9999, r: 0 }; return; }
+      const cyP = (gy.start + gy.end) / 2;
+      const rP = Math.min(gx.end - gx.start, gy.end - gy.start) / 2;
+      // map probe-canvas coords → page coords (x via text origin, y via baseline)
+      const cxCss = rect.left + (cxP - ox);
+      const cyCss = baselineY + (cyP - oy);
+      hole = { x: cxCss * dpr, y: H - cyCss * dpr, r: rP * 1.12 * dpr }; // overshoot hides under ink
     }
     function fit() {
       measure();
