@@ -72,6 +72,12 @@
     content="two builders, live and unedited. first dive: august 2026."
   />
   <meta name="twitter:image" content="https://pyredivers.com/og.png" />
+  <link
+    rel="alternate"
+    type="application/rss+xml"
+    title="pyre divers"
+    href="https://pyredivers.com/feed.xml"
+  />
   <!-- eslint-disable-next-line svelte/no-at-html-tags -- build-time constant json-ld, no user input -->
   {@html jsonLd}
 </svelte:head>
