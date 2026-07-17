@@ -370,6 +370,7 @@
     const FS = `#version 300 es
     precision highp float;
     uniform vec3 uInk;
+    uniform vec3 uHole;   // the d's counter, gl_FragCoord space: x, y(bottom-up), r
     in vec2 vLocal;
     in float vHalfLen;
     in float vHalfW;
@@ -385,6 +386,7 @@
         d = length(q);
       }
       float a = (1.0 - smoothstep(vHalfW - 0.75, vHalfW + 0.75, d)) * vFade;
+      a *= smoothstep(uHole.z - 1.0, uHole.z + 1.0, distance(gl_FragCoord.xy, uHole.xy));
       if (a <= 0.001) discard;
       frag = vec4(uInk * a, a);
     }`;
@@ -536,7 +538,7 @@
     for (const n of ['u_res', 'u_dt', 'u_center', 'u_Scss', 'u_VE', 'u_C2', 'u_RE', 'u_time'])
       sU[n] = gl.getUniformLocation(simProg, n);
     const rU = {};
-    for (const n of ['uRes', 'uS', 'uDpr', 'uSpin', 'uCore', 'uRCORE', 'uRE', 'uFadeBand', 'uInk'])
+    for (const n of ['uRes', 'uS', 'uDpr', 'uSpin', 'uCore', 'uRCORE', 'uRE', 'uFadeBand', 'uHole', 'uInk'])
       rU[n] = gl.getUniformLocation(prog, n);
 
     gl.enable(gl.BLEND);
@@ -579,6 +581,7 @@
       gl.uniform1f(rU.uRE, R_E);
       gl.uniform1f(rU.uFadeBand, 0.35 * R_E);
       gl.uniform3fv(rU.uInk, INK);
+      gl.uniform3f(rU.uHole, hole.x, hole.y, hole.r);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(rU.uCore, 0);
       gl.bindVertexArray(renderVaos[active]);
@@ -589,6 +592,25 @@
       gl.bindVertexArray(null);
     }
 
+    let hole = { x: -9999, y: -9999, r: 0 };
+    function measureHole() {
+      const k = document.querySelector('.wordmark .k');
+      const rect = k.getBoundingClientRect();
+      const fontPx = parseFloat(getComputedStyle(k).fontSize);
+      const c = document.createElement('canvas').getContext('2d');
+      c.font = '700 ' + fontPx + "px 'Comfortaa', ui-rounded, system-ui, sans-serif";
+      const md = c.measureText('d');
+      const mx = c.measureText('x');
+      const xh = mx.actualBoundingBoxAscent || 0.52 * fontPx;
+      const A = md.fontBoundingBoxAscent || 0.98 * fontPx;
+      const D = md.fontBoundingBoxDescent || 0.26 * fontPx;
+      const baseline = rect.top + (fontPx - (A + D)) / 2 + A;
+      const inkLeft = md.actualBoundingBoxLeft <= 0 ? -md.actualBoundingBoxLeft : 0;
+      const cx = (rect.left + inkLeft + xh / 2) * dpr;
+      const cy = (baseline - xh / 2) * dpr;
+      const r = Math.max(2, xh / 2 - 0.095 * fontPx) * dpr;
+      hole = { x: cx, y: H - cy, r }; // pre-flipped for gl_FragCoord
+    }
     function fit() {
       measure();
       const fontPx = parseFloat(getComputedStyle(document.querySelector('.wordmark')).fontSize);
@@ -596,6 +618,7 @@
       seedParticles();
       rebuildCore();
       rebuildCoreVao();
+      measureHole();
     }
 
     const boot = () => {
