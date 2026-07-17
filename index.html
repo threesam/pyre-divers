@@ -30,9 +30,7 @@
     line-height: 1;
   }
   .wordmark .line { white-space: nowrap; transform: translateY(-0.05em); } /* one line, optically centered */
-  /* "pyre" is white and PHYSICAL — the crowd collides with it and parts around
-     it, bunching at its edges (garden-style). "divers" is plain ink the crowd
-     swims beneath. */
+  /* both words are plain paint above the sea — the crowd swims beneath */
   .wordmark .w { color: #ffffff; }
   .wordmark .k { color: #212614; }
 </style>
@@ -208,7 +206,6 @@
     uniform float u_C2;
     uniform float u_RE;
     uniform float u_time;
-    uniform sampler2D u_coll;
     out vec2 v_position;
     out vec2 v_velocity;
     const float K = ${K};
@@ -242,26 +239,6 @@
       pos += vel * u_dt;
       vel *= pow(0.97, u_dt); // bleed cursor impulse; steering re-energizes
 
-      // "pyre" is solid: reflect off the letterform's edge gradient
-      vec2 uv = pos / u_res;
-      if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0) {
-        float here = texture(u_coll, uv).r;
-        if (here > 0.5) {
-          vec2 st = 2.0 / u_res;
-          float rgt = texture(u_coll, uv + vec2(st.x, 0.0)).r;
-          float lft = texture(u_coll, uv - vec2(st.x, 0.0)).r;
-          float dwn = texture(u_coll, uv + vec2(0.0, st.y)).r;
-          float up  = texture(u_coll, uv - vec2(0.0, st.y)).r;
-          vec2 nrm = vec2(lft - rgt, up - dwn);
-          float nl = length(nrm);
-          if (nl > 0.001) {
-            nrm /= nl;
-            vel = reflect(vel, nrm) * 0.5; // gentle: slide around the glyph, don't ricochet
-            pos += nrm * 1.5;
-          }
-        }
-      }
-
       // swallowed by the disc (or lost past the rim) → resurface at the rim
       float rn2 = length(pos - u_center) / u_Scss;
       if (rn2 < u_RE * 0.98 || rn2 > 0.745) {
@@ -292,8 +269,6 @@
     uniform float uRCORE;
     uniform float uRE;
     uniform float uFadeBand;
-    uniform sampler2D uColl;
-    uniform vec2 uCollRes;  // css px
     layout(location=0) in vec3 aTpl;  // segId, end(0|1), side(-1|1)
     layout(location=1) in vec4 aA;    // core: ang0, radFrac, 0, size · field: 0,0,0,size
     layout(location=2) in vec4 aB;    // core: rotC, rotS · field: cos(jit), sin(jit) · zw: armLen, legLen
@@ -322,10 +297,6 @@
         h = max(0.052 * r, H_MIN) * aA.w * uS;
         cR = ca * aB.x - sa * aB.y;
         sR = sa * aB.x + ca * aB.y;
-        // the disc must not leak into the carved word
-        vec2 cuv = center / uDpr / uCollRes;
-        if (cuv.x >= 0.0 && cuv.x <= 1.0 && cuv.y >= 0.0 && cuv.y <= 1.0 &&
-            texture(uColl, cuv).r > 0.4) h = 0.0;
       } else {
         vec2 pC = aPos * uDpr;
         vec2 rel = pC - uRes * 0.5;
@@ -463,65 +434,31 @@
       drain.count = list.length;
     }
 
-    // particle state (ping-pong) + collision mask
+    // particle state (ping-pong)
     const posBufs = [gl.createBuffer(), gl.createBuffer()];
     const velBufs = [gl.createBuffer(), gl.createBuffer()];
     let active = 0;
-    let collTex = gl.createTexture();
-    let mask = null; // Uint8 alpha at css res, for spawn rejection
-
-    function buildCollision() {
-      const c2d = document.createElement('canvas');
-      c2d.width = cw; c2d.height = ch;
-      const c = c2d.getContext('2d', { willReadFrequently: true });
-      const span = document.querySelector('.wordmark .w');
-      const rect = span.getBoundingClientRect();
-      const fontPx = parseFloat(getComputedStyle(span).fontSize);
-      c.font = '700 ' + fontPx + "px 'Comfortaa', ui-rounded, system-ui, sans-serif";
-      c.textBaseline = 'middle';
-      c.fillStyle = '#fff';
-      c.fillText('pyre', rect.left, rect.top + rect.height / 2);
-      const data = c.getImageData(0, 0, cw, ch).data;
-      mask = new Uint8Array(cw * ch);
-      for (let i = 0; i < mask.length; i++) mask[i] = data[i * 4 + 3];
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, collTex);
-      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, cw, ch, 0, gl.RED, gl.UNSIGNED_BYTE, mask);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    }
 
     function seedParticles() {
-      const rand = mulberry32(99);
       const P = new Float32Array(N_F * 2);
       const V = new Float32Array(N_F * 2);
       const cx = cw / 2, cy = ch / 2;
       for (let i = 0; i < N_F; i++) {
         const b = field[i];
-        let px = 0, py = 0;
-        for (let tries = 0; tries < 12; tries++) {
-          const frac = tries === 0 ? b.frac : rand();
-          const w = V_E + (V_RIM_W - V_E) * frac;
-          const r0 = R_E + (w * w - V_E * V_E) / C2;
-          const rn = r0 * (1 + b.drift);
-          const ang = Math.log(R_START / r0) / K + b.off;
-          px = cx + Math.cos(ang) * rn * Scss;
-          py = cy + Math.sin(ang) * rn * Scss;
-          const mx = Math.floor(px), my = Math.floor(py);
-          if (mx < 0 || mx >= cw || my < 0 || my >= ch || mask[my * cw + mx] < 50) break;
-        }
+        const w = V_E + (V_RIM_W - V_E) * b.frac;
+        const r0 = R_E + (w * w - V_E * V_E) / C2;
+        const rn = r0 * (1 + b.drift);
+        const ang = Math.log(R_START / r0) / K + b.off;
+        const px = cx + Math.cos(ang) * rn * Scss;
+        const py = cy + Math.sin(ang) * rn * Scss;
         P[i * 2] = px; P[i * 2 + 1] = py;
         const rel = [px - cx, py - cy];
         const r = Math.max(Math.hypot(rel[0], rel[1]), 1e-3);
-        const rn = r / Scss;
         const tang = [-rel[1] / r, rel[0] / r];
         const rad = [rel[0] / r, rel[1] / r];
         let dx = tang[0] - rad[0] * K, dy = tang[1] - rad[1] * K;
         const dl = Math.hypot(dx, dy);
-        const v = speedN(rn) * Scss / 60;
+        const v = speedN(r / Scss) * Scss / 60;
         V[i * 2] = (dx / dl) * v; V[i * 2 + 1] = (dy / dl) * v;
       }
       for (let i = 0; i < 2; i++) {
@@ -580,10 +517,10 @@
 
     // uniforms
     const sU = {};
-    for (const n of ['u_res', 'u_dt', 'u_center', 'u_Scss', 'u_VE', 'u_C2', 'u_RE', 'u_time', 'u_coll'])
+    for (const n of ['u_res', 'u_dt', 'u_center', 'u_Scss', 'u_VE', 'u_C2', 'u_RE', 'u_time'])
       sU[n] = gl.getUniformLocation(simProg, n);
     const rU = {};
-    for (const n of ['uRes', 'uS', 'uDpr', 'uSpin', 'uCore', 'uRCORE', 'uRE', 'uFadeBand', 'uColl', 'uCollRes', 'uInk'])
+    for (const n of ['uRes', 'uS', 'uDpr', 'uSpin', 'uCore', 'uRCORE', 'uRE', 'uFadeBand', 'uInk'])
       rU[n] = gl.getUniformLocation(prog, n);
 
     gl.enable(gl.BLEND);
@@ -601,9 +538,6 @@
       gl.uniform1f(sU.u_C2, C2);
       gl.uniform1f(sU.u_RE, R_E);
       gl.uniform1f(sU.u_time, performance.now() * 0.001);
-      gl.uniform1i(sU.u_coll, 0);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, collTex);
       const out = 1 - active;
       gl.bindVertexArray(simVaos[active]);
       gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, posBufs[out]);
@@ -628,11 +562,7 @@
       gl.uniform1f(rU.uRCORE, R_CORE);
       gl.uniform1f(rU.uRE, R_E);
       gl.uniform1f(rU.uFadeBand, 0.35 * R_E);
-      gl.uniform1i(rU.uColl, 0);
-      gl.uniform2f(rU.uCollRes, cw, ch);
       gl.uniform3fv(rU.uInk, INK);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, collTex);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(rU.uCore, 0);
       gl.bindVertexArray(renderVaos[active]);
@@ -647,7 +577,6 @@
       measure();
       const fontPx = parseFloat(getComputedStyle(document.querySelector('.wordmark')).fontSize);
       tune(fontPx * dpr, S);
-      buildCollision();
       seedParticles();
       rebuildCore();
       rebuildCoreVao();
@@ -673,7 +602,7 @@
       addEventListener('resize', onRs);
       if (window.visualViewport) visualViewport.addEventListener('resize', onRs); // in-app browser chrome shifts
     };
-    // the collision mask needs the real font — wait for it, then build
+    // wait for the wordmark font so first paint and sizing agree
     if (document.fonts && document.fonts.load) {
       document.fonts.load("700 100px 'Comfortaa'").then(boot, boot);
     } else boot();
