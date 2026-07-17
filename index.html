@@ -243,9 +243,15 @@
       float vpf = vmag * u_Scss / 60.0;             // local current, px per frame
       vec2 vdes = normalize(tang - radial * K) * vpf;
       vel += (vdes - vel) * min(0.16 * u_dt, 1.0); // firm steering — the flow closes behind the letters
-      // turbulent diffusion, PROPORTIONAL to the local current: same noise-to-flow
-      // ratio at every radius and screen size — wakes refill, structure survives
-      vel += (vec2(hash(pos * 0.71 + u_time), hash(pos * 1.31 - u_time)) - 0.5) * (0.5 * vpf) * u_dt;
+      // smooth per-body wander (not white noise — that made bodies twirl on their
+      // axis): a gentle force whose direction eases to a new random heading every
+      // ~1.5s, proportional to the local current. Wakes refill, headings stay calm.
+      float id = float(gl_VertexID);
+      float tt = u_time * 0.66;
+      float ft = floor(tt), s = smoothstep(0.0, 1.0, fract(tt));
+      vec2 n0 = vec2(hash(vec2(id, ft)),       hash(vec2(id + 7.0, ft)))       - 0.5;
+      vec2 n1 = vec2(hash(vec2(id, ft + 1.0)), hash(vec2(id + 7.0, ft + 1.0))) - 0.5;
+      vel += mix(n0, n1, s) * vpf * min(0.16 * u_dt, 1.0);
 
       pos += vel * u_dt;
       vel *= pow(0.97, u_dt); // bleed cursor impulse; steering re-energizes
