@@ -128,37 +128,45 @@
   // steady rate as it spirals down (v² linear in r keeps the strands invariant),
   // arriving at the disc edge moving exactly at the core's spin — no ravine drop,
   // no seam. Speed itself is the conveyor variable: w falls linearly in time.
-  const R_CORE = 0.125;                    // inside here: the phyllotaxis disc, solid-body spin
   const W_CORE = TAU / 24;                 // the disc's spin — halved again per review
-  const R_E = 0.115;                       // where field bodies dissolve into the disc
-  const V_E = W_CORE * R_E;                // arrival speed — matches the disc, seamlessly
   const V_RIM = (TAU / 70) * R_START;      // lazy at the rim, decelerating all the way in
-  const C2 = (V_RIM * V_RIM - V_E * V_E) / (R_START - R_E);
-  const MU = K * C2 / 2;                   // dw/dt — the one shared deceleration
-  const W_SPAN = V_RIM - V_E;
+  // the disc is sized off the wordmark itself: a bit bigger than the "d",
+  // reaching halfway to the "i" — so the core radius and the deceleration ramp
+  // are (re)derived from the rendered font size in fit()
+  let R_CORE = 0.05, R_E = 0.046, V_E = 0.012, C2 = 0.02, MU = 0.0002, W_SPAN = 0.05;
+  function tune(fontDevPx) {
+    R_CORE = 0.315 * fontDevPx / S;
+    R_E = 0.92 * R_CORE;
+    V_E = W_CORE * R_E;
+    C2 = (V_RIM * V_RIM - V_E * V_E) / (R_START - R_E);
+    MU = K * C2 / 2;                       // dw/dt — the one shared deceleration
+    W_SPAN = V_RIM - V_E;
+  }
   const field = [];
   {
     const rand = mulberry32(777);
     const N_F = 3400;
     for (let i = 0; i < N_F; i++) {
       const b = dress({ lane: i % LANES, phi: 0 }, rand);
-      b.w0 = V_E + W_SPAN * ((i + 0.25 + rand() * 0.5) / N_F); // even in w + jitter
+      b.frac = (i + 0.25 + rand() * 0.5) / N_F; // even in w-fraction + jitter
       field.push(b);
     }
   }
   // phyllotaxis (sunflower) core: golden-angle packing fills the whole disc evenly —
-  // no clot, no rings, no hole — a readable crowd to dead center, spinning as one
-  const core = [];
-  {
+  // no clot, no rings, no hole. Regenerated whenever the disc is re-sized, count
+  // tied to area so the packing density stays readable.
+  function makeCore() {
     const rand = mulberry32(4200);
+    const n = Math.max(60, Math.round(PI * R_CORE * R_CORE / Math.pow(1.16 * H_MIN, 2)));
     const GOLD = PI * (3 - Math.sqrt(5));
-    const N_DISC = 1900;
-    for (let i = 0; i < N_DISC; i++) {
+    const out = [];
+    for (let i = 0; i < n; i++) {
       const b = dress({}, rand);
       b.ang0 = i * GOLD + (rand() - 0.5) * 0.15;
-      b.rad = R_CORE * Math.sqrt((i + 0.5) / N_DISC) * (1 + (rand() - 0.5) * 0.06);
-      core.push(b);
+      b.radFrac = Math.sqrt((i + 0.5) / n) * (1 + (rand() - 0.5) * 0.06);
+      out.push(b);
     }
+    return out;
   }
 
   const canvas = document.getElementById('sea');
@@ -184,9 +192,15 @@
     precision highp float;
     uniform vec2 uRes;
     uniform float uS;
-    uniform float uDrop;   // λ·t — how far every field body has fallen in u
-    uniform float uSpin;   // core rotation angle
+    uniform float uDrop;   // how much speed every field body has shed so far
+    uniform float uSpin;   // disc rotation angle
     uniform float uCore;
+    uniform float uVE;     // arrival speed at the disc edge
+    uniform float uWSPAN;  // rim speed − arrival speed
+    uniform float uC2;     // v² = uVE² + uC2·(r − uRE)
+    uniform float uRE;     // where field bodies dissolve
+    uniform float uRCORE;  // disc radius
+    uniform float uFadeW;
     layout(location=0) in vec3 aTpl;  // segId, end(0|1), side(-1|1)
     layout(location=1) in vec4 aA;    // u0/angle0, angOff/radius, drift, size
     layout(location=2) in vec4 aB;    // rotC, rotS, armLen, legLen
@@ -201,26 +215,22 @@
     const float K = ${K};
     const float R_START = ${R_START};
     const float H_MIN = ${H_MIN};
-    const float R_E = ${R_E};
-    const float V_E = ${V_E};
-    const float C2 = ${C2};
-    const float W_SPAN = ${W_SPAN};
 
     void main() {
       float ang, r, h;
       vFade = 1.0;
       if (uCore > 0.5) {
         ang = aA.x + uSpin;          // the phyllotaxis disc spins as one
-        r = aA.y;
+        r = aA.y * uRCORE;
       } else {
         // speed falls linearly in time for every body: constant deceleration,
         // arriving at the disc edge at exactly the disc's spin speed
-        float w = V_E + mod(aA.x - V_E - uDrop, W_SPAN);
-        float r0 = R_E + (w * w - V_E * V_E) / C2;
+        float w = uVE + mod(aA.x * uWSPAN - uDrop, uWSPAN);
+        float r0 = uRE + (w * w - uVE * uVE) / uC2;
         float phi = log(R_START / r0) / K;   // stay on your strand
         r = r0 * (1.0 + aA.z);
         ang = phi + aA.y;
-        vFade = smoothstep(V_E, V_E + 0.008, w); // dissolve gently into the disc
+        vFade = smoothstep(uVE, uVE + uFadeW, w); // dissolve gently into the disc
       }
       h = max(0.052 * r, H_MIN) * aA.w * uS;
       float ca = cos(ang), sa = sin(ang);
@@ -331,8 +341,11 @@
       gl.bufferData(gl.ARRAY_BUFFER, f, gl.STATIC_DRAW);
       return { buf, count: list.length };
     }
-    const flow = instanceBuffer(field, (b, f, o) => { f[o] = b.w0; f[o + 1] = b.off; f[o + 2] = b.drift; f[o + 3] = b.size; });
-    const drain = instanceBuffer(core,  (b, f, o) => { f[o] = b.ang0; f[o + 1] = b.rad; f[o + 2] = 0; f[o + 3] = b.size; });
+    const flow = instanceBuffer(field, (b, f, o) => { f[o] = b.frac; f[o + 1] = b.off; f[o + 2] = b.drift; f[o + 3] = b.size; });
+    let drain = null;
+    function rebuildCore() {
+      drain = instanceBuffer(makeCore(), (b, f, o) => { f[o] = b.ang0; f[o + 1] = b.radFrac; f[o + 2] = 0; f[o + 3] = b.size; });
+    }
 
     function bindInstances(inst) {
       gl.bindBuffer(gl.ARRAY_BUFFER, inst.buf);
@@ -345,17 +358,25 @@
 
     const U = n => gl.getUniformLocation(prog, n);
     const uRes = U('uRes'), uS = U('uS'), uDrop = U('uDrop'), uSpin = U('uSpin'), uCore = U('uCore');
+    const uVE = U('uVE'), uWSPAN = U('uWSPAN'), uC2 = U('uC2'), uRE = U('uRE'), uRCORE = U('uRCORE'), uFadeW = U('uFadeW');
     gl.uniform3fv(U('uInk'), INK);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // premultiplied over the CSS ground
     gl.clearColor(0, 0, 0, 0);
 
-    function draw(t) {
+    let drop = 0, spin = 0;
+    function draw() {
       gl.viewport(0, 0, W, H);
       gl.uniform2f(uRes, W, H);
       gl.uniform1f(uS, S);
-      gl.uniform1f(uDrop, MU * t);
-      gl.uniform1f(uSpin, W_CORE * t);
+      gl.uniform1f(uDrop, drop);
+      gl.uniform1f(uSpin, spin);
+      gl.uniform1f(uVE, V_E);
+      gl.uniform1f(uWSPAN, W_SPAN);
+      gl.uniform1f(uC2, C2);
+      gl.uniform1f(uRE, R_E);
+      gl.uniform1f(uRCORE, R_CORE);
+      gl.uniform1f(uFadeW, 0.12 * W_SPAN);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(uCore, 0);
       bindInstances(flow);
@@ -365,18 +386,23 @@
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, drain.count);
     }
 
-    measure();
-    addEventListener('resize', () => { measure(); draw(t); });
+    function fit() {
+      measure();
+      const fontPx = parseFloat(getComputedStyle(document.querySelector('.wordmark')).fontSize);
+      tune(fontPx * dpr);
+      rebuildCore();
+    }
+    fit();
+    addEventListener('resize', () => { fit(); draw(); });
 
-    let t = 0;
-    draw(0);
+    draw();
     if (!still) {
       let last = performance.now();
       const loop = now => {
         const dt = Math.min((now - last) / 1000, 0.05);
         last = now;
-        t += dt; // the only per-frame CPU work: this line
-        draw(t);
+        drop += MU * dt; spin += W_CORE * dt; // the only per-frame CPU work
+        draw();
         requestAnimationFrame(loop);
       };
       requestAnimationFrame(loop);
