@@ -1079,14 +1079,19 @@
       ctx2.lineJoin = 'round';
       const h0 = 0.02 * S;
       ctx2.strokeStyle = '#ffffff';
-      ctx2.globalAlpha = 0.92;
-      const path = new Path2D();
+      ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.09);
+      const base = deskQ.matches ? FLAME_BASE : 1.02;
       for (const b of drops) {
+        // they take form as they rise: faint at the flame's mouth, whole higher up
+        const a = Math.min(1, Math.max(0, (base - b.y) / 0.28));
+        if (a <= 0.01) { continue; }
+        ctx2.globalAlpha = 0.92 * a;
+        const path = new Path2D();
         const px = b.x * rw + Math.sin(t * 0.6 + b.swayPh) * b.swayA * dpr;
         addBody(path, px, b.y * rh, Math.cos(b.rot), Math.sin(b.rot), h0 * b.size, b, h0 * b.size >= HEAD_PX);
+        ctx2.stroke(path);
       }
-      ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.09);
-      ctx2.stroke(path);
+      ctx2.globalAlpha = 1;
       if (deskQ.matches) {
         for (const f of flecks) {
           const rise = Math.max(0, (FLAME_BASE - f.y) / FLAME_BASE);
