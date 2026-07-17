@@ -3,20 +3,30 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
     "test": "node --test",
     "lint": "eslint .",
-    "format": "prettier --write \"**/*.{html,mjs,json}\"",
-    "format:check": "prettier --check \"**/*.{html,mjs,json}\"",
-    "typecheck": "node scripts/extract-js.mjs && tsc -p tsconfig.json",
-    "check": "npm run lint && npm run typecheck && npm run format:check && npm test"
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "svelte-kit sync && npm run lint && svelte-check --tsconfig ./jsconfig.json && npm run format:check && npm test"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@sveltejs/adapter-vercel": "6.3.4",
+    "@sveltejs/kit": "2.69.3",
+    "@sveltejs/vite-plugin-svelte": "7.2.0",
     "@types/node": "26.1.1",
     "eslint": "10.7.0",
-    "eslint-plugin-html": "8.1.4",
+    "eslint-plugin-svelte": "3.20.0",
     "globals": "17.7.0",
     "prettier": "3.9.5",
-    "typescript": "7.0.2"
+    "prettier-plugin-svelte": "4.1.1",
+    "svelte": "5.56.6",
+    "svelte-check": "4.7.3",
+    "typescript": "6.0.3",
+    "vite": "8.1.5"
   }
 }

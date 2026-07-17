@@ -1,6 +1,6 @@
 import globals from 'globals';
-import html from 'eslint-plugin-html';
 import js from '@eslint/js';
+import svelte from 'eslint-plugin-svelte';
 
 // js.configs.all = every core rule on. The waivers below are the deliberate
 // exceptions a generative-art page earns — each one documented, nothing silent.
@@ -38,19 +38,21 @@ const waivers = {
   'no-negated-condition': 'off',
   'no-else-return': 'off',
   'no-console': 'error',
+  // fire()/rain() keep their names in stack traces when deferred
+  'prefer-arrow-callback': ['error', { allowNamedFunctions: true }],
   'no-warning-comments': 'off',
 };
 
 export default [
-  { ignores: ['node_modules/**', '.tscheck/**', '.vercel/**'] },
+  { ignores: ['node_modules/**', '.svelte-kit/**', '.vercel/**', 'static/**'] },
+  ...svelte.configs.recommended,
   {
-    files: ['**/*.html'],
-    plugins: { html },
+    files: ['src/**/*.js'],
     languageOptions: { globals: { ...globals.browser } },
     rules: { ...js.configs.all.rules, ...waivers },
   },
   {
-    files: ['**/*.mjs'],
+    files: ['**/*.mjs', '*.js'],
     languageOptions: { globals: { ...globals.node } },
     rules: { ...js.configs.all.rules, ...waivers },
   },

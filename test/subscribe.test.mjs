@@ -1,18 +1,6 @@
-import { dirname, join } from 'node:path';
 import assert from 'node:assert/strict';
-import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
+import { subscribeFlow } from '../src/lib/subscribe.js';
 import { test } from 'node:test';
-
-// The page is a single self-contained HTML file; tests run against the REAL
-// shipped code by extracting the marked subscribeFlow block from index.html.
-const html = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), '..', 'index.html'),
-  'utf8',
-);
-const m = html.match(/\/\/ >>> subscribeFlow[\s\S]*?\n([\s\S]*?)\/\/ <<< subscribeFlow/);
-// eslint-disable-next-line no-new-func -- evaluating the extracted page code is the point
-const subscribeFlow = m ? new Function(`${m[1]}\nreturn subscribeFlow;`)() : null;
 
 const CFG = { url: 'https://list.example.com', list: 'uuid-123' };
 
@@ -35,9 +23,13 @@ test('rejects an email without an @', async () => {
 
 test('reports early when no listmonk is configured', async () => {
   assert.ok(subscribeFlow, 'subscribeFlow not found in index.html');
-  const res = await subscribeFlow('sam@sixtom.com', { url: '', list: '' }, () => {
-    throw new Error('must not fetch');
-  });
+  const res = await subscribeFlow(
+    'sam@sixtom.com',
+    { url: '', list: '' },
+    () => {
+      throw new Error('must not fetch');
+    },
+  );
   assert.equal(res.state, 'early');
   assert.equal(res.message, 'you’re early. list opens with episode one.');
 });
@@ -52,7 +44,10 @@ test('posts the trimmed email and list uuid as json to the public api', async ()
   await subscribeFlow('  sam@sixtom.com  ', CFG, fetchFn);
   assert.equal(calls.length, 1);
   // listmonk's public json api: caddy answers the preflight, response is readable
-  assert.equal(calls[0].url, 'https://list.example.com/api/public/subscription');
+  assert.equal(
+    calls[0].url,
+    'https://list.example.com/api/public/subscription',
+  );
   assert.equal(calls[0].opts.method, 'POST');
   assert.equal(calls[0].opts.headers['Content-Type'], 'application/json');
   assert.equal(calls[0].opts.mode, undefined);
@@ -65,7 +60,9 @@ test('posts the trimmed email and list uuid as json to the public api', async ()
 
 test('joined only when the api says ok', async () => {
   assert.ok(subscribeFlow, 'subscribeFlow not found in index.html');
-  const res = await subscribeFlow('sam@sixtom.com', CFG, () => Promise.resolve({ ok: true }));
+  const res = await subscribeFlow('sam@sixtom.com', CFG, () =>
+    Promise.resolve({ ok: true }),
+  );
   assert.equal(res.state, 'joined');
   assert.equal(res.message, 'you’re in. see you at the fire.');
 });
