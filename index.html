@@ -271,7 +271,6 @@
     uniform float uCore;
     uniform float uRCORE;
     uniform float uRE;
-    uniform float uFadeBand;
     layout(location=0) in vec3 aTpl;  // segId, end(0|1), side(-1|1)
     layout(location=1) in vec4 aA;    // core: ang0, radFrac, 0, size · field: 0,0,0,size
     layout(location=2) in vec4 aB;    // core: rotC, rotS · field: cos(jit), sin(jit) · zw: armLen, legLen
@@ -295,7 +294,7 @@
       if (uCore > 0.5) {
         float ang = aA.x + uSpin;            // the sunflower disc spins as one
         float r = aA.y * uRCORE;
-        vFade = smoothstep(0.45, 0.98, aA.y); // hard melt — clear from mid-disc in
+        vFade = smoothstep(uRE * 0.3, uRE * 3.2, r); // same long ramp as the field — one smooth dim
         float ca = cos(ang), sa = sin(ang);
         center = uRes * 0.5 + vec2(ca, sa) * r * uS;
         h = max(0.052 * r, H_MIN) * aA.w * uS;
@@ -312,7 +311,7 @@
         float c0 = -vdir.y, s0 = vdir.x;
         cR = c0 * aB.x - s0 * aB.y;
         sR = s0 * aB.x + c0 * aB.y;
-        vFade = smoothstep(uRE, uRE + uFadeBand, rn); // dissolve into the disc
+        vFade = smoothstep(uRE * 0.3, uRE * 3.2, rn); // long ramp: outpaces the crowding, no dark ring
       }
 
       float w = max(uS * 0.0008, 0.09 * h);
@@ -524,7 +523,7 @@
     for (const n of ['u_res', 'u_dt', 'u_center', 'u_Scss', 'u_VE', 'u_C2', 'u_RE', 'u_time'])
       sU[n] = gl.getUniformLocation(simProg, n);
     const rU = {};
-    for (const n of ['uRes', 'uS', 'uDpr', 'uSpin', 'uCore', 'uRCORE', 'uRE', 'uFadeBand', 'uInk'])
+    for (const n of ['uRes', 'uS', 'uDpr', 'uSpin', 'uCore', 'uRCORE', 'uRE', 'uInk'])
       rU[n] = gl.getUniformLocation(prog, n);
 
     gl.enable(gl.BLEND);
@@ -565,7 +564,6 @@
       gl.uniform1f(rU.uSpin, spin);
       gl.uniform1f(rU.uRCORE, R_CORE);
       gl.uniform1f(rU.uRE, R_E);
-      gl.uniform1f(rU.uFadeBand, 0.9 * R_E);
       gl.uniform3fv(rU.uInk, INK);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(rU.uCore, 0);
