@@ -1143,7 +1143,11 @@
         }
         ctx2.globalAlpha = 1;
         ctx2.fillStyle = '#10120a';
-        ctx2.strokeStyle = '#ffffff';
+        const rockGrad = ctx2.createLinearGradient((FLAME_X - 0.12) * rw, 0, (FLAME_X + 0.12) * rw, 0);
+        rockGrad.addColorStop(0, '#f5b942');
+        rockGrad.addColorStop(0.5, '#e25822');
+        rockGrad.addColorStop(1, '#b91c1c');
+        ctx2.strokeStyle = rockGrad;
         ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.1);
         for (const r of rocks) { drawRock(r); }
       }
