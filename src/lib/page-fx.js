@@ -1087,7 +1087,9 @@ export function initPageFx() {
       const from = s.scrollTop;
       const to = target.offsetTop;
       const dur = 620;
-      const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (2 - 2 * t) ** 3 / 2);
+      // ease-out only: launch at speed (matches the flick's momentum —
+      // an ease-in reads as a dead stop), land gently
+      const ease = (t) => 1 - (1 - t) ** 3;
       // parking the snap forces a root style recalc — pay it on a
       // stationary frame, then start the tween clock one frame later
       document.documentElement.style.scrollSnapType = 'none';
@@ -1121,8 +1123,8 @@ export function initPageFx() {
           e.preventDefault();
           return;
         }
-        if (Math.abs(e.deltaY) < 6) {
-          return;
+        if (Math.abs(e.deltaY) < 2) {
+          return; // trackpad noise
         }
         const s = document.scrollingElement || document.documentElement;
         const vh = document.documentElement.clientHeight;
