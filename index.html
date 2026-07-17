@@ -252,15 +252,18 @@
     p.moveTo(hx, hy); p.lineTo(hx + (b.lRx * cR - b.lRy * sR) * lL, hy + (b.lRx * sR + b.lRy * cR) * lL);
   }
 
-  let ground = null, baked = null, L = 0, CX = 0, CY = 0;
+  /** @type {HTMLCanvasElement | null} */ let ground = null;
+  /** @type {HTMLCanvasElement | null} */ let baked = null;
+  let L = 0, CX = 0, CY = 0;
   const CUTS = [18, 30, 48, 72];
 
-  const canvas = document.getElementById('sea');
+  const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('sea'));
   const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
   let seaVisible = true;
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver(es => { seaVisible = es[0].isIntersecting; }, { threshold: 0.02 })
-      .observe(document.getElementById('splash'));
+  const splashEl = document.getElementById('splash');
+  if ('IntersectionObserver' in window && splashEl) {
+    new IntersectionObserver(es => { seaVisible = es.some(en => en.isIntersecting); }, { threshold: 0.02 })
+      .observe(splashEl);
   }
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let W = 0, H = 0, S = 0;      // device px
@@ -516,6 +519,7 @@
     }
     // field style: jitter-oriented (cJ/sJ); core style: rail-oriented (cR/sR)
     const flowStyle = styleBuffer(field, (b, f, o) => { f[o + 3] = b.size; });
+    /** @type {{ buf: WebGLBuffer | null, count: number } | null} */
     let drain = null;
     function rebuildCore() {
       const list = makeCore();
@@ -608,6 +612,7 @@
     }
     let coreVao = null;
     function rebuildCoreVao() {
+      if (!drain) {return;}
       if (!coreVao) {coreVao = gl.createVertexArray();}
       gl.bindVertexArray(coreVao);
       bindCommon(drain.buf);
@@ -652,6 +657,7 @@
     }
 
     function draw() {
+      if (!drain) {return;}
       gl.useProgram(prog);
       gl.viewport(0, 0, W, H);
       gl.uniform2f(rU.uRes, W, H);
@@ -674,7 +680,9 @@
     let seededW = 0;
     function fit() {
       measure();
-      const fontPx = parseFloat(getComputedStyle(document.querySelector('.wordmark')).fontSize);
+      const wm = document.querySelector('.wordmark');
+      if (!wm) {return;}
+      const fontPx = parseFloat(getComputedStyle(wm).fontSize);
       tune(fontPx * dpr, S);
       // reseed only on real width changes (rotation, window resize) — iOS scroll
       // collapses browser chrome and fires height-only resizes; resetting the
@@ -702,13 +710,15 @@
       }
       let rT;
       const onRs = () => {
-        if (window.visualViewport && visualViewport.scale !== 1) {return;} // pinch zoom isn't a resize
+        const vv = window.visualViewport;
+        if (vv && vv.scale !== 1) {return;} // pinch zoom isn't a resize
         const de = document.documentElement;
         if (de.clientWidth === cw && de.clientHeight === ch) {return;}     // nothing actually changed
         clearTimeout(rT); rT = setTimeout(() => { fit(); draw(); }, 150);
       };
       addEventListener('resize', onRs);
-      if (window.visualViewport) {visualViewport.addEventListener('resize', onRs);} // in-app browser chrome shifts
+      const vvr = window.visualViewport;
+      if (vvr) {vvr.addEventListener('resize', onRs);} // in-app browser chrome shifts
     };
     // wait for the wordmark font so first paint and sizing agree
     if (document.fonts && document.fonts.load) {
@@ -751,6 +761,7 @@
       baked.width = L;
       baked.height = L;
       const c = baked.getContext('2d');
+      if (!c) {return;}
       const paths = [new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D()];
       for (const b of bodies) {
         const r = b.r0 * (1 + b.drift);
@@ -792,12 +803,14 @@
       CX = W / 2; CY = H / 2;
       ground = document.createElement('canvas');
       ground.width = W; ground.height = H;
-      paintGround(ground.getContext('2d'));
+      const gctx = ground.getContext('2d');
+      if (gctx) {paintGround(gctx);}
       bake();
     }
 
     let theta = 0;
     function frame(c) {
+      if (!ground || !baked) {return;}
       c.setTransform(1, 0, 0, 1, 0, 0);
       c.drawImage(ground, 0, 0);
       c.translate(CX, CY);
@@ -845,19 +858,25 @@
   }
   // <<< subscribeFlow
   const joinForm = document.getElementById('join-form');
-  joinForm.addEventListener('submit', async e => {
-    e.preventDefault();
-    const btn = joinForm.querySelector('button');
-    btn.disabled = true;
-    const res = await subscribeFlow(joinForm.email.value, LISTMONK, fetch);
-    btn.textContent = res.message;
-    btn.disabled = false;
-  });
+  if (joinForm) {
+    joinForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = joinForm.querySelector('button');
+      const emailInput = /** @type {HTMLInputElement | null} */ (joinForm.querySelector('input[name="email"]'));
+      if (!btn || !emailInput) {return;}
+      btn.disabled = true;
+      const res = await subscribeFlow(emailInput.value, LISTMONK, fetch);
+      btn.textContent = res.message;
+      btn.disabled = false;
+    });
+  }
 
   // ── screen two: white divers falling through the black
   (function rain() {
-    const c = document.getElementById('rain');
-    const ctx2 = c.getContext('2d');
+    const c = /** @type {HTMLCanvasElement} */ (document.getElementById('rain'));
+    const joinEl = document.getElementById('join');
+    if (!joinEl) {return;}
+    const ctx2 = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d'));
     const rand = mulberry32(77);
     const drops = [];
     for (let i = 0; i < 70; i++) {
@@ -879,8 +898,8 @@
     addEventListener('resize', sizeRain);
     let joinVisible = false;
     if ('IntersectionObserver' in window) {
-      new IntersectionObserver(es => { joinVisible = es[0].isIntersecting; }, { threshold: 0.02 })
-        .observe(document.getElementById('join'));
+      new IntersectionObserver(es => { joinVisible = es.some(en => en.isIntersecting); }, { threshold: 0.02 })
+        .observe(joinEl);
     } else {joinVisible = true;}
     function drawRain(t) {
       ctx2.clearRect(0, 0, rw, rh);

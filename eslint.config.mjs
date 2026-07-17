@@ -16,7 +16,7 @@ const waivers = {
   'max-lines-per-function': 'off',
   'max-statements': 'off',
   'max-params': 'off',
-  'complexity': 'off',
+  complexity: 'off',
   'no-ternary': 'off',
   'func-style': 'off',
   'capitalized-comments': 'off',
