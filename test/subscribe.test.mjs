@@ -42,38 +42,27 @@ test('reports early when no listmonk is configured', async () => {
   assert.equal(res.message, 'you’re early. list opens with episode one.');
 });
 
-test('posts the trimmed email and list uuid to the listmonk public API', async () => {
+test('posts the trimmed email and list uuid as a no-cors form submission', async () => {
   assert.ok(subscribeFlow, 'subscribeFlow not found in index.html');
   const calls = [];
   const fetchFn = (url, opts) => {
     calls.push({ url, opts });
-    return Promise.resolve({ ok: true });
+    return Promise.resolve({ type: 'opaque' });
   };
   await subscribeFlow('  sam@sixtom.com  ', CFG, fetchFn);
   assert.equal(calls.length, 1);
-  assert.equal(calls[0].url, 'https://list.example.com/api/public/subscription');
+  // listmonk's form endpoint: urlencoded body, no preflight, opaque response
+  assert.equal(calls[0].url, 'https://list.example.com/subscription/form');
   assert.equal(calls[0].opts.method, 'POST');
-  assert.deepEqual(JSON.parse(calls[0].opts.body), {
-    email: 'sam@sixtom.com',
-    // eslint-disable-next-line camelcase -- listmonk's API field name
-    list_uuids: ['uuid-123'],
-  });
+  assert.equal(calls[0].opts.mode, 'no-cors');
+  assert.equal(String(calls[0].opts.body), 'email=sam%40sixtom.com&l=uuid-123');
 });
 
-test('joined on a 2xx response', async () => {
+test('joined when the send resolves (opaque response — sent is success)', async () => {
   assert.ok(subscribeFlow, 'subscribeFlow not found in index.html');
-  const res = await subscribeFlow('sam@sixtom.com', CFG, () => Promise.resolve({ ok: true }));
+  const res = await subscribeFlow('sam@sixtom.com', CFG, () => Promise.resolve({ type: 'opaque' }));
   assert.equal(res.state, 'joined');
   assert.equal(res.message, 'you’re in. see you at the fire.');
-});
-
-test('failed on a non-2xx response', async () => {
-  assert.ok(subscribeFlow, 'subscribeFlow not found in index.html');
-  const res = await subscribeFlow('sam@sixtom.com', CFG, () =>
-    Promise.resolve({ ok: false, status: 500 }),
-  );
-  assert.equal(res.state, 'failed');
-  assert.equal(res.message, 'didn’t take. try again?');
 });
 
 test('failed when the network throws', async () => {
