@@ -150,32 +150,18 @@
     }
   }
 
-  // the dark spot: the spiral's own continuation below the disc edge — bodies
-  // packed even-in-angle with the size floor, overflowing into solid ink at the
-  // drain, plus the pile that hides the pinhole. Spins rigidly with the current.
+  // phyllotaxis (sunflower) core: golden-angle packing fills the disc evenly —
+  // crisp edge, readable bodies to dead center. Regenerated per resize, count
+  // tied to area so the packing density holds.
   function makeCore() {
     const rand = mulberry32(4200);
+    const n = Math.max(60, Math.round(PI * R_CORE * R_CORE / Math.pow(1.16 * H_MIN, 2)));
+    const GOLD = PI * (3 - Math.sqrt(5));
     const out = [];
-    const PHI_C = Math.log(R_START / 0.004) / K;
-    const phi0 = Math.log(R_START / R_CORE) / K;
-    for (let lane = 0; lane < LANES; lane++) {
-      const n = Math.round(15.4 * (PHI_C - phi0));
-      const w = Array.from({ length: n }, () => 0.78 + rand() * 0.44);
-      const total = w.reduce((x, y) => x + y, 0);
-      let acc = 0;
-      for (let i = 0; i < n; i++) {
-        acc += w[i];
-        const phi = phi0 + (acc / total) * (PHI_C - phi0);
-        const b = dress({}, rand);
-        b.ang0 = phi + (lane * TAU) / LANES + (rand() - 0.5) * 0.03;
-        b.radFrac = (R_START * Math.exp(-K * phi) / R_CORE) * (1 + b.drift);
-        out.push(b);
-      }
-    }
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < n; i++) {
       const b = dress({}, rand);
-      b.ang0 = rand() * TAU;
-      b.radFrac = 0.3 * Math.pow(rand(), 0.7);
+      b.ang0 = i * GOLD + (rand() - 0.5) * 0.15;
+      b.radFrac = Math.sqrt((i + 0.5) / n) * (1 + (rand() - 0.5) * 0.06);
       out.push(b);
     }
     return out;
@@ -306,7 +292,7 @@
       float h, cR, sR;
       vFade = 1.0;
       if (uCore > 0.5) {
-        float ang = aA.x + uSpin;            // the dark spot spins as one
+        float ang = aA.x + uSpin;            // the sunflower disc spins as one
         float r = aA.y * uRCORE;
         float ca = cos(ang), sa = sin(ang);
         center = uRes * 0.5 + vec2(ca, sa) * r * uS;
