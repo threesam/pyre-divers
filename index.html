@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>pyre divers</title>
-<meta name="description" content="Live, unpolished conversations with the trailblazers making asymmetric bets. Two builders, one fire. First dive: August 2026.">
+<meta name="description" content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 2026.">
 <meta name="theme-color" content="#e25822">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg stroke='%23212614' stroke-width='2.6' stroke-linecap='round' fill='none'%3E%3Ccircle cx='16' cy='7' r='3.4'/%3E%3Cpath d='M16 10.5 L16 20 M16 13 L9 17 M16 13 L23 17 M16 20 L11 27 M16 20 L21 27'/%3E%3C/g%3E%3C/svg%3E">
 <style>
@@ -106,15 +106,15 @@
 <section id="join">
 <canvas id="rain" aria-hidden="true"></canvas>
 <div class="card">
-<h2 class="fire">come sit by the fire</h2>
-<p>Live, unpolished conversations with trailblazers making asymmetric bets. Two builders, one fire. First dive: August 2026.</p>
+<h2 class="fire">come sit by the fire.</h2>
+<p>two builders, live. no script. no polish. no edits.<br>conversations with the ones who jumped before they were ready.<br>first dive: august 2026.</p>
 <form id="join-form" novalidate>
 <div class="fieldwrap">
 <input name="email" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" aria-label="email address" required>
 </div>
-<button class="join" type="submit">join the list</button>
+<button class="join" type="submit">save me a seat.</button>
 </form>
-<p class="tiny">no noise — just new dives. rss soon.</p>
+<p class="tiny">no spam. one email when the fire’s lit. rss soon.</p>
 </div>
 </section>
 
@@ -814,8 +814,8 @@
     e.preventDefault();
     const email = joinForm.email.value.trim();
     const btn = joinForm.querySelector('button');
-    if (!email || !email.includes('@')) { btn.textContent = 'needs a real email'; return; }
-    if (!LISTMONK.url) { btn.textContent = "you're early — list opens with episode one"; return; }
+    if (!email || !email.includes('@')) { btn.textContent = 'needs a real email.'; return; }
+    if (!LISTMONK.url) { btn.textContent = "you\u2019re early. list opens with episode one."; return; }
     btn.disabled = true; btn.textContent = 'joining…';
     try {
       const r = await fetch(LISTMONK.url + '/api/public/subscription', {
@@ -823,9 +823,9 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, list_uuids: [LISTMONK.list] }),
       });
-      btn.textContent = r.ok ? 'in. see you at the fire' : 'hmm — try again?';
+      btn.textContent = r.ok ? 'you\u2019re in. see you at the fire.' : 'didn\u2019t take. try again?';
     } catch (err) {
-      btn.textContent = 'hmm — try again?';
+      btn.textContent = 'didn\u2019t take. try again?';
     }
     btn.disabled = false;
   });
