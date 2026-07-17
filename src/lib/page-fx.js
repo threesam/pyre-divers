@@ -1226,9 +1226,10 @@ export function initPageFx() {
     }
     const ctx2 = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d'));
     const rand = mulberry32(77);
-    // each body's ink: randomly interpolated white -> ember (#e25822)
+    // each body's ink: randomly interpolated between the two approved
+    // riser colors — warm white (#f0e8dd) and salmon (#d6855e)
     const emberMix = (t) =>
-      `rgb(${Math.round(255 - 29 * t)}, ${Math.round(255 - 167 * t)}, ${Math.round(255 - 221 * t)})`;
+      `rgb(${Math.round(240 - 26 * t)}, ${Math.round(232 - 99 * t)}, ${Math.round(221 - 127 * t)})`;
     const seedDrop = (b, initial) => {
       b.col = emberMix(rand());
       if (initial && deskQ.matches) {
