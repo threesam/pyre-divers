@@ -130,8 +130,7 @@
   // while inner bodies visibly outpace outer ones. That's the parallax.
   const P_EXP = 0.5;
   const R_CORE = 0.125;                          // inside here: solid-body spin
-  const U_KILL = Math.sqrt(0.095 / R_START);     // field bodies die deep INSIDE the core,
-                                                 // so the handoff seam is buried in the dark
+  const U_KILL = Math.sqrt(0.115 / R_START);     // field bodies dissolve across the disc edge
   const W_EDGE = TAU / 14;                       // field angular speed at the core's edge
   const LAMBDA = P_EXP * K * U_KILL * W_EDGE;    // du/dt, shared by the whole field
   const W_CORE = TAU / 12;                       // the drain whips — at half tempo
@@ -145,12 +144,20 @@
       field.push(b);
     }
   }
+  // phyllotaxis (sunflower) core: golden-angle packing fills the whole disc evenly —
+  // no clot, no rings, no hole — a readable crowd to dead center, spinning as one
   const core = [];
-  for (const b of bodies) {
-    const r = b.r0 * (1 + b.drift);
-    if (r <= R_CORE) core.push({ ...b, ang0: b.phi + b.off, rad: r }); // the approved clot, verbatim
+  {
+    const rand = mulberry32(4200);
+    const GOLD = PI * (3 - Math.sqrt(5));
+    const N_DISC = 1900;
+    for (let i = 0; i < N_DISC; i++) {
+      const b = dress({}, rand);
+      b.ang0 = i * GOLD + (rand() - 0.5) * 0.15;
+      b.rad = R_CORE * Math.sqrt((i + 0.5) / N_DISC) * (1 + (rand() - 0.5) * 0.06);
+      core.push(b);
+    }
   }
-  for (const b of pile) core.push({ ...b, ang0: b.a, rad: b.r });
 
   const canvas = document.getElementById('sea');
   const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
