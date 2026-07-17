@@ -28,10 +28,19 @@
     font-size: clamp(2.2rem, min(15vmax, 14vw), 17rem); /* cover-proportioned, fits any width */
     word-spacing: -0.06em;
     line-height: 1;
+    /* the letters are windows: filled with the exact ground gradient (this layer
+       spans the viewport, same as body, so the stacks align pixel-perfect) —
+       invisible against the background, revealed only by divers vanishing under them */
+    background-color: #e25822;
+    background-image:
+      radial-gradient(circle at 16% 84%, #b91c1c 0%, rgba(185, 28, 28, 0) 72%),
+      radial-gradient(circle at 78% 16%, #f5b942 0%, rgba(245, 185, 66, 0) 66%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   .wordmark .line { white-space: nowrap; transform: translateY(-0.05em); } /* one line, optically centered */
-  .wordmark .w { color: #ffffff; }
-  .wordmark .k { color: #212614; }
+  .wordmark .w, .wordmark .k { color: transparent; }
 </style>
 </head>
 <body>
