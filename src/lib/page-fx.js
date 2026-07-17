@@ -1087,17 +1087,26 @@ export function initPageFx() {
       const from = s.scrollTop;
       const to = target.offsetTop;
       const dur = 620;
-      const t0 = performance.now();
-      document.documentElement.style.scrollSnapType = 'none';
       const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (2 - 2 * t) ** 3 / 2);
+      // parking the snap forces a root style recalc — pay it on a
+      // stationary frame, then start the tween clock one frame later
+      document.documentElement.style.scrollSnapType = 'none';
+      let t0 = 0;
       const step = (now) => {
+        if (!t0) {
+          t0 = now;
+          requestAnimationFrame(step);
+          return;
+        }
         const p = Math.min((now - t0) / dur, 1);
         s.scrollTop = from + (to - from) * ease(p);
         if (p < 1) {
           requestAnimationFrame(step);
         } else {
-          document.documentElement.style.scrollSnapType = '';
           releaseFlight();
+          requestAnimationFrame(() => {
+            document.documentElement.style.scrollSnapType = '';
+          });
         }
       };
       requestAnimationFrame(step);
@@ -1273,6 +1282,9 @@ export function initPageFx() {
     if (still || soft2) {
       drawFire(7);
       return;
+    }
+    if (deskQ.matches) {
+      drawFire(0); // warm the pipeline off-screen — first visible frame stays cheap
     }
     const loop = (now) => {
       if (fireVisible && deskQ.matches) {
@@ -1488,6 +1500,7 @@ export function initPageFx() {
       drawRain(8);
       return;
     }
+    drawRain(0); // warm draw — allocations + first strokes happen off-screen
     let last = performance.now();
     const loop = (now) => {
       if (!joinVisible) {
