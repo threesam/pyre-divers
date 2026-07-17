@@ -1123,7 +1123,11 @@
     if (!joinEl) { return; }
     const ctx2 = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d'));
     const rand = mulberry32(77);
+    // each body's ink: randomly interpolated white -> ember (#e25822)
+    const emberMix = t =>
+      `rgb(${Math.round(255 - 29 * t)}, ${Math.round(255 - 167 * t)}, ${Math.round(255 - 221 * t)})`;
     const seedDrop = (b, initial) => {
+      b.col = emberMix(rand());
       if (initial && deskQ.matches) {
         // seed along the plume: as if each body already rose from the flame —
         // the higher it is, the further it has drifted
@@ -1233,7 +1237,6 @@
       ctx2.lineCap = 'round';
       ctx2.lineJoin = 'round';
       const h0 = 0.02 * S;
-      ctx2.strokeStyle = '#ffffff';
       ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.09);
       const base = deskQ.matches ? FLAME_BASE : 1.02;
       for (const b of drops) {
@@ -1241,6 +1244,7 @@
         const a = Math.min(1, Math.max(0, (base - b.y) / 0.28));
         if (a <= 0.01) { continue; }
         ctx2.globalAlpha = 0.92 * a;
+        ctx2.strokeStyle = b.col;
         const path = new Path2D();
         const px = b.x * rw + Math.sin(t * 0.6 + b.swayPh) * b.swayA * dpr;
         addBody(path, px, b.y * rh, Math.cos(b.rot), Math.sin(b.rot), h0 * b.size, b, h0 * b.size >= HEAD_PX);
