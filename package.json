@@ -1,0 +1,21 @@
+{
+  "name": "pyre-divers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{html,mjs,json}\"",
+    "format:check": "prettier --check \"**/*.{html,mjs,json}\"",
+    "typecheck": "node scripts/extract-js.mjs && tsc -p tsconfig.json",
+    "check": "npm run lint && npm run typecheck && npm run format:check && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.7.0",
+    "eslint-plugin-html": "8.1.4",
+    "globals": "17.7.0",
+    "prettier": "3.9.5",
+    "typescript": "7.0.2"
+  }
+}

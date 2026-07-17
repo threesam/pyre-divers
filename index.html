@@ -131,13 +131,14 @@
 
 <script>
 (() => {
-  'use strict';
+  
   // ── seeded rng: the same souls every load
-  function mulberry32(a) {
+  function mulberry32(seed) {
+    let a = seed | 0;
     return () => {
-      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      a = (a + 0x6D2B79F5) | 0;
       let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
   }
@@ -158,15 +159,15 @@
   // ── pose library: diver / spread-eagle / arms-up / reach / tuck, all jittered
   function makePose(rand) {
     const t = rand();
-    const J = () => (rand() - 0.5) * 0.26;
+    const jit = () => (rand() - 0.5) * 0.26;
     let aL, aR, lL, lR, arm = 1, leg = 1;
     if (t < 0.30)      { aL =  PI * 0.66; aR =  PI * 0.34; lL = PI * 0.5 + 0.18; lR = PI * 0.5 - 0.18; }
     else if (t < 0.50) { aL = -PI * 0.78; aR = -PI * 0.22; lL = PI * 0.5 + 0.34; lR = PI * 0.5 - 0.34; }
     else if (t < 0.70) { aL = -PI * 0.60; aR = -PI * 0.40; lL = PI * 0.5 + 0.12; lR = PI * 0.5 - 0.12; }
     else if (t < 0.90) { aL = -PI * 0.55; aR =  PI * 0.42; lL = PI * 0.5 + 0.10; lR = PI * 0.5 - 0.26; }
-    else               { aL =  PI * 0.80; aR =  PI * 0.20; lL = PI * 0.5 + 0.46; lR = PI * 0.5 - 0.46; arm = leg = 0.62; }
+    else               { aL =  PI * 0.80; aR =  PI * 0.20; lL = PI * 0.5 + 0.46; lR = PI * 0.5 - 0.46; arm = 0.62; leg = 0.62; }
     return {
-      aL: aL + J(), aR: aR + J(), lL: lL + J(), lR: lR + J(),
+      aL: aL + jit(), aR: aR + jit(), lL: lL + jit(), lR: lR + jit(),
       arm: arm * (0.88 + rand() * 0.24), leg: leg * (0.88 + rand() * 0.24),
     };
   }
@@ -222,7 +223,7 @@
   // tied to area so the packing density holds.
   function makeCore() {
     const rand = mulberry32(4200);
-    const n = Math.max(60, Math.round(PI * R_CORE * R_CORE / Math.pow(1.16 * H_MIN, 2)));
+    const n = Math.max(60, Math.round(PI * R_CORE * R_CORE / (1.16 * H_MIN)**2));
     const GOLD = PI * (3 - Math.sqrt(5));
     const out = [];
     for (let i = 0; i < n; i++) {
@@ -233,6 +234,26 @@
     }
     return out;
   }
+
+  function addBody(p, px, py, cR, sR, h, b, withHead) {
+    const fx = -sR, fy = cR;
+    const s2 = h * 0.21;
+    p.moveTo(px - fx * s2, py - fy * s2); p.lineTo(px + fx * s2, py + fy * s2);
+    if (withHead) {
+      const hd = h * 0.11, hx0 = px - fx * (s2 + hd), hy0 = py - fy * (s2 + hd);
+      p.moveTo(hx0 + hd, hy0); p.arc(hx0, hy0, hd, 0, TAU);
+    }
+    const sx = px - fx * h * 0.105, sy = py - fy * h * 0.105;
+    const hx = px + fx * s2, hy = py + fy * s2;
+    const aL = h * b.arm, lL = h * b.leg;
+    p.moveTo(sx, sy); p.lineTo(sx + (b.aLx * cR - b.aLy * sR) * aL, sy + (b.aLx * sR + b.aLy * cR) * aL);
+    p.moveTo(sx, sy); p.lineTo(sx + (b.aRx * cR - b.aRy * sR) * aL, sy + (b.aRx * sR + b.aRy * cR) * aL);
+    p.moveTo(hx, hy); p.lineTo(hx + (b.lLx * cR - b.lLy * sR) * lL, hy + (b.lLx * sR + b.lLy * cR) * lL);
+    p.moveTo(hx, hy); p.lineTo(hx + (b.lRx * cR - b.lRy * sR) * lL, hy + (b.lRx * sR + b.lRy * cR) * lL);
+  }
+
+  let ground = null, baked = null, L = 0, CX = 0, CY = 0;
+  const CUTS = [18, 30, 48, 72];
 
   const canvas = document.getElementById('sea');
   const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
@@ -255,8 +276,8 @@
     canvas.width = W; canvas.height = H;
     // pin the element to the measured px — iOS in-app browsers stretch 100vh past
     // the visible viewport, which displaced the whole field below the wordmark
-    canvas.style.width = cw + 'px';
-    canvas.style.height = ch + 'px';
+    canvas.style.width = `${cw  }px`;
+    canvas.style.height = `${ch  }px`;
   }
 
   // ════════════════════════════════════════════════════════════════════════
@@ -454,16 +475,16 @@
     function compile(type, src) {
       const s = gl.createShader(type);
       gl.shaderSource(s, src); gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {throw new Error(gl.getShaderInfoLog(s));}
       return s;
     }
     function link(vs, fs, tf) {
       const p = gl.createProgram();
       gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
       gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
-      if (tf) gl.transformFeedbackVaryings(p, tf, gl.SEPARATE_ATTRIBS);
+      if (tf) {gl.transformFeedbackVaryings(p, tf, gl.SEPARATE_ATTRIBS);}
       gl.linkProgram(p);
-      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {throw new Error(gl.getProgramInfoLog(p));}
       return p;
     }
     const simProg = link(SIM_VS, SIM_FS, ['v_position', 'v_velocity']);
@@ -473,7 +494,7 @@
     const tpl = [];
     for (let seg = 0; seg < 6; seg++) {
       const c = [[0, -1], [0, 1], [1, -1], [1, 1]];
-      for (const i of [0, 1, 2, 2, 1, 3]) tpl.push(seg, c[i][0], c[i][1]);
+      for (const i of [0, 1, 2, 2, 1, 3]) {tpl.push(seg, c[i][0], c[i][1]);}
     }
     const tplBuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, tplBuf);
@@ -506,7 +527,7 @@
         f[o++] = b.aLx; f[o++] = b.aLy; f[o++] = b.aRx; f[o++] = b.aRy;
         f[o++] = b.lLx; f[o++] = b.lLy; f[o++] = b.lRx; f[o++] = b.lRy;
       }
-      if (!drain) drain = { buf: gl.createBuffer(), count: 0 };
+      if (!drain) {drain = { buf: gl.createBuffer(), count: 0 };}
       gl.bindBuffer(gl.ARRAY_BUFFER, drain.buf);
       gl.bufferData(gl.ARRAY_BUFFER, f, gl.STATIC_DRAW);
       drain.count = list.length;
@@ -534,7 +555,7 @@
         const r = Math.max(Math.hypot(rel[0], rel[1]), 1e-3);
         const tang = [-rel[1] / r, rel[0] / r];
         const rad = [rel[0] / r, rel[1] / r];
-        let dx = tang[0] - rad[0] * K, dy = tang[1] - rad[1] * K;
+        const dx = tang[0] - rad[0] * K, dy = tang[1] - rad[1] * K;
         const dl = Math.hypot(dx, dy);
         const v = speedN(r / Scss) * Scss / 60;
         V[i * 2] = (dx / dl) * v; V[i * 2 + 1] = (dy / dl) * v;
@@ -587,7 +608,7 @@
     }
     let coreVao = null;
     function rebuildCoreVao() {
-      if (!coreVao) coreVao = gl.createVertexArray();
+      if (!coreVao) {coreVao = gl.createVertexArray();}
       gl.bindVertexArray(coreVao);
       bindCommon(drain.buf);
       gl.bindVertexArray(null);
@@ -596,10 +617,10 @@
     // uniforms
     const sU = {};
     for (const n of ['u_res', 'u_dt', 'u_center', 'u_Scss', 'u_VE', 'u_C2', 'u_RE', 'u_time'])
-      sU[n] = gl.getUniformLocation(simProg, n);
+      {sU[n] = gl.getUniformLocation(simProg, n);}
     const rU = {};
     for (const n of ['uRes', 'uS', 'uDpr', 'uSpin', 'uCore', 'uRCORE', 'uRE', 'uInk'])
-      rU[n] = gl.getUniformLocation(prog, n);
+      {rU[n] = gl.getUniformLocation(prog, n);}
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -681,18 +702,18 @@
       }
       let rT;
       const onRs = () => {
-        if (window.visualViewport && visualViewport.scale !== 1) return; // pinch zoom isn't a resize
+        if (window.visualViewport && visualViewport.scale !== 1) {return;} // pinch zoom isn't a resize
         const de = document.documentElement;
-        if (de.clientWidth === cw && de.clientHeight === ch) return;     // nothing actually changed
+        if (de.clientWidth === cw && de.clientHeight === ch) {return;}     // nothing actually changed
         clearTimeout(rT); rT = setTimeout(() => { fit(); draw(); }, 150);
       };
       addEventListener('resize', onRs);
-      if (window.visualViewport) visualViewport.addEventListener('resize', onRs); // in-app browser chrome shifts
+      if (window.visualViewport) {visualViewport.addEventListener('resize', onRs);} // in-app browser chrome shifts
     };
     // wait for the wordmark font so first paint and sizing agree
     if (document.fonts && document.fonts.load) {
       document.fonts.load("700 100px 'Comfortaa'").then(boot, boot);
-    } else boot();
+    } else {boot();}
   }
 
   // ════════════════════════════════════════════════════════════════════════
@@ -720,34 +741,15 @@
     {
       const rand = mulberry32(4200);
       for (let i = 0; i < 60; i++) {
-        pile.push(dress({ a: rand() * TAU, r: 0.018 * Math.pow(rand(), 0.7) }, rand));
+        pile.push(dress({ a: rand() * TAU, r: 0.018 * rand()**0.7 }, rand));
       }
     }
-
-    function addBody(p, px, py, cR, sR, h, b, withHead) {
-      const fx = -sR, fy = cR;
-      const s2 = h * 0.21;
-      p.moveTo(px - fx * s2, py - fy * s2); p.lineTo(px + fx * s2, py + fy * s2);
-      if (withHead) {
-        const hd = h * 0.11, hx0 = px - fx * (s2 + hd), hy0 = py - fy * (s2 + hd);
-        p.moveTo(hx0 + hd, hy0); p.arc(hx0, hy0, hd, 0, TAU);
-      }
-      const sx = px - fx * h * 0.105, sy = py - fy * h * 0.105;
-      const hx = px + fx * s2, hy = py + fy * s2;
-      const aL = h * b.arm, lL = h * b.leg;
-      p.moveTo(sx, sy); p.lineTo(sx + (b.aLx * cR - b.aLy * sR) * aL, sy + (b.aLx * sR + b.aLy * cR) * aL);
-      p.moveTo(sx, sy); p.lineTo(sx + (b.aRx * cR - b.aRy * sR) * aL, sy + (b.aRx * sR + b.aRy * cR) * aL);
-      p.moveTo(hx, hy); p.lineTo(hx + (b.lLx * cR - b.lLy * sR) * lL, hy + (b.lLx * sR + b.lLy * cR) * lL);
-      p.moveTo(hx, hy); p.lineTo(hx + (b.lRx * cR - b.lRy * sR) * lL, hy + (b.lRx * sR + b.lRy * cR) * lL);
-    }
-
-    let ground = null, baked = null, L = 0, CX = 0, CY = 0;
-    const CUTS = [18, 30, 48, 72];
 
     function bake() {
       L = Math.ceil(1.44 * S) + 8;
       baked = document.createElement('canvas');
-      baked.width = baked.height = L;
+      baked.width = L;
+      baked.height = L;
       const c = baked.getContext('2d');
       const paths = [new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D()];
       for (const b of bodies) {
@@ -823,54 +825,34 @@
 
   // ── the list (listmonk) — fill url + list uuid once the box is live
   const LISTMONK = { url: '', list: '' };
+  // >>> subscribeFlow (tested in test/subscribe.test.mjs — extracted verbatim)
+  async function subscribeFlow(email, cfg, fetchFn) {
+    const addr = (email || '').trim();
+    if (!addr || !addr.includes('@')) {return { state: 'invalid', message: 'needs a real email.' };}
+    if (!cfg || !cfg.url) {return { state: 'early', message: 'you\u2019re early. list opens with episode one.' };}
+    try {
+      const r = await fetchFn(`${cfg.url  }/api/public/subscription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // eslint-disable-next-line camelcase -- listmonk's API field name
+        body: JSON.stringify({ email: addr, list_uuids: [cfg.list] }),
+      });
+      if (r && r.ok) {return { state: 'joined', message: 'you\u2019re in. see you at the fire.' };}
+      return { state: 'failed', message: 'didn\u2019t take. try again?' };
+    } catch {
+      return { state: 'failed', message: 'didn\u2019t take. try again?' };
+    }
+  }
+  // <<< subscribeFlow
   const joinForm = document.getElementById('join-form');
   joinForm.addEventListener('submit', async e => {
     e.preventDefault();
-    const email = joinForm.email.value.trim();
     const btn = joinForm.querySelector('button');
-    if (!email || !email.includes('@')) { btn.textContent = 'needs a real email.'; return; }
-    if (!LISTMONK.url) { btn.textContent = "you\u2019re early. list opens with episode one."; return; }
-    btn.disabled = true; btn.textContent = 'joining…';
-    try {
-      const r = await fetch(LISTMONK.url + '/api/public/subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, list_uuids: [LISTMONK.list] }),
-      });
-      btn.textContent = r.ok ? 'you\u2019re in. see you at the fire.' : 'didn\u2019t take. try again?';
-    } catch (err) {
-      btn.textContent = 'didn\u2019t take. try again?';
-    }
+    btn.disabled = true;
+    const res = await subscribeFlow(joinForm.email.value, LISTMONK, fetch);
+    btn.textContent = res.message;
     btn.disabled = false;
   });
-
-  // ── hard paging between the two screens: wheel + keys flip exactly one page;
-  // touch keeps native mandatory snap (already one-screen-per-swipe)
-  {
-    const scroller = document.scrollingElement || document.documentElement;
-    const pages = [document.getElementById('splash'), document.getElementById('join')];
-    let lock = false, cur = 0;
-    const go = i => {
-      i = Math.max(0, Math.min(pages.length - 1, i));
-      if (i === cur) return;
-      lock = true; cur = i;
-      pages[i].scrollIntoView({ behavior: still ? 'auto' : 'smooth' });
-      setTimeout(() => { lock = false; }, 750);
-    };
-    addEventListener('wheel', e => {
-      e.preventDefault();
-      if (lock || Math.abs(e.deltaY) < 12) return;
-      go(cur + (e.deltaY > 0 ? 1 : -1));
-    }, { passive: false });
-    addEventListener('keydown', e => {
-      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') && e.key === ' ') return;
-      if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(cur + 1); }
-      else if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
-    });
-    addEventListener('scroll', () => {
-      if (!lock) cur = Math.round(scroller.scrollTop / document.documentElement.clientHeight);
-    }, { passive: true });
-  }
 
   // ── screen two: white divers falling through the black
   (function rain() {
@@ -891,7 +873,7 @@
       const de = document.documentElement;
       rw = Math.round(de.clientWidth * dpr); rh = Math.round(de.clientHeight * dpr);
       c.width = rw; c.height = rh;
-      c.style.width = de.clientWidth + 'px'; c.style.height = de.clientHeight + 'px';
+      c.style.width = `${de.clientWidth  }px`; c.style.height = `${de.clientHeight  }px`;
     }
     sizeRain();
     addEventListener('resize', sizeRain);
@@ -899,7 +881,7 @@
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(es => { joinVisible = es[0].isIntersecting; }, { threshold: 0.02 })
         .observe(document.getElementById('join'));
-    } else joinVisible = true;
+    } else {joinVisible = true;}
     function drawRain(t) {
       ctx2.clearRect(0, 0, rw, rh);
       ctx2.strokeStyle = '#ffffff'; ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
@@ -928,7 +910,7 @@
 
   const gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: true });
   if (gl) {
-    try { startGL(gl); } catch (e) { startCanvas2D(canvas.getContext('2d')); }
+    try { startGL(gl); } catch { startCanvas2D(canvas.getContext('2d')); }
   } else {
     startCanvas2D(canvas.getContext('2d'));
   }
