@@ -1049,6 +1049,23 @@
       b.rot = (rand() - 0.5) * 0.5; // head-first UP, loosely
       drops.push(b);
     }
+    const mkRock = (cx, cy, rx, ry) => {
+      const pts = [];
+      const n = 9;
+      for (let i = 0; i < n; i++) {
+        const ang = (i / n) * TAU;
+        const j = 0.82 + rand() * 0.36; // hand wobble
+        pts.push([Math.cos(ang) * rx * j, Math.sin(ang) * ry * j]);
+      }
+      return { cx, cy, pts };
+    };
+    // three rocks at the flame's mouth, mildly overlapping; center drawn last (front)
+    const rocks = [
+      mkRock(FLAME_X - 0.045, FLAME_BASE + 0.02, 0.052, 0.028),
+      mkRock(FLAME_X + 0.062, FLAME_BASE + 0.018, 0.042, 0.024),
+      mkRock(FLAME_X + 0.008, FLAME_BASE + 0.028, 0.062, 0.033),
+    ];
+
     const flecks = [];
     for (let i = 0; i < 90; i++) {
       flecks.push({
@@ -1074,6 +1091,23 @@
     };
     sizeRain();
     addEventListener('resize', sizeRain);
+    const drawRock = r => {
+      const n = r.pts.length;
+      ctx2.beginPath();
+      for (let i = 0; i <= n; i++) {
+        const p = r.pts[i % n];
+        const q = r.pts[(i + 1) % n];
+        const x1 = r.cx * rw + p[0] * rh;
+        const y1 = r.cy * rh + p[1] * rh;
+        const x2 = r.cx * rw + q[0] * rh;
+        const y2 = r.cy * rh + q[1] * rh;
+        if (i === 0) { ctx2.moveTo((x1 + x2) / 2, (y1 + y2) / 2); }
+        else { ctx2.quadraticCurveTo(x1, y1, (x1 + x2) / 2, (y1 + y2) / 2); }
+      }
+      ctx2.closePath();
+      ctx2.fill();
+      ctx2.stroke();
+    };
     let joinVisible = false;
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(es => { joinVisible = es.some(en => en.isIntersecting); }, { threshold: 0.02 })
@@ -1108,6 +1142,10 @@
           ctx2.fill();
         }
         ctx2.globalAlpha = 1;
+        ctx2.fillStyle = '#10120a';
+        ctx2.strokeStyle = '#ffffff';
+        ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.1);
+        for (const r of rocks) { drawRock(r); }
       }
     };
     if (still) { drawRain(8); return; }
