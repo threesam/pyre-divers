@@ -182,6 +182,12 @@
   }
   button.join:focus-visible { outline: 2px solid #f5b942; outline-offset: 3px; }
   .tiny { font-size: 0.78rem; color: #7d745f; }
+  @media (min-width: 769px) and (pointer: fine) {
+    /* trackpads: glide, settle at boundaries — mandatory snap rubber-bands
+       small flicks back (the "sticky" swipe); touch keeps the hard snap */
+    html { scroll-snap-type: y proximity; }
+    section { scroll-snap-stop: normal; }
+  }
   @media (min-width: 769px) {
     /* the card's own hand-drawn frame — desktop only */
     .card::before {
