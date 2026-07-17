@@ -625,11 +625,15 @@
       const cyCss = baselineY + (cyP - oy);
       hole = { x: cxCss * dpr, y: H - cyCss * dpr, r: rP * 1.12 * dpr }; // overshoot hides under ink
     }
+    let seededW = 0;
     function fit() {
       measure();
       const fontPx = parseFloat(getComputedStyle(document.querySelector('.wordmark')).fontSize);
       tune(fontPx * dpr, S);
-      seedParticles();
+      // reseed only on real width changes (rotation, window resize) — iOS scroll
+      // collapses browser chrome and fires height-only resizes; resetting the
+      // crowd for those reads as a glitch. The current re-centers bodies itself.
+      if (cw !== seededW) { seedParticles(); seededW = cw; }
       rebuildCore();
       rebuildCoreVao();
       measureHole();
