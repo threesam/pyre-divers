@@ -261,8 +261,20 @@ export function initPageFx() {
       return;
     }
     const t = (ms, fn) => setTimeout(fn, ms);
+    // liftoff IS the trigger — and liftoff is the POP, not the squat.
+    // The squat is a full second of anticipation; at the pop the swarm
+    // releases and the marigold dissolve starts, all fading through the
+    // same one-second window as him.
+    const goDive = () => {
+      de.classList.add('dive-go');
+      releaseAt = performance.now();
+    };
     if (full) {
       t(500, () => {
+        // scheduled INSIDE this callback so the pop (anim t+1000ms) and
+        // the world's reaction share the same real t=0 — an absolute
+        // 1500ms timer desyncs when this callback fires late
+        t(1000, goDive);
         const flyer = veil ? veil.querySelector('.veil-diver') : null;
         if (!flyer || !flyer.animate) {
           return;
@@ -272,7 +284,7 @@ export function initPageFx() {
         // center), then the pop — 13px, fast out of the hole, decelerating
         // the moment he straightens — and from the instant of liftoff
         // EVERYTHING fades together over one second: him, the marigold,
-        // the swarm arriving (dive-go fires at the same 1500ms mark).
+        // the swarm arriving (goDive is nested +1000ms off this clock).
         flyer.animate(
           [
             {
@@ -313,34 +325,29 @@ export function initPageFx() {
         );
         // the arms ride the same clock: they drift up through the squat
         // (gathering), then swing down past rest on the pop (the drive)
-        // and settle. Left arm's "up" is a clockwise rotation about the
-        // shoulder, right arm's is counter-clockwise — mirrored signs.
-        // WAAPI on purpose, not CSS keyframes: the whole gesture must
+        // and settle. WAAPI on purpose, not CSS keyframes: the whole gesture must
         // share the body animation's t=0 (a JS timer), and class-
         // triggered CSS would introduce a second timing authority.
-        const armKeys = (up, down, settle) => [
+        // sign mirrors the whole gesture: +1 = left arm (its "up" is a
+        // clockwise rotation about the shoulder), -1 = right. The three
+        // angles — up 40, drive -12, settle -6 — live here once.
+        const armKeys = (s) => [
           { transform: 'rotate(0deg)', easing: 'cubic-bezier(0.4, 0, 0.5, 1)' },
-          { transform: `rotate(${up}deg)`, offset: 0.5, easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)' },
-          { transform: `rotate(${down}deg)`, offset: 0.65, easing: 'linear' },
-          { transform: `rotate(${settle}deg)`, offset: 0.82, easing: 'linear' },
-          { transform: `rotate(${settle}deg)` },
+          { transform: `rotate(${40 * s}deg)`, offset: 0.5, easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)' },
+          { transform: `rotate(${-12 * s}deg)`, offset: 0.65, easing: 'linear' },
+          { transform: `rotate(${-6 * s}deg)`, offset: 0.82, easing: 'linear' },
+          { transform: `rotate(${-6 * s}deg)` },
         ];
         const armL = flyer.querySelector('.arm-l');
         const armR = flyer.querySelector('.arm-r');
         if (armL && armR) {
-          armL.animate(armKeys(40, -12, -6), { duration: 2000, fill: 'forwards' });
-          armR.animate(armKeys(-40, 12, 6), { duration: 2000, fill: 'forwards' });
+          armL.animate(armKeys(1), { duration: 2000, fill: 'forwards' });
+          armR.animate(armKeys(-1), { duration: 2000, fill: 'forwards' });
         }
       });
+    } else {
+      t(1500, goDive); // no animation to sync with — absolute time is fine
     }
-    t(1500, () => {
-      // liftoff IS the trigger — and liftoff is the POP, not the squat.
-      // The squat is a full second of anticipation (50% of 2000ms from
-      // t=500); at the pop the swarm releases and the marigold dissolve
-      // starts, all fading through the same one-second window as him
-      de.classList.add('dive-go');
-      releaseAt = performance.now();
-    });
     t(3900, () => {
       de.classList.add('dive-title');
       titleAt = performance.now();
