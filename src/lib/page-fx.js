@@ -805,22 +805,11 @@ export function initPageFx() {
       gl.uniform1f(rU.uS, S);
       gl.uniform1f(rU.uDpr, dpr);
       gl.uniform1f(rU.uSpin, spin);
-      gl.uniform1f(
-        rU.uCoreA,
-        titleAt
-          ? Math.min((performance.now() - titleAt) / 800, 1)
-          : glDive
-            ? 0
-            : 1,
-      );
-      gl.uniform1f(
-        rU.uFieldA,
-        releaseAt
-          ? Math.min((performance.now() - releaseAt) / 150, 1)
-          : glDive
-            ? 0
-            : 1,
-      );
+      // dive-arrival reveal ramps: 0 until the moment lands, then fade in
+      const fadeIn = (at, ms) =>
+        at ? Math.min((performance.now() - at) / ms, 1) : glDive ? 0 : 1;
+      gl.uniform1f(rU.uCoreA, fadeIn(titleAt, 800));
+      gl.uniform1f(rU.uFieldA, fadeIn(releaseAt, 150));
       gl.uniform1f(rU.uRCORE, R_CORE);
       gl.uniform1f(rU.uRE, R_E);
       gl.uniform3fv(rU.uInk, INK);
