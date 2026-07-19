@@ -778,6 +778,9 @@ export function initPageFx() {
     gl.clearColor(0, 0, 0, 0);
 
     let spin = 0;
+    // dive-arrival reveal ramps: 0 until the moment lands, then fade in
+    const fadeIn = (at, ms) =>
+      at ? Math.min((performance.now() - at) / ms, 1) : glDive ? 0 : 1;
     function step(dt) {
       gl.useProgram(simProg);
       gl.uniform2f(sU.u_res, cw, ch);
@@ -813,9 +816,6 @@ export function initPageFx() {
       gl.uniform1f(rU.uS, S);
       gl.uniform1f(rU.uDpr, dpr);
       gl.uniform1f(rU.uSpin, spin);
-      // dive-arrival reveal ramps: 0 until the moment lands, then fade in
-      const fadeIn = (at, ms) =>
-        at ? Math.min((performance.now() - at) / ms, 1) : glDive ? 0 : 1;
       gl.uniform1f(rU.uCoreA, fadeIn(titleAt, 800));
       gl.uniform1f(rU.uFieldA, fadeIn(releaseAt, 150));
       gl.uniform1f(rU.uRCORE, R_CORE);
