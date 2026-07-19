@@ -10,8 +10,12 @@
     />
     <script>
       // pre-paint gate: arriving from threesam.com (?dive) opens on the
-      // garden's marigold so the hand-off reads as one continuous scene
-      if (new URLSearchParams(location.search).has('dive'))
+      // garden's marigold so the hand-off reads as one continuous scene.
+      // Landing only — elsewhere nothing would ever clean the class up.
+      if (
+        location.pathname === '/' &&
+        new URLSearchParams(location.search).has('dive')
+      )
         document.documentElement.classList.add('diving');
     </script>
     <link rel="preconnect" href="https://analytics.sixtom.com" crossorigin />
