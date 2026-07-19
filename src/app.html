@@ -8,6 +8,12 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg transform='rotate(180 16 16)' stroke='%23212614' stroke-width='2.6' stroke-linecap='round' fill='none'%3E%3Ccircle cx='16' cy='7' r='3.4'/%3E%3Cpath d='M16 10.5 L16 20 M16 13 L9 17 M16 13 L23 17 M16 20 L11 27 M16 20 L21 27'/%3E%3C/g%3E%3C/svg%3E"
     />
+    <script>
+      // pre-paint gate: arriving from threesam.com (?dive) opens on the
+      // garden's marigold so the hand-off reads as one continuous scene
+      if (new URLSearchParams(location.search).has('dive'))
+        document.documentElement.classList.add('diving');
+    </script>
     <link rel="preconnect" href="https://analytics.sixtom.com" crossorigin />
     <script
       defer

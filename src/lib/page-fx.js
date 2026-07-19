@@ -233,6 +233,79 @@ export function initPageFx() {
     ch = 0,
     Scss = 0; // css px (sim space)
 
+  // ── dive arrival (threesam.com hand-off, ?dive → html.diving pre-paint).
+  // Timeline: hold marigold → tagline words fade → the little diver hops and
+  // dives into the current → veil lifts on the converging swarm → wordmark.
+  const diving = document.documentElement.classList.contains('diving');
+  const doDive = diving && !still;
+  let titleAt = 0; // when the wordmark lands — the core disc fades in with it
+  function runDiveIntro(full) {
+    if (!diving) {
+      return;
+    }
+    history.replaceState(null, '', location.pathname + location.hash);
+    const de = document.documentElement;
+    const veil = document.getElementById('veil');
+    if (!doDive) {
+      // reduced motion: css already skipped the veil — just drop the gate
+      de.classList.remove('diving');
+      return;
+    }
+    const t = (ms, fn) => setTimeout(fn, ms);
+    t(150, () => de.classList.add('dive-run'));
+    if (full) {
+      t(820, () => {
+        const flyer = veil ? veil.querySelector('.veil-diver') : null;
+        if (!flyer || !flyer.animate) {
+          return;
+        }
+        const r = flyer.getBoundingClientRect();
+        const fx0 = r.left + r.width / 2;
+        const fy0 = r.top + r.height / 2;
+        // entry point on the current, lower-right of the drain
+        const ex = cw / 2 + Math.cos(0.9) * 0.3 * Scss - fx0;
+        const ey = ch / 2 + Math.sin(0.9) * 0.3 * Scss - fy0;
+        flyer.animate(
+          [
+            { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
+            {
+              transform: 'translate(4px, -30px) rotate(-16deg) scale(1.06)',
+              opacity: 1,
+              offset: 0.24,
+            },
+            {
+              transform: `translate(${ex * 0.55}px, ${ey * 0.45 - 40}px) rotate(120deg) scale(0.62)`,
+              opacity: 1,
+              offset: 0.6,
+            },
+            {
+              transform: `translate(${ex}px, ${ey}px) rotate(190deg) scale(0.3)`,
+              opacity: 0,
+            },
+          ],
+          {
+            duration: 1000,
+            easing: 'cubic-bezier(0.5, 0, 0.35, 1)',
+            fill: 'forwards',
+          },
+        );
+      });
+    }
+    t(1250, () => de.classList.add('dive-go'));
+    t(2250, () => {
+      if (veil) {
+        veil.style.display = 'none';
+      }
+    });
+    t(2450, () => {
+      de.classList.add('dive-title');
+      titleAt = performance.now();
+    });
+    t(4200, () =>
+      de.classList.remove('diving', 'dive-run', 'dive-go', 'dive-title'),
+    );
+  }
+
   function measure() {
     // layout viewport, not visual: stable under pinch zoom
     cw = document.documentElement.clientWidth;
@@ -264,6 +337,8 @@ export function initPageFx() {
       : '';
     const soft = /swiftshader|llvmpipe|software|basic render/i.test(renderer);
     const N_F = field.length;
+    const glDive = doDive && !soft; // scatter + gather need the live loop
+    let gather = 0;
 
     const SIM_VS = `#version 300 es
     precision highp float;
@@ -277,6 +352,7 @@ export function initPageFx() {
     uniform float u_C2;
     uniform float u_RE;
     uniform float u_time;
+    uniform float u_gather;
     out vec2 v_position;
     out vec2 v_velocity;
     const float K = ${K};
@@ -295,7 +371,10 @@ export function initPageFx() {
       vec2 tang = vec2(-radial.y, radial.x);
       float vmag = sqrt(max(u_VE * u_VE + u_C2 * (rn - u_RE), 0.25 * u_VE * u_VE));
       float vpf = vmag * u_Scss / 60.0;             // local current, px per frame
-      vec2 vdes = normalize(tang - radial * K) * vpf;
+      // dive arrival: u_gather steepens the current's inward pitch and
+      // over-drives it — the field vacuum-sucks toward the drain, then
+      // relaxes into the steady vortex as gather decays to zero
+      vec2 vdes = normalize(tang - radial * (K + u_gather)) * vpf * (1.0 + u_gather * 2.2);
       vel += (vdes - vel) * min(0.16 * u_dt, 1.0); // firm steering — the flow closes behind the letters
       // smooth per-body wander (not white noise — that made bodies twirl on their
       // axis): a gentle force whose direction eases to a new random heading every
@@ -337,6 +416,7 @@ export function initPageFx() {
     uniform float uDpr;
     uniform float uSpin;
     uniform float uCore;
+    uniform float uCoreA;
     uniform float uRCORE;
     uniform float uRE;
     layout(location=0) in vec3 aTpl;  // segId, end(0|1), side(-1|1)
@@ -363,6 +443,7 @@ export function initPageFx() {
         float ang = aA.x + uSpin;            // the sunflower disc spins as one
         float r = aA.y * uRCORE;
         vFade = smoothstep(uRE * 0.3, uRE * 3.2, r); // same long ramp as the field — one smooth dim
+        vFade *= uCoreA;                     // dive arrival: the disc lands with the wordmark
         float ca = cos(ang), sa = sin(ang);
         center = uRes * 0.5 + vec2(ca, sa) * r * uS;
         h = max(0.052 * r, H_MIN) * aA.w * uS;
@@ -551,16 +632,25 @@ export function initPageFx() {
     const velBufs = [gl.createBuffer(), gl.createBuffer()];
     let active = 0;
 
+    let introSeeded = false;
     function seedParticles() {
       const P = new Float32Array(N_F * 2);
       const V = new Float32Array(N_F * 2);
       const cx = cw / 2,
         cy = ch / 2;
+      const scatter = glDive && !introSeeded;
+      introSeeded = true;
       for (let i = 0; i < N_F; i++) {
         const b = field[i];
         const w = V_E + (V_RIM_W - V_E) * b.frac;
         const r0 = R_E + (w * w - V_E * V_E) / C2;
-        const rn = r0 * (1 + b.drift);
+        let rn = r0 * (1 + b.drift);
+        if (scatter) {
+          // dive arrival: everyone seeds pushed outward — the outer field
+          // past the screen edges — so the crowd pours in from all sides
+          // while u_gather sucks the current toward the drain
+          rn = Math.min(0.735, rn * 1.25 + 0.14 + ((b.frac * 7.13) % 1) * 0.35);
+        }
         const ang = Math.log(R_START / r0) / K + b.off;
         const px = cx + Math.cos(ang) * rn * Scss;
         const py = cy + Math.sin(ang) * rn * Scss;
@@ -647,6 +737,7 @@ export function initPageFx() {
       'u_C2',
       'u_RE',
       'u_time',
+      'u_gather',
     ]) {
       sU[n] = gl.getUniformLocation(simProg, n);
     }
@@ -657,6 +748,7 @@ export function initPageFx() {
       'uDpr',
       'uSpin',
       'uCore',
+      'uCoreA',
       'uRCORE',
       'uRE',
       'uInk',
@@ -679,6 +771,7 @@ export function initPageFx() {
       gl.uniform1f(sU.u_C2, C2);
       gl.uniform1f(sU.u_RE, R_E);
       gl.uniform1f(sU.u_time, performance.now() * 0.001);
+      gl.uniform1f(sU.u_gather, gather);
       const out = 1 - active;
       gl.bindVertexArray(simVaos[active]);
       gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, posBufs[out]);
@@ -703,6 +796,14 @@ export function initPageFx() {
       gl.uniform1f(rU.uS, S);
       gl.uniform1f(rU.uDpr, dpr);
       gl.uniform1f(rU.uSpin, spin);
+      gl.uniform1f(
+        rU.uCoreA,
+        titleAt
+          ? Math.min((performance.now() - titleAt) / 800, 1)
+          : glDive
+            ? 0
+            : 1,
+      );
       gl.uniform1f(rU.uRCORE, R_CORE);
       gl.uniform1f(rU.uRE, R_E);
       gl.uniform3fv(rU.uInk, INK);
@@ -738,7 +839,11 @@ export function initPageFx() {
 
     const boot = () => {
       fit();
+      if (glDive) {
+        gather = 0.55; // the intro's vacuum — decays in the loop
+      }
       draw();
+      runDiveIntro(glDive);
       if (!still && !soft) {
         let last = performance.now();
         const loop = (now) => {
@@ -751,6 +856,9 @@ export function initPageFx() {
           last = now;
           step(dt);
           spin += (W_CORE * dt) / 60;
+          if (gather) {
+            gather = gather < 0.004 ? 0 : gather * 0.955 ** dt;
+          }
           draw();
           requestAnimationFrame(loop);
         };
@@ -992,6 +1100,7 @@ export function initPageFx() {
     const boot = () => {
       fit();
       frame(ctx);
+      runDiveIntro(false);
       addEventListener('resize', () => {
         fit();
         frame(ctx);
