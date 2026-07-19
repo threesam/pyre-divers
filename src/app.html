@@ -25,6 +25,19 @@
         background: #e8a317;
       }
     </style>
+    <script>
+      // testing eject: ?test flips umami's native kill switch for this
+      // browser (persistent); ?test=0 rejoins. The tracker checks
+      // localStorage before every send — no custom gating needed.
+      try {
+        var q = new URLSearchParams(location.search);
+        if (q.has('test')) {
+          q.get('test') === '0'
+            ? localStorage.removeItem('umami.disabled')
+            : localStorage.setItem('umami.disabled', '1');
+        }
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://analytics.sixtom.com" crossorigin />
     <script
       defer
