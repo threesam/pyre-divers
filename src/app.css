@@ -13,11 +13,14 @@
     format('woff2');
 }
 /* snap lives on the root: iOS ignores snap-type on body when the
-     documentElement is the actual scroller */
+     documentElement is the actual scroller.
+     proximity, not mandatory: the page must track the finger 1:1 and only
+     settle at a boundary when the scroll ends near one — mandatory holds the
+     viewport rigid mid-gesture and leaps on release (the "sticky swipe") */
 html {
   height: 100%;
   background: #10120a;
-  scroll-snap-type: y mandatory;
+  scroll-snap-type: y proximity;
   scroll-behavior: smooth;
 }
 body {
@@ -34,7 +37,6 @@ section {
   height: 100dvh;
   box-sizing: border-box;
   scroll-snap-align: start;
-  scroll-snap-stop: always;
   overflow: hidden;
 }
 #splash {
@@ -277,16 +279,6 @@ button.join:focus-visible {
 .tiny {
   font-size: 0.78rem;
   color: #7d745f;
-}
-@media (min-width: 769px) and (pointer: fine) {
-  /* trackpads: glide, settle at boundaries — mandatory snap rubber-bands
-       small flicks back (the "sticky" swipe); touch keeps the hard snap */
-  html {
-    scroll-snap-type: y proximity;
-  }
-  section {
-    scroll-snap-stop: normal;
-  }
 }
 @media (min-width: 769px) {
   /* the card's own hand-drawn frame — desktop only */
