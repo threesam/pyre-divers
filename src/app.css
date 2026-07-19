@@ -397,6 +397,10 @@ html.diving.dive-title .down {
 .veil-diver .thigh {
   transform-box: view-box;
 }
+.veil-diver .torso,
+.veil-diver .thigh {
+  transform-origin: 50% 62.5%; /* hip 16,20 — torso leans, thighs swing */
+}
 .veil-diver .arm {
   transform-origin: 50% 40.625%; /* shoulder 16,13 */
 }
@@ -407,15 +411,9 @@ html.diving.dive-title .down {
   transform-origin: 60.9375% 46.875%; /* right elbow 19.5,15 */
 }
 .veil-diver .shin-l {
-  transform-origin: 34.375% 84.375%; /* left foot 11,27 */
-}
-.veil-diver .shin-r {
-  transform-origin: 65.625% 84.375%; /* right foot 21,27 */
-}
-.veil-diver .thigh-l {
   transform-origin: 42.1875% 73.4375%; /* left knee 13.5,23.5 */
 }
-.veil-diver .thigh-r {
+.veil-diver .shin-r {
   transform-origin: 57.8125% 73.4375%; /* right knee 18.5,23.5 */
 }
 html.dive-go #veil {

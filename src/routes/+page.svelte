@@ -172,11 +172,11 @@
        head (16,7) · spine 16,10.5→20 · shoulder (16,13) · hip (16,20)
        elbows (12.5,15)/(19.5,15) · hands (9,17)/(23,17)
        knees (13.5,23.5)/(18.5,23.5) · feet (11,27)/(21,27)
-     Two joints per limb, straight by default. Arms chain top-down
-     (shoulder → elbow). Legs chain GROUND-UP — shin pivots at the foot,
-     thigh nests inside pivoting at the knee — so the feet are planted by
-     construction and a squat is just two rotations per leg plus the
-     torso dropping to meet the hip (angles hand-solved in page-fx). -->
+     Two joints per limb, straight by default, all chained top-down:
+     arms shoulder → elbow → hand, legs hip → knee → foot. The torso
+     (head + spine + arms) leans about the hip; legs are siblings of the
+     torso so a lean doesn't swing them. page-fx drives everything as
+     per-joint rotation keyframes on one clock. -->
 <div id="veil" aria-hidden="true">
   <span class="veil-diver"
     ><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"
@@ -196,13 +196,13 @@
               ><path d="M19.5 15 L23 17" /></g
             ></g
           ></g
-        ><g class="shin shin-l"
-          ><path d="M11 27 L13.5 23.5" /><g class="thigh thigh-l"
-            ><path d="M13.5 23.5 L16 20" /></g
+        ><g class="thigh thigh-l"
+          ><path d="M16 20 L13.5 23.5" /><g class="shin shin-l"
+            ><path d="M13.5 23.5 L11 27" /></g
           ></g
-        ><g class="shin shin-r"
-          ><path d="M21 27 L18.5 23.5" /><g class="thigh thigh-r"
-            ><path d="M18.5 23.5 L16 20" /></g
+        ><g class="thigh thigh-r"
+          ><path d="M16 20 L18.5 23.5" /><g class="shin shin-r"
+            ><path d="M18.5 23.5 L21 27" /></g
           ></g
         ></g
       ></svg
