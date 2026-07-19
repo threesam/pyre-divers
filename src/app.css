@@ -322,8 +322,12 @@ button.join:focus-visible {
   display: none;
   pointer-events: none;
 }
+html.diving {
+  overflow: hidden; /* the intro owns the viewport — no scroll while it runs */
+}
 html.diving #veil {
   display: block;
+  pointer-events: auto; /* swallow clicks aimed at the covered page */
   animation: veil-auto 700ms ease 6s forwards; /* js-dead backstop */
 }
 @keyframes veil-auto {
@@ -384,9 +388,12 @@ html.dive-go #veil {
     visibility 0s 900ms;
   animation: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  /* continuity yields to comfort: no veil, no choreography — the link
-     lands on the normal page instantly */
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+  /* continuity yields to comfort (reduced motion) or resilience (no JS to
+     run the choreography): no veil, no scroll lock — the normal page */
+  html.diving {
+    overflow: auto;
+  }
   html.diving #veil {
     display: none;
   }

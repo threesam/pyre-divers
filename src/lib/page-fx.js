@@ -244,7 +244,15 @@ export function initPageFx() {
     if (!diving) {
       return;
     }
-    history.replaceState(null, '', location.pathname + location.hash);
+    // strip only our flag — UTM/referral params ride along untouched
+    const q = new URLSearchParams(location.search);
+    q.delete('dive');
+    const qs = q.toString();
+    history.replaceState(
+      null,
+      '',
+      location.pathname + (qs ? `?${qs}` : '') + location.hash,
+    );
     const de = document.documentElement;
     const veil = document.getElementById('veil');
     if (!doDive) {
@@ -305,7 +313,7 @@ export function initPageFx() {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(5500, () =>
+    t(4800, () =>
       de.classList.remove('diving', 'dive-run', 'dive-go', 'dive-title'),
     );
   }
@@ -639,14 +647,14 @@ export function initPageFx() {
     const velBufs = [gl.createBuffer(), gl.createBuffer()];
     let active = 0;
 
-    let introSeeded = false;
     function seedParticles() {
       const P = new Float32Array(N_F * 2);
       const V = new Float32Array(N_F * 2);
       const cx = cw / 2,
         cy = ch / 2;
-      const scatter = glDive && !introSeeded;
-      introSeeded = true;
+      // scatter until the crowd is released — a pre-release resize reseeds
+      // scattered (the intro survives), a later one reseeds steady
+      const scatter = glDive && !releaseAt;
       for (let i = 0; i < N_F; i++) {
         const b = field[i];
         const w = V_E + (V_RIM_W - V_E) * b.frac;
@@ -1237,6 +1245,10 @@ export function initPageFx() {
       'wheel',
       (e) => {
         if (!fineQ.matches) {
+          return;
+        }
+        if (document.documentElement.classList.contains('diving')) {
+          e.preventDefault(); // the intro owns the viewport — no flight underneath
           return;
         }
         if (flying || performance.now() < cooldownUntil) {
