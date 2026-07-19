@@ -261,7 +261,6 @@ export function initPageFx() {
       return;
     }
     const t = (ms, fn) => setTimeout(fn, ms);
-    t(150, () => de.classList.add('dive-run'));
     if (full) {
       t(850, () => {
         const flyer = veil ? veil.querySelector('.veil-diver') : null;
@@ -320,9 +319,7 @@ export function initPageFx() {
         veil.style.display = 'none'; // after the flyer's arc completes (~3.05s)
       }
     });
-    t(5500, () =>
-      de.classList.remove('diving', 'dive-run', 'dive-go', 'dive-title'),
-    );
+    t(5500, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
   }
 
   function measure() {
