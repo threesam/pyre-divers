@@ -262,19 +262,20 @@ export function initPageFx() {
     }
     const t = (ms, fn) => setTimeout(fn, ms);
     // liftoff IS the trigger — and liftoff is the POP, not the squat.
-    // The squat is a full second of anticipation; at the pop the swarm
-    // releases and the marigold dissolve starts, all fading through the
-    // same one-second window as him.
+    // The squat is a full second of anticipation starting the moment the
+    // page lands (no lead-in); ~300ms after takeoff the swarm releases
+    // and the marigold dissolve starts, and he fades through the reveal.
     const goDive = () => {
       de.classList.add('dive-go');
       releaseAt = performance.now();
     };
     if (full) {
-      t(500, () => {
+      t(100, () => {
         // scheduled INSIDE this callback so the animation and the world's
         // reaction share the same real t=0 — an absolute timer desyncs
         // when this callback fires late. 1300 = the decelerating-after-
-        // takeoff keyframe: he pops fully visible, THEN the world answers
+        // takeoff keyframe (pop + 300ms): he pops fully visible, THEN
+        // the world answers
         t(1300, goDive);
         const flyer = veil ? veil.querySelector('.veil-diver') : null;
         if (!flyer || !flyer.animate) {
@@ -349,22 +350,22 @@ export function initPageFx() {
         }
       });
     } else {
-      t(1800, goDive); // no animation to sync with — absolute time is fine
+      t(1400, goDive); // no animation to sync with — absolute time is fine
     }
-    t(3900, () => {
+    t(3000, () => {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(3250, () => {
+    t(2800, () => {
       if (veil) {
-        // fades complete by ~2.9s (flyer anim ends 500+2400; world
-        // dissolve ends ~1800+1000); the slack absorbs a main-thread
+        // fades complete by ~2.5s (flyer anim ends 100+2400; world
+        // dissolve ends ~1400+1000); the slack absorbs a main-thread
         // stall delaying the dive-go transition's start — timers don't
         // shift together, so a tight margin truncates it
         veil.style.display = 'none';
       }
     });
-    t(5400, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
+    t(4500, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
   }
 
   function measure() {
