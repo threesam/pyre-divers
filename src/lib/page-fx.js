@@ -268,28 +268,30 @@ export function initPageFx() {
         if (!flyer || !flyer.animate) {
           return;
         }
-        // he jumps and the swarm absorbs him where he is: a slow rise, a
-        // slight leftward tilt, and he fades the moment the wave hits —
-        // no spin, no journey to the middle
+        // one real jump: he launches at speed and decelerates the whole
+        // way up (easing is per-segment in WAAPI — the launch segment
+        // carries a hard ease-out, the rest are linear so he never
+        // re-accelerates), tilting slightly left, fading as the wave hits
         flyer.animate(
           [
-            { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
             {
-              // liftoff — timed to the dive-go/release trigger at 1150ms
-              transform: 'translate(0, -16px) rotate(-4deg) scale(1.02)',
+              transform: 'translate(0, 0) rotate(0deg) scale(1)',
               opacity: 1,
-              offset: 0.14,
+              easing: 'cubic-bezier(0.1, 0.7, 0.25, 1)',
             },
             {
+              // apex — airborne well before the 1150ms dive-go trigger
               transform: 'translate(-6px, -60px) rotate(-10deg) scale(0.98)',
               opacity: 1,
               offset: 0.45,
+              easing: 'linear',
             },
             {
-              // the wave reaches him — fade begins
+              // hanging — the wave reaches him, fade begins
               transform: 'translate(-10px, -70px) rotate(-12deg) scale(0.95)',
               opacity: 1,
               offset: 0.62,
+              easing: 'linear',
             },
             {
               transform: 'translate(-16px, -78px) rotate(-14deg) scale(0.92)',
@@ -298,7 +300,6 @@ export function initPageFx() {
           ],
           {
             duration: 2200,
-            easing: 'cubic-bezier(0.3, 0, 0.4, 1)',
             fill: 'forwards',
           },
         );
