@@ -322,8 +322,9 @@ button.join:focus-visible {
   display: none;
   pointer-events: none;
 }
-html.diving {
-  overflow: hidden; /* the intro owns the viewport — no scroll while it runs */
+html.diving:not(.dive-title) {
+  overflow: hidden; /* the intro owns the viewport until the title lands —
+     the chevrons that arrive with it are immediately usable */
 }
 html.diving #veil {
   display: block;
