@@ -271,20 +271,22 @@ export function initPageFx() {
     };
     if (full) {
       t(500, () => {
-        // scheduled INSIDE this callback so the pop (anim t+1000ms) and
-        // the world's reaction share the same real t=0 — an absolute
-        // 1500ms timer desyncs when this callback fires late
-        t(1000, goDive);
+        // scheduled INSIDE this callback so the animation and the world's
+        // reaction share the same real t=0 — an absolute timer desyncs
+        // when this callback fires late. 1300 = the decelerating-after-
+        // takeoff keyframe: he pops fully visible, THEN the world answers
+        t(1300, goDive);
         const flyer = veil ? veil.querySelector('.veil-diver') : null;
         if (!flyer || !flyer.animate) {
           return;
         }
         // a real jump, human-scale, on a strict clock: one full second to
         // settle into the sumo squat (feet planted — origin is bottom
-        // center), then the pop — 13px, fast out of the hole, decelerating
-        // the moment he straightens — and from the instant of liftoff
-        // EVERYTHING fades together over one second: him, the marigold,
-        // the swarm arriving (goDive is nested +1000ms off this clock).
+        // center), then the pop — 13px, fast out of the hole. The takeoff
+        // is fully OPAQUE — you see him leave the ground — and only once
+        // he's straightened and decelerating (rel 1300ms) does the world
+        // answer: goDive fires there, and he fades through the reveal
+        // while hanging. Total 2400ms.
         flyer.animate(
           [
             {
@@ -296,21 +298,22 @@ export function initPageFx() {
               // the squat — compressed, a touch wider, feet never leave
               transform: 'translateY(0) scale(1.12, 0.8)',
               opacity: 1,
-              offset: 0.5,
+              offset: 0.417, // 1000ms
               easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)', // the pop: fast, then immediate deceleration
             },
             {
-              // straightened, rise nearly spent, fade underway
-              transform: 'translateY(-12px) scale(1, 1)',
-              opacity: 0.72,
-              offset: 0.65,
+              // straightened, decelerating, STILL fully there — this is
+              // the visible takeoff; goDive fires at this moment
+              transform: 'translateY(-11px) scale(1, 1)',
+              opacity: 1,
+              offset: 0.542, // 1300ms
               easing: 'linear',
             },
             {
-              // apex — thirteen pixels
+              // apex — thirteen pixels; the wave is arriving, fade underway
               transform: 'translateY(-13px) scale(1, 1)',
-              opacity: 0.4,
-              offset: 0.82,
+              opacity: 0.55,
+              offset: 0.833, // 2000ms
               easing: 'linear',
             },
             {
@@ -319,7 +322,7 @@ export function initPageFx() {
             },
           ],
           {
-            duration: 2000,
+            duration: 2400,
             fill: 'forwards',
           },
         );
@@ -333,30 +336,31 @@ export function initPageFx() {
         // angles — up 40, drive -12, settle -6 — live here once.
         const armKeys = (s) => [
           { transform: 'rotate(0deg)', easing: 'cubic-bezier(0.4, 0, 0.5, 1)' },
-          { transform: `rotate(${40 * s}deg)`, offset: 0.5, easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)' },
-          { transform: `rotate(${-12 * s}deg)`, offset: 0.65, easing: 'linear' },
-          { transform: `rotate(${-6 * s}deg)`, offset: 0.82, easing: 'linear' },
+          { transform: `rotate(${40 * s}deg)`, offset: 0.417, easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)' },
+          { transform: `rotate(${-12 * s}deg)`, offset: 0.542, easing: 'linear' },
+          { transform: `rotate(${-6 * s}deg)`, offset: 0.833, easing: 'linear' },
           { transform: `rotate(${-6 * s}deg)` },
         ];
         const armL = flyer.querySelector('.arm-l');
         const armR = flyer.querySelector('.arm-r');
         if (armL && armR) {
-          armL.animate(armKeys(1), { duration: 2000, fill: 'forwards' });
-          armR.animate(armKeys(-1), { duration: 2000, fill: 'forwards' });
+          armL.animate(armKeys(1), { duration: 2400, fill: 'forwards' });
+          armR.animate(armKeys(-1), { duration: 2400, fill: 'forwards' });
         }
       });
     } else {
-      t(1500, goDive); // no animation to sync with — absolute time is fine
+      t(1800, goDive); // no animation to sync with — absolute time is fine
     }
     t(3900, () => {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(2800, () => {
+    t(3250, () => {
       if (veil) {
-        // shared fade completes at 2.5s; the 300ms slack absorbs a
-        // main-thread stall delaying the dive-go transition's start —
-        // timers don't shift together, so a tight margin truncates it
+        // fades complete by ~2.9s (flyer anim ends 500+2400; world
+        // dissolve ends ~1800+1000); the slack absorbs a main-thread
+        // stall delaying the dive-go transition's start — timers don't
+        // shift together, so a tight margin truncates it
         veil.style.display = 'none';
       }
     });
