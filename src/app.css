@@ -323,8 +323,17 @@ button.join:focus-visible {
   pointer-events: none;
 }
 html.diving:not(.dive-title) {
-  overflow: hidden; /* the intro owns the viewport until the title lands —
-     the chevrons that arrive with it are immediately usable */
+  /* the intro owns the viewport until the title lands — and the lock is a
+     self-expiring animation, so even a dead bundle can't hold it past 4.8s */
+  animation: dive-lock 4.8s step-end both;
+}
+@keyframes dive-lock {
+  from {
+    overflow: hidden;
+  }
+  to {
+    overflow: visible;
+  }
 }
 html.diving #veil {
   display: block;
@@ -392,8 +401,10 @@ html.dive-go #veil {
 @media (prefers-reduced-motion: reduce), (scripting: none) {
   /* continuity yields to comfort (reduced motion) or resilience (no JS to
      run the choreography): no veil, no scroll lock — the normal page */
-  html.diving {
+  html.diving,
+  html.diving:not(.dive-title) {
     overflow: auto;
+    animation: none;
   }
   html.diving #veil {
     display: none;
