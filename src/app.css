@@ -325,7 +325,7 @@ button.join:focus-visible {
 html.diving:not(.dive-title) {
   /* the intro owns the viewport until the title lands — and the lock is a
      self-expiring animation, so even a dead bundle can't hold it past 4.8s */
-  animation: dive-lock 4.8s step-end both;
+  animation: dive-lock 5.4s step-end both;
 }
 @keyframes dive-lock {
   from {
@@ -391,11 +391,14 @@ html.dive-run .vt-word {
   display: block;
 }
 html.dive-go #veil {
+  /* the dissolve IS the reveal: he lands on solid marigold, then it thins
+     slowly while the swarm pours in through it — gradient and crowd fade
+     in together as the overlay goes */
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 900ms ease,
-    visibility 0s 900ms;
+    opacity 1600ms ease,
+    visibility 0s 1600ms;
   animation: none;
 }
 @media (prefers-reduced-motion: reduce), (scripting: none) {

@@ -300,20 +300,22 @@ export function initPageFx() {
         );
       });
     }
-    t(1150, () => de.classList.add('dive-go'));
     t(1850, () => {
-      releaseAt = performance.now(); // he's in — now they all follow
+      // he lands — the marigold starts dissolving AND the crowd releases,
+      // so the gradient and the swarm emerge together through the veil
+      de.classList.add('dive-go');
+      releaseAt = performance.now();
     });
-    t(2150, () => {
+    t(3600, () => {
       if (veil) {
         veil.style.display = 'none';
       }
     });
-    t(3750, () => {
+    t(4400, () => {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(4800, () =>
+    t(5400, () =>
       de.classList.remove('diving', 'dive-run', 'dive-go', 'dive-title'),
     );
   }
