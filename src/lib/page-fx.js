@@ -281,66 +281,124 @@ export function initPageFx() {
         if (!flyer || !flyer.animate) {
           return;
         }
-        // a real jump on a strict clock, with real knees: one full second
-        // into a SUMO squat — feet planted (legs chain ground-up: shin
-        // pivots at the foot, thigh at the knee), knees bowing OUT, torso
-        // dropping 3 units to meet the hips — then the pop: 13px, fast
-        // out of the hole, and the world answers INSTANTLY: goDive fires
-        // at the pop (rel 1000ms) and the coin crossfades out over 3s
-        // while he hangs and dissolves inside it. Total 4000ms.
-        //
-        // Squat pose is hand-solved IK for a 3-unit torso drop with both
-        // limb segments 4.30 long: knee swings out to (±)26° at the
-        // ankle, 84° at the knee — the chain closes at the dropped hip.
-        const EASE_DOWN = 'cubic-bezier(0.4, 0, 0.5, 1)'; // the slow second down
-        const EASE_POP = 'cubic-bezier(0.1, 0.9, 0.2, 1)'; // fast, then immediate deceleration
-        const OFF = { squat: 0.25 /* 1000ms */, up: 0.325 /* 1300ms */, apex: 0.5 /* 2000ms */ };
+        // THE RUN AND DIVE, on one 4000ms clock: three scampering steps
+        // to the LEFT (the direction the whole current moves), a plant,
+        // then a leap that rotates him head-first into a forward dive —
+        // he sails into the swarm as the coin crossfades out (goDive at
+        // the leap, rel 1000ms, zero delay). Beats (rel ms):
+        //   150/450/750 = foot strikes · 900 = plant · 1000 = LEAP
+        //   1400 = mid-flight · 2000 = laid out · 4000 = gone
+        // WAAPI on purpose, not CSS keyframes: every element must share
+        // this callback's t=0, and class-triggered CSS would introduce
+        // a second timing authority.
+        const EASE_STEP = 'cubic-bezier(0.4, 0, 0.6, 1)'; // stride rhythm
+        const EASE_POP = 'cubic-bezier(0.1, 0.9, 0.2, 1)'; // launch: fast, then immediate deceleration
         const TIMING = { duration: 4000, fill: 'forwards' };
-        const pose = (transforms, extra) =>
-          transforms.map((transform, i) => ({
-            transform,
-            ...(extra ? extra[i] : {}),
-            offset: [0, OFF.squat, OFF.up, OFF.apex, 1][i],
-            easing: [EASE_DOWN, EASE_POP, 'linear', 'linear', undefined][i],
-          }));
-        // rest → squat → straightened → apex → gone, one column per beat.
-        // He starts thinning at the pop (with the coin crossfade) but is
-        // still ~90% there as he straightens — the takeoff stays visible;
-        // he dissolves with the marigold over the long hang.
-        flyer.animate(
-          pose(
-            ['translateY(0)', 'translateY(0)', 'translateY(-11px)', 'translateY(-13px)', 'translateY(-13px)'],
-            [{ opacity: 1 }, { opacity: 1 }, { opacity: 0.9 }, { opacity: 0.7 }, { opacity: 0 }],
-          ),
-          TIMING,
-        );
-        const joint = (el, angles) => {
+        // beat offsets of 4000ms
+        const B = { s1: 0.0375, s2: 0.1125, s3: 0.1875, plant: 0.225, leap: 0.25, fly: 0.35, out: 0.5 };
+        // kf(el, frames): frames = [offset, transform, easingToNext?, opacity?]
+        const kf = (el, frames) => {
           if (el) {
-            el.animate(pose(angles.map((a) => `rotate(${a}deg)`)), TIMING);
+            el.animate(
+              frames.map(([offset, transform, easing, opacity]) => ({
+                offset,
+                transform,
+                ...(easing ? { easing } : {}),
+                ...(opacity !== undefined ? { opacity } : {}),
+              })),
+              TIMING,
+            );
           }
         };
         const q = (sel) => flyer.querySelector(sel);
-        // torso rides down to the hips and back up with the pop
-        if (q('.torso')) {
-          q('.torso').animate(
-            pose(['translateY(0)', 'translateY(3px)', 'translateY(0)', 'translateY(0)', 'translateY(0)']),
-            TIMING,
+        // root: the journey. Steps drift left with a little bob; the
+        // leap arcs up-left while the whole figure rotates head-first.
+        // He stays ~90% there through the launch, dissolving in the
+        // coin crossfade across the long glide.
+        kf(flyer, [
+          [0, 'translate(0px, 0px) rotate(0deg)', EASE_STEP, 1],
+          [B.s1, 'translate(-5px, -1.5px) rotate(-3deg)', EASE_STEP, 1],
+          [B.s2, 'translate(-11px, -1px) rotate(-2deg)', EASE_STEP, 1],
+          [B.s3, 'translate(-17px, -1.5px) rotate(-3deg)', EASE_STEP, 1],
+          [B.plant, 'translate(-21px, 0px) rotate(-2deg)', EASE_POP, 1],
+          [B.leap, 'translate(-25px, -5px) rotate(-18deg)', 'linear', 1],
+          [B.fly, 'translate(-36px, -13px) rotate(-45deg)', 'linear', 0.9],
+          [B.out, 'translate(-46px, -17px) rotate(-58deg)', 'linear', 0.72],
+          [1, 'translate(-60px, -15px) rotate(-62deg)', undefined, 0],
+        ]);
+        // torso leans into the run from the hip, straightens into the
+        // dive line (the body angle comes from the root rotation)
+        kf(q('.torso'), [
+          [0, 'rotate(0deg)', EASE_STEP],
+          [B.s1, 'rotate(-8deg)', EASE_STEP],
+          [B.plant, 'rotate(-6deg)', EASE_POP],
+          [B.fly, 'rotate(2deg)', 'linear'],
+          [1, 'rotate(2deg)'],
+        ]);
+        // A sideways run is PHASE-SHIFTED, not mirrored: both legs swing
+        // through the same arc around vertical-down, half a cycle apart.
+        // The rest pose is splayed (thigh-l at 125.5deg, thigh-r at
+        // 54.5deg from +x), so the same world-space arc means different
+        // local rotations per side — forward stride points the thigh to
+        // ~120deg, back stride ~60deg. Knee folds are LOCAL to the thigh
+        // (the shin nests inside it), so a fold is the same number on
+        // both sides: ~0 straight, -75 = heel kicked up behind.
+        const legs = (thL, shL, thR, shR) => ({ thL, shL, thR, shR });
+        const strideLfwd = legs(-6, -8, 6, -75); // left leg reaching, right heel up
+        const strideRfwd = legs(-66, -75, 66, -8); // right leg reaching, left heel up
+        // the glide pose comes from Sam's sticky-note sketch: one leg
+        // straight along the body line, the other knee-bent, heel up
+        const glide = legs(-20, -85, 35, -4);
+        const legBeats = [
+          [0, legs(0, 0, 0, 0), EASE_STEP],
+          [B.s1, strideLfwd, EASE_STEP],
+          [B.s2, strideRfwd, EASE_STEP],
+          [B.s3, strideLfwd, EASE_STEP],
+          [B.plant, legs(-30, -18, 30, -18), EASE_POP], // crouched, both feet down
+          [B.leap, legs(-32, -6, 32, -6), 'linear'], // extended drive
+          [B.fly, glide, 'linear'],
+          [1, glide, undefined],
+        ];
+        for (const [sel, key] of [
+          ['.thigh-l', 'thL'],
+          ['.shin-l', 'shL'],
+          ['.thigh-r', 'thR'],
+          ['.shin-r', 'shR'],
+        ]) {
+          kf(
+            q(sel),
+            legBeats.map(([o, p, e]) => [o, `rotate(${p[key]}deg)`, e]),
           );
         }
-        // legs: s=+1 left, -1 right — mirrored sumo bend, straight otherwise
-        for (const s of [1, -1]) {
-          const side = s === 1 ? 'l' : 'r';
-          joint(q(`.shin-${side}`), [0, -26 * s, 0, 0, 0]);
-          joint(q(`.thigh-${side}`), [0, 84 * s, 0, 0, 0]);
-        }
-        // arms ride the same clock: up through the squat (gathering),
-        // down past rest on the pop (the drive), settle through the hang.
-        // Elbows (.fore-*) exist in the skeleton but stay straight here.
-        // WAAPI on purpose, not CSS keyframes: the whole gesture must
-        // share the body animation's t=0 (a JS timer), and class-
-        // triggered CSS would introduce a second timing authority.
-        for (const s of [1, -1]) {
-          joint(q(`.arm-${s === 1 ? 'l' : 'r'}`), [0, 40 * s, -12 * s, -6 * s, -6 * s]);
+        // arms are exaggerated pendulums (visually tuned): the forward
+        // arm reaches near-horizontal ahead, the back arm swings well
+        // behind — rest splay makes the local numbers asymmetric per
+        // side. Elbows flex more on the reaching arm. On the leap both
+        // sweep through into a swan-V (±75 — wide enough that the arms
+        // read separate from the head at 22px), elbows straight.
+        const arms = (aL, fL, aR, fR) => ({ aL, fL, aR, fR });
+        const armBeats = [
+          [0, arms(0, 0, 0, 0), EASE_STEP],
+          [B.s1, arms(-120, -15, 135, -35), EASE_STEP], // left back, right reaching
+          [B.s2, arms(15, -35, -10, -15), EASE_STEP], // left reaching, right back
+          [B.s3, arms(-120, -15, 135, -35), EASE_STEP],
+          [B.plant, arms(-120, -15, -10, -15), EASE_POP], // windup: both behind
+          [B.leap, arms(-40, -8, 50, -8), 'linear'], // sweeping through
+          // glide arms, per the sketch: both reach forward-DOWN toward
+          // the travel direction, nearly stacked so they read as one
+          [B.fly, arms(30, 8, 150, 0), 'linear'],
+          [1, arms(30, 8, 150, 0), undefined],
+        ];
+        for (const [sel, key] of [
+          ['.arm-l', 'aL'],
+          ['.fore-l', 'fL'],
+          ['.arm-r', 'aR'],
+          ['.fore-r', 'fR'],
+        ]) {
+          kf(
+            q(sel),
+            armBeats.map(([o, p, e]) => [o, `rotate(${p[key]}deg)`, e]),
+          );
         }
       });
     } else {
