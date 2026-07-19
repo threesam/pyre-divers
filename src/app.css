@@ -374,7 +374,6 @@ html.diving.dive-title .down {
   width: 22.4px;
   height: 22.4px;
   line-height: 0;
-  transform-origin: 50% 100%; /* squat compresses onto planted feet */
   will-change: transform, opacity;
 }
 @media (min-width: 769px) {
@@ -388,22 +387,46 @@ html.diving.dive-title .down {
   height: 100%;
   display: block;
 }
-.veil-diver .arm {
-  /* pivot at the shoulder — 16,13 of the 32×32 viewBox. Percentages are
-     unambiguous against the view-box reference box in every engine
-     (px-as-user-units is per-spec but has had engine quirks) */
+/* joint pivots — percentages of the 32×32 view-box (unambiguous across
+   engines; px-as-user-units is per-spec but has had quirks). Each rule's
+   comment is the joint's viewBox coordinate. */
+.veil-diver .torso,
+.veil-diver .arm,
+.veil-diver .fore,
+.veil-diver .shin,
+.veil-diver .thigh {
   transform-box: view-box;
-  transform-origin: 50% 40.625%;
+}
+.veil-diver .arm {
+  transform-origin: 50% 40.625%; /* shoulder 16,13 */
+}
+.veil-diver .fore-l {
+  transform-origin: 39.0625% 46.875%; /* left elbow 12.5,15 */
+}
+.veil-diver .fore-r {
+  transform-origin: 60.9375% 46.875%; /* right elbow 19.5,15 */
+}
+.veil-diver .shin-l {
+  transform-origin: 34.375% 84.375%; /* left foot 11,27 */
+}
+.veil-diver .shin-r {
+  transform-origin: 65.625% 84.375%; /* right foot 21,27 */
+}
+.veil-diver .thigh-l {
+  transform-origin: 42.1875% 73.4375%; /* left knee 13.5,23.5 */
+}
+.veil-diver .thigh-r {
+  transform-origin: 57.8125% 73.4375%; /* right knee 18.5,23.5 */
 }
 html.dive-go #veil {
   pointer-events: none; /* he's airborne — the page is the world again */
 }
 html.dive-go #veil::before {
-  /* the dissolve IS the reveal: liftoff starts it, and the gradient and
-     the swarm emerge together through the thinning marigold — one second,
-     the same window the flyer fades through */
+  /* the dissolve IS the reveal: the pop starts it (zero delay), and the
+     gradient and swarm emerge through the thinning coin over a slow
+     three seconds — the flyer dissolves inside the same crossfade */
   opacity: 0;
-  transition: opacity 1000ms ease;
+  transition: opacity 3000ms ease;
 }
 @media (prefers-reduced-motion: reduce), (scripting: none) {
   /* continuity yields to comfort (reduced motion) or resilience (no JS to
