@@ -168,6 +168,9 @@
      so arrival is just the stick figure alone on marigold, standing where
      it stood; page-fx choreographs the jump → converge → title. -->
 <div id="veil" aria-hidden="true">
+  <!-- at handoff the garden shows only the little guy — no words — so the
+       veil matches: just him, anchored to the corner. One rule, every
+       viewport. -->
   <span class="veil-diver"
     ><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"
       ><g

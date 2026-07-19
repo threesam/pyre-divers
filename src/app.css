@@ -370,15 +370,14 @@ html.diving.dive-title .down {
   transition: opacity 1s ease;
   animation: none;
 }
+/* at handoff the garden shows only the little guy, so arrival is just him
+     on marigold. Corner-anchored with one rule — no measured pixels, works
+     at every viewport (the old 144.2px was a 1440×900 measurement of the
+     garden's tagline and meant nothing on phones). */
 .veil-diver {
-  /* the sole continuity anchor: the garden fades its words out BEFORE
-     navigating, so arrival is just the stick on marigold — placed exactly
-     where the garden's figure sits (measured at 1440×900 md: svg right
-     edge 144.2px from the right = 2rem anchor + "uncertain" 105.8px +
-     0.4em gap; bottom 32px; 22.4px square). Pure geometry, no font. */
   position: absolute;
-  right: 144.2px;
-  bottom: 32px;
+  right: 2rem;
+  bottom: 26px;
   width: 22.4px;
   height: 22.4px;
   line-height: 0;

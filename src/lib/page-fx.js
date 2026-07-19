@@ -262,7 +262,7 @@ export function initPageFx() {
     }
     const t = (ms, fn) => setTimeout(fn, ms);
     if (full) {
-      t(850, () => {
+      t(500, () => {
         const flyer = veil ? veil.querySelector('.veil-diver') : null;
         if (!flyer || !flyer.animate) {
           return;
@@ -304,22 +304,23 @@ export function initPageFx() {
         );
       });
     }
-    t(1150, () => {
-      // liftoff IS the trigger: the act of jumping releases the swarm and
-      // starts the marigold dissolving — the world answers the jump
+    t(550, () => {
+      // liftoff IS the trigger: the instant he leaves the ground the swarm
+      // releases and the marigold starts dissolving — the world answers
+      // the jump, not a beat after it
       de.classList.add('dive-go');
       releaseAt = performance.now();
     });
-    t(3900, () => {
+    t(3300, () => {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(3200, () => {
+    t(2750, () => {
       if (veil) {
-        veil.style.display = 'none'; // after the flyer's arc completes (~3.05s)
+        veil.style.display = 'none'; // after the flyer's arc completes (~2.7s)
       }
     });
-    t(5500, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
+    t(4900, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
   }
 
   function measure() {
