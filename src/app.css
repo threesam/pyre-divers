@@ -394,9 +394,10 @@ html.dive-go #veil {
 }
 html.dive-go #veil::before {
   /* the dissolve IS the reveal: liftoff starts it, and the gradient and
-     the swarm emerge together through the thinning marigold */
+     the swarm emerge together through the thinning marigold — one second,
+     the same window the flyer fades through */
   opacity: 0;
-  transition: opacity 1600ms ease;
+  transition: opacity 1000ms ease;
 }
 @media (prefers-reduced-motion: reduce), (scripting: none) {
   /* continuity yields to comfort (reduced motion) or resilience (no JS to

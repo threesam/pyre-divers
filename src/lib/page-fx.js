@@ -267,70 +267,70 @@ export function initPageFx() {
         if (!flyer || !flyer.animate) {
           return;
         }
-        // a real jump, human-scale: sumo squat (feet planted — origin is
-        // bottom center), then a quick pop that tops out ~10px up. The
-        // launch segment carries a hard ease-out so he decelerates the
-        // moment he straightens; then he just hangs and fades as the
-        // wave reaches him. No arc, no tilt.
+        // a real jump, human-scale, on a strict clock: one full second to
+        // settle into the sumo squat (feet planted — origin is bottom
+        // center), then the pop — 13px, fast out of the hole, decelerating
+        // the moment he straightens — and from the instant of liftoff
+        // EVERYTHING fades together over one second: him, the marigold,
+        // the swarm arriving (dive-go fires at the same 1500ms mark).
         flyer.animate(
           [
             {
               transform: 'translateY(0) scale(1, 1)',
               opacity: 1,
-              easing: 'cubic-bezier(0.35, 0, 0.4, 1)', // settle into the squat
+              easing: 'cubic-bezier(0.4, 0, 0.5, 1)', // the slow second down
             },
             {
               // the squat — compressed, a touch wider, feet never leave
               transform: 'translateY(0) scale(1.12, 0.8)',
               opacity: 1,
-              offset: 0.13,
-              easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)', // the pop: fast out of the hole, decelerating immediately
+              offset: 0.5,
+              easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)', // the pop: fast, then immediate deceleration
             },
             {
-              // straightened and already nearly at apex
-              transform: 'translateY(-9px) scale(1, 1)',
-              opacity: 1,
-              offset: 0.3,
+              // straightened, rise nearly spent, fade underway
+              transform: 'translateY(-12px) scale(1, 1)',
+              opacity: 0.72,
+              offset: 0.65,
               easing: 'linear',
             },
             {
-              // apex — ten pixels, max
-              transform: 'translateY(-10px) scale(1, 1)',
-              opacity: 1,
-              offset: 0.55,
+              // apex — thirteen pixels
+              transform: 'translateY(-13px) scale(1, 1)',
+              opacity: 0.4,
+              offset: 0.82,
               easing: 'linear',
             },
             {
-              // hanging — the wave takes him
-              transform: 'translateY(-10px) scale(1, 1)',
+              transform: 'translateY(-13px) scale(1, 1)',
               opacity: 0,
             },
           ],
           {
-            duration: 2200,
+            duration: 2000,
             fill: 'forwards',
           },
         );
       });
     }
-    t(800, () => {
+    t(1500, () => {
       // liftoff IS the trigger — and liftoff is the POP, not the squat.
-      // The squat runs ~285ms of anticipation (13% of 2200ms from t=500);
-      // the instant he leaves the hole the swarm releases and the
-      // marigold starts dissolving — the world answers the jump
+      // The squat is a full second of anticipation (50% of 2000ms from
+      // t=500); at the pop the swarm releases and the marigold dissolve
+      // starts, all fading through the same one-second window as him
       de.classList.add('dive-go');
       releaseAt = performance.now();
     });
-    t(3300, () => {
+    t(3900, () => {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(2750, () => {
+    t(2550, () => {
       if (veil) {
-        veil.style.display = 'none'; // after the flyer's arc completes (~2.7s)
+        veil.style.display = 'none'; // the shared fade completes at 2.5s
       }
     });
-    t(4900, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
+    t(5400, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
   }
 
   function measure() {
