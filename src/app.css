@@ -390,10 +390,11 @@ html.diving.dive-title .down {
   display: block;
 }
 .veil-diver .arm {
-  /* pivot at the shoulder: transform-box makes the origin read in
-     viewBox units, so 16px 13px IS the joint */
+  /* pivot at the shoulder — 16,13 of the 32×32 viewBox. Percentages are
+     unambiguous against the view-box reference box in every engine
+     (px-as-user-units is per-spec but has had engine quirks) */
   transform-box: view-box;
-  transform-origin: 16px 13px;
+  transform-origin: 50% 40.625%;
 }
 html.dive-go #veil {
   pointer-events: none; /* he's airborne — the page is the world again */
