@@ -268,50 +268,31 @@ export function initPageFx() {
         if (!flyer || !flyer.animate) {
           return;
         }
-        const r = flyer.getBoundingClientRect();
-        const fx0 = r.left + r.width / 2;
-        const fy0 = r.top + r.height / 2;
-        // he jumps and the swarm absorbs him where he is — no journey to
-        // the middle. His drift follows the local current AT HIS SPOT,
-        // head-first with the flow, at ~0.69× the swarm's pace so the
-        // stream visibly overtakes him as he fades.
-        const cx0 = cw / 2;
-        const cy0 = ch / 2;
-        const rl = Math.hypot(fx0 - cx0, fy0 - cy0);
-        const rx = (fx0 - cx0) / rl;
-        const ry = (fy0 - cy0) / rl;
-        let tx = -ry - rx * K;
-        let ty = rx - ry * K;
-        const tl = Math.hypot(tx, ty);
-        tx /= tl;
-        ty /= tl;
-        const rotEnd = (Math.atan2(ty, tx) * 180) / Math.PI + 90;
-        const dxs = tx * 0.14 * Scss;
-        const dys = ty * 0.14 * Scss;
+        // he jumps and the swarm absorbs him where he is: a slow rise, a
+        // slight leftward tilt, and he fades the moment the wave hits —
+        // no spin, no journey to the middle
         flyer.animate(
           [
             { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
             {
               // liftoff — timed to the dive-go/release trigger at 1150ms
-              transform: 'translate(2px, -16px) rotate(-8deg) scale(1.03)',
+              transform: 'translate(0, -16px) rotate(-4deg) scale(1.02)',
               opacity: 1,
               offset: 0.14,
             },
             {
-              // apex, tipping toward the flow
-              transform: `translate(${dxs * 0.2}px, ${dys * 0.2 - 60}px) rotate(40deg) scale(0.97)`,
+              transform: 'translate(-6px, -60px) rotate(-10deg) scale(0.98)',
               opacity: 1,
               offset: 0.45,
             },
             {
-              // the wave reaches him — aligned with the stream, fade begins
-              transform: `translate(${dxs * 0.45}px, ${dys * 0.45 - 66}px) rotate(${rotEnd}deg) scale(0.9)`,
+              // the wave reaches him — fade begins
+              transform: 'translate(-10px, -70px) rotate(-12deg) scale(0.95)',
               opacity: 1,
               offset: 0.62,
             },
             {
-              // carried off among them
-              transform: `translate(${dxs}px, ${dys - 58}px) rotate(${rotEnd + 4}deg) scale(0.84)`,
+              transform: 'translate(-16px, -78px) rotate(-14deg) scale(0.92)',
               opacity: 0,
             },
           ],
