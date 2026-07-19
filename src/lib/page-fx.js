@@ -271,28 +271,23 @@ export function initPageFx() {
         const r = flyer.getBoundingClientRect();
         const fx0 = r.left + r.width / 2;
         const fy0 = r.top + r.height / 2;
-        // entry point on the current, lower-right of the drain — he drifts
-        // there in slow motion while the released swarm streams past him
+        // he jumps and the swarm absorbs him where he is — no journey to
+        // the middle. His drift follows the local current AT HIS SPOT,
+        // head-first with the flow, at ~0.69× the swarm's pace so the
+        // stream visibly overtakes him as he fades.
         const cx0 = cw / 2;
         const cy0 = ch / 2;
-        const eX = cx0 + Math.cos(0.9) * 0.22 * Scss;
-        const eY = cy0 + Math.sin(0.9) * 0.22 * Scss;
-        // local current at the entry (tangent minus the slight inward
-        // pitch): his exit runs WITH the stream, head-first along it, so
-        // the swarm overtakes and absorbs him instead of crossing him
-        const rl = Math.hypot(eX - cx0, eY - cy0);
-        const rx = (eX - cx0) / rl;
-        const ry = (eY - cy0) / rl;
+        const rl = Math.hypot(fx0 - cx0, fy0 - cy0);
+        const rx = (fx0 - cx0) / rl;
+        const ry = (fy0 - cy0) / rl;
         let tx = -ry - rx * K;
         let ty = rx - ry * K;
         const tl = Math.hypot(tx, ty);
         tx /= tl;
         ty /= tl;
         const rotEnd = (Math.atan2(ty, tx) * 180) / Math.PI + 90;
-        const ex = eX - fx0;
-        const ey = eY - fy0;
-        const dxs = tx * 0.22 * Scss;
-        const dys = ty * 0.22 * Scss;
+        const dxs = tx * 0.14 * Scss;
+        const dys = ty * 0.14 * Scss;
         flyer.animate(
           [
             { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
@@ -300,30 +295,28 @@ export function initPageFx() {
               // liftoff — timed to the dive-go/release trigger at 1150ms
               transform: 'translate(2px, -16px) rotate(-8deg) scale(1.03)',
               opacity: 1,
-              offset: 0.08,
+              offset: 0.14,
             },
             {
-              transform: `translate(${ex * 0.2}px, ${ey * 0.14 - 74}px) rotate(40deg) scale(0.96)`,
+              // apex, tipping toward the flow
+              transform: `translate(${dxs * 0.2}px, ${dys * 0.2 - 60}px) rotate(40deg) scale(0.97)`,
               opacity: 1,
-              offset: 0.32,
+              offset: 0.45,
             },
             {
-              transform: `translate(${ex * 0.62 - dxs * 0.25}px, ${ey * 0.52 - dys * 0.25 - 24}px) rotate(${rotEnd - 60}deg) scale(0.7)`,
+              // the wave reaches him — aligned with the stream, fade begins
+              transform: `translate(${dxs * 0.45}px, ${dys * 0.45 - 66}px) rotate(${rotEnd}deg) scale(0.9)`,
               opacity: 1,
               offset: 0.62,
             },
             {
-              transform: `translate(${ex}px, ${ey}px) rotate(${rotEnd}deg) scale(0.52)`,
-              opacity: 1,
-              offset: 0.82,
-            },
-            {
-              transform: `translate(${ex + dxs}px, ${ey + dys}px) rotate(${rotEnd + 6}deg) scale(0.45)`,
+              // carried off among them
+              transform: `translate(${dxs}px, ${dys - 58}px) rotate(${rotEnd + 4}deg) scale(0.84)`,
               opacity: 0,
             },
           ],
           {
-            duration: 3800,
+            duration: 2200,
             easing: 'cubic-bezier(0.3, 0, 0.4, 1)',
             fill: 'forwards',
           },
@@ -340,9 +333,9 @@ export function initPageFx() {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(4750, () => {
+    t(3200, () => {
       if (veil) {
-        veil.style.display = 'none'; // after the flyer's 3.8s arc completes
+        veil.style.display = 'none'; // after the flyer's arc completes (~3.05s)
       }
     });
     t(5500, () =>
