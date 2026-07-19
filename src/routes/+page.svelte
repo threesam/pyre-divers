@@ -164,9 +164,11 @@
 </section>
 <!-- dive arrival veil: shown only when the document arrived with ?dive
      (threesam.com hand-off — the `diving` class is set pre-paint in
-     app.html). The garden fades its tagline words out before navigating,
-     so arrival is just the stick figure alone on marigold, standing where
-     it stood; page-fx choreographs the jump → converge → title. -->
+     app.html). At handoff the garden shows only the little guy — no words —
+     so arrival is just him on marigold, corner-anchored (one rule, every
+     viewport); page-fx choreographs the squat → pop → converge → title.
+     His arms are separate paths so the jump can articulate them: they
+     pivot at the shoulder (16,13 in viewBox units — see .veil-diver .arm). -->
 <div id="veil" aria-hidden="true">
   <span class="veil-diver"
     ><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"
@@ -176,7 +178,10 @@
         stroke-linecap="round"
         fill="none"
         ><circle cx="16" cy="7" r="3.4" /><path
-          d="M16 10.5 L16 20 M16 13 L9 17 M16 13 L23 17 M16 20 L11 27 M16 20 L21 27"
+          d="M16 10.5 L16 20 M16 20 L11 27 M16 20 L21 27"
+        /><path class="arm arm-l" d="M16 13 L9 17" /><path
+          class="arm arm-r"
+          d="M16 13 L23 17"
         /></g
       ></svg
     ></span

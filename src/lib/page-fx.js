@@ -261,65 +261,106 @@ export function initPageFx() {
       return;
     }
     const t = (ms, fn) => setTimeout(fn, ms);
+    // liftoff IS the trigger — and liftoff is the POP, not the squat.
+    // The squat is a full second of anticipation; at the pop the swarm
+    // releases and the marigold dissolve starts, all fading through the
+    // same one-second window as him.
+    const goDive = () => {
+      de.classList.add('dive-go');
+      releaseAt = performance.now();
+    };
     if (full) {
-      t(850, () => {
+      t(500, () => {
+        // scheduled INSIDE this callback so the pop (anim t+1000ms) and
+        // the world's reaction share the same real t=0 — an absolute
+        // 1500ms timer desyncs when this callback fires late
+        t(1000, goDive);
         const flyer = veil ? veil.querySelector('.veil-diver') : null;
         if (!flyer || !flyer.animate) {
           return;
         }
-        // one real jump: he launches at speed and decelerates the whole
-        // way up (easing is per-segment in WAAPI — the launch segment
-        // carries a hard ease-out, the rest are linear so he never
-        // re-accelerates), tilting slightly left, fading as the wave hits
+        // a real jump, human-scale, on a strict clock: one full second to
+        // settle into the sumo squat (feet planted — origin is bottom
+        // center), then the pop — 13px, fast out of the hole, decelerating
+        // the moment he straightens — and from the instant of liftoff
+        // EVERYTHING fades together over one second: him, the marigold,
+        // the swarm arriving (goDive is nested +1000ms off this clock).
         flyer.animate(
           [
             {
-              transform: 'translate(0, 0) rotate(0deg) scale(1)',
+              transform: 'translateY(0) scale(1, 1)',
               opacity: 1,
-              easing: 'cubic-bezier(0.1, 0.7, 0.25, 1)',
+              easing: 'cubic-bezier(0.4, 0, 0.5, 1)', // the slow second down
             },
             {
-              // apex — airborne well before the 1150ms dive-go trigger
-              transform: 'translate(-6px, -60px) rotate(-10deg) scale(0.98)',
+              // the squat — compressed, a touch wider, feet never leave
+              transform: 'translateY(0) scale(1.12, 0.8)',
               opacity: 1,
-              offset: 0.45,
+              offset: 0.5,
+              easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)', // the pop: fast, then immediate deceleration
+            },
+            {
+              // straightened, rise nearly spent, fade underway
+              transform: 'translateY(-12px) scale(1, 1)',
+              opacity: 0.72,
+              offset: 0.65,
               easing: 'linear',
             },
             {
-              // hanging — the wave reaches him, fade begins
-              transform: 'translate(-10px, -70px) rotate(-12deg) scale(0.95)',
-              opacity: 1,
-              offset: 0.62,
+              // apex — thirteen pixels
+              transform: 'translateY(-13px) scale(1, 1)',
+              opacity: 0.4,
+              offset: 0.82,
               easing: 'linear',
             },
             {
-              transform: 'translate(-16px, -78px) rotate(-14deg) scale(0.92)',
+              transform: 'translateY(-13px) scale(1, 1)',
               opacity: 0,
             },
           ],
           {
-            duration: 2200,
+            duration: 2000,
             fill: 'forwards',
           },
         );
+        // the arms ride the same clock: they drift up through the squat
+        // (gathering), then swing down past rest on the pop (the drive)
+        // and settle. WAAPI on purpose, not CSS keyframes: the whole gesture must
+        // share the body animation's t=0 (a JS timer), and class-
+        // triggered CSS would introduce a second timing authority.
+        // sign mirrors the whole gesture: +1 = left arm (its "up" is a
+        // clockwise rotation about the shoulder), -1 = right. The three
+        // angles — up 40, drive -12, settle -6 — live here once.
+        const armKeys = (s) => [
+          { transform: 'rotate(0deg)', easing: 'cubic-bezier(0.4, 0, 0.5, 1)' },
+          { transform: `rotate(${40 * s}deg)`, offset: 0.5, easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)' },
+          { transform: `rotate(${-12 * s}deg)`, offset: 0.65, easing: 'linear' },
+          { transform: `rotate(${-6 * s}deg)`, offset: 0.82, easing: 'linear' },
+          { transform: `rotate(${-6 * s}deg)` },
+        ];
+        const armL = flyer.querySelector('.arm-l');
+        const armR = flyer.querySelector('.arm-r');
+        if (armL && armR) {
+          armL.animate(armKeys(1), { duration: 2000, fill: 'forwards' });
+          armR.animate(armKeys(-1), { duration: 2000, fill: 'forwards' });
+        }
       });
+    } else {
+      t(1500, goDive); // no animation to sync with — absolute time is fine
     }
-    t(1150, () => {
-      // liftoff IS the trigger: the act of jumping releases the swarm and
-      // starts the marigold dissolving — the world answers the jump
-      de.classList.add('dive-go');
-      releaseAt = performance.now();
-    });
     t(3900, () => {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(3200, () => {
+    t(2800, () => {
       if (veil) {
-        veil.style.display = 'none'; // after the flyer's arc completes (~3.05s)
+        // shared fade completes at 2.5s; the 300ms slack absorbs a
+        // main-thread stall delaying the dive-go transition's start —
+        // timers don't shift together, so a tight margin truncates it
+        veil.style.display = 'none';
       }
     });
-    t(5500, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
+    t(5400, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
   }
 
   function measure() {
