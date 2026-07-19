@@ -315,6 +315,9 @@ export function initPageFx() {
         // (gathering), then swing down past rest on the pop (the drive)
         // and settle. Left arm's "up" is a clockwise rotation about the
         // shoulder, right arm's is counter-clockwise — mirrored signs.
+        // WAAPI on purpose, not CSS keyframes: the whole gesture must
+        // share the body animation's t=0 (a JS timer), and class-
+        // triggered CSS would introduce a second timing authority.
         const armKeys = (up, down, settle) => [
           { transform: 'rotate(0deg)', easing: 'cubic-bezier(0.4, 0, 0.5, 1)' },
           { transform: `rotate(${up}deg)`, offset: 0.5, easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)' },
@@ -342,9 +345,12 @@ export function initPageFx() {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(2550, () => {
+    t(2800, () => {
       if (veil) {
-        veil.style.display = 'none'; // the shared fade completes at 2.5s
+        // shared fade completes at 2.5s; the 300ms slack absorbs a
+        // main-thread stall delaying the dive-go transition's start —
+        // timers don't shift together, so a tight margin truncates it
+        veil.style.display = 'none';
       }
     });
     t(5400, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
