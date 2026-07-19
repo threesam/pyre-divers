@@ -308,3 +308,110 @@ button.join:focus-visible {
     white-space: nowrap;
   }
 }
+/* ── dive arrival: threesam.com hands off on its marigold coin field.
+     `html.diving` is set pre-paint (app.html) so the FIRST frame is
+     marigold — no ember flash. page-fx stages the classes:
+     dive-run (tagline words fade) → dive-go (veil lifts, swarm converging)
+     → dive-title (wordmark + chevrons arrive). A CSS keyframe backstop
+     resolves the veil even if the script never runs. */
+#veil {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: #e8a317; /* --coin on threesam.com */
+  display: none;
+  pointer-events: none;
+}
+html.diving:not(.dive-title) {
+  /* the intro owns the viewport until the title lands — and the lock is a
+     self-expiring animation, so even a dead bundle can't hold it past 4.8s */
+  animation: dive-lock 4.8s step-end both;
+}
+@keyframes dive-lock {
+  from {
+    overflow: hidden;
+  }
+  to {
+    overflow: visible;
+  }
+}
+html.diving #veil {
+  display: block;
+  pointer-events: auto; /* swallow clicks aimed at the covered page */
+  animation: veil-auto 700ms ease 6s forwards; /* js-dead backstop */
+}
+@keyframes veil-auto {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+html.diving .wordmark,
+html.diving .down {
+  opacity: 0;
+  animation: dive-restore 700ms ease 6.5s forwards; /* js-dead backstop */
+}
+@keyframes dive-restore {
+  to {
+    opacity: 1;
+  }
+}
+html.diving.dive-title .wordmark,
+html.diving.dive-title .down {
+  opacity: 1;
+  transition: opacity 1s ease;
+  animation: none;
+}
+.veil-tag {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.4rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  color: #1a1a14; /* --black on threesam.com */
+}
+.vt-word {
+  transition: opacity 600ms ease-out;
+}
+html.dive-run .vt-word {
+  opacity: 0;
+}
+.veil-diver {
+  line-height: 0;
+  will-change: transform, opacity;
+}
+.veil-diver svg {
+  width: 1.9em;
+  height: 1.9em;
+  display: block;
+}
+html.dive-go #veil {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 900ms ease,
+    visibility 0s 900ms;
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+  /* continuity yields to comfort (reduced motion) or resilience (no JS to
+     run the choreography): no veil, no scroll lock — the normal page */
+  html.diving,
+  html.diving:not(.dive-title) {
+    overflow: auto;
+    animation: none;
+  }
+  html.diving #veil {
+    display: none;
+  }
+  html.diving .wordmark,
+  html.diving .down {
+    opacity: 1;
+    animation: none;
+  }
+}
