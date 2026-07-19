@@ -168,8 +168,7 @@
      marigold; page-fx choreographs the fade → jump → converge → title. -->
 <div id="veil" aria-hidden="true">
   <p class="veil-tag">
-    <span class="vt-word">certainly</span>
-    <span class="veil-diver"
+    <span class="vt-word">certainly</span><span class="veil-diver"
       ><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"
         ><g
           stroke="#1a1a14"
@@ -181,8 +180,7 @@
           /></g
         ></svg
       ></span
-    >
-    <span class="vt-word">uncertain</span>
+    ><span class="vt-word vt-u">uncertain</span>
   </p>
 </div>
 <section id="join">

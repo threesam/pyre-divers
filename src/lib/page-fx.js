@@ -263,7 +263,7 @@ export function initPageFx() {
     const t = (ms, fn) => setTimeout(fn, ms);
     t(150, () => de.classList.add('dive-run'));
     if (full) {
-      t(820, () => {
+      t(850, () => {
         const flyer = veil ? veil.querySelector('.veil-diver') : null;
         if (!flyer || !flyer.animate) {
           return;
@@ -271,51 +271,63 @@ export function initPageFx() {
         const r = flyer.getBoundingClientRect();
         const fx0 = r.left + r.width / 2;
         const fy0 = r.top + r.height / 2;
-        // entry point on the current, lower-right of the drain
-        const ex = cw / 2 + Math.cos(0.9) * 0.3 * Scss - fx0;
-        const ey = ch / 2 + Math.sin(0.9) * 0.3 * Scss - fy0;
+        // entry point on the current, lower-right of the drain — he drifts
+        // there in slow motion while the released swarm streams past him
+        const ex = cw / 2 + Math.cos(0.9) * 0.22 * Scss - fx0;
+        const ey = ch / 2 + Math.sin(0.9) * 0.22 * Scss - fy0;
         flyer.animate(
           [
             { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
             {
-              transform: 'translate(4px, -30px) rotate(-16deg) scale(1.06)',
+              // liftoff — timed to the dive-go/release trigger at 1150ms
+              transform: 'translate(2px, -16px) rotate(-8deg) scale(1.03)',
               opacity: 1,
-              offset: 0.24,
+              offset: 0.08,
             },
             {
-              transform: `translate(${ex * 0.55}px, ${ey * 0.45 - 40}px) rotate(120deg) scale(0.62)`,
+              transform: `translate(${ex * 0.2}px, ${ey * 0.14 - 74}px) rotate(34deg) scale(0.96)`,
               opacity: 1,
-              offset: 0.6,
+              offset: 0.32,
             },
             {
-              transform: `translate(${ex}px, ${ey}px) rotate(190deg) scale(0.3)`,
+              transform: `translate(${ex * 0.52}px, ${ey * 0.44 - 34}px) rotate(138deg) scale(0.72)`,
+              opacity: 1,
+              offset: 0.68,
+            },
+            {
+              transform: `translate(${ex * 0.72}px, ${ey * 0.66}px) rotate(172deg) scale(0.55)`,
+              opacity: 1,
+              offset: 0.88,
+            },
+            {
+              transform: `translate(${ex * 0.84}px, ${ey * 0.8}px) rotate(188deg) scale(0.45)`,
               opacity: 0,
             },
           ],
           {
-            duration: 1000,
-            easing: 'cubic-bezier(0.5, 0, 0.35, 1)',
+            duration: 3800,
+            easing: 'cubic-bezier(0.3, 0, 0.4, 1)',
             fill: 'forwards',
           },
         );
       });
     }
-    t(1850, () => {
-      // he lands — the marigold starts dissolving AND the crowd releases,
-      // so the gradient and the swarm emerge together through the veil
+    t(1150, () => {
+      // liftoff IS the trigger: the act of jumping releases the swarm and
+      // starts the marigold dissolving — the world answers the jump
       de.classList.add('dive-go');
       releaseAt = performance.now();
     });
-    t(3600, () => {
-      if (veil) {
-        veil.style.display = 'none';
-      }
-    });
-    t(4400, () => {
+    t(3900, () => {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(5400, () =>
+    t(4750, () => {
+      if (veil) {
+        veil.style.display = 'none'; // after the flyer's 3.8s arc completes
+      }
+    });
+    t(5500, () =>
       de.classList.remove('diving', 'dive-run', 'dive-go', 'dive-title'),
     );
   }
