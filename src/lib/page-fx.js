@@ -267,33 +267,42 @@ export function initPageFx() {
         if (!flyer || !flyer.animate) {
           return;
         }
-        // one real jump: he launches at speed and decelerates the whole
-        // way up (easing is per-segment in WAAPI — the launch segment
-        // carries a hard ease-out, the rest are linear so he never
-        // re-accelerates), tilting slightly left, fading as the wave hits
+        // a real jump, human-scale: sumo squat (feet planted — origin is
+        // bottom center), then a quick pop that tops out ~10px up. The
+        // launch segment carries a hard ease-out so he decelerates the
+        // moment he straightens; then he just hangs and fades as the
+        // wave reaches him. No arc, no tilt.
         flyer.animate(
           [
             {
-              transform: 'translate(0, 0) rotate(0deg) scale(1)',
+              transform: 'translateY(0) scale(1, 1)',
               opacity: 1,
-              easing: 'cubic-bezier(0.1, 0.7, 0.25, 1)',
+              easing: 'cubic-bezier(0.35, 0, 0.4, 1)', // settle into the squat
             },
             {
-              // apex — airborne well before the 1150ms dive-go trigger
-              transform: 'translate(-6px, -60px) rotate(-10deg) scale(0.98)',
+              // the squat — compressed, a touch wider, feet never leave
+              transform: 'translateY(0) scale(1.12, 0.8)',
               opacity: 1,
-              offset: 0.45,
+              offset: 0.13,
+              easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)', // the pop: fast out of the hole, decelerating immediately
+            },
+            {
+              // straightened and already nearly at apex
+              transform: 'translateY(-9px) scale(1, 1)',
+              opacity: 1,
+              offset: 0.3,
               easing: 'linear',
             },
             {
-              // hanging — the wave reaches him, fade begins
-              transform: 'translate(-10px, -70px) rotate(-12deg) scale(0.95)',
+              // apex — ten pixels, max
+              transform: 'translateY(-10px) scale(1, 1)',
               opacity: 1,
-              offset: 0.62,
+              offset: 0.55,
               easing: 'linear',
             },
             {
-              transform: 'translate(-16px, -78px) rotate(-14deg) scale(0.92)',
+              // hanging — the wave takes him
+              transform: 'translateY(-10px) scale(1, 1)',
               opacity: 0,
             },
           ],
@@ -304,10 +313,11 @@ export function initPageFx() {
         );
       });
     }
-    t(550, () => {
-      // liftoff IS the trigger: the instant he leaves the ground the swarm
-      // releases and the marigold starts dissolving — the world answers
-      // the jump, not a beat after it
+    t(800, () => {
+      // liftoff IS the trigger — and liftoff is the POP, not the squat.
+      // The squat runs ~285ms of anticipation (13% of 2200ms from t=500);
+      // the instant he leaves the hole the swarm releases and the
+      // marigold starts dissolving — the world answers the jump
       de.classList.add('dive-go');
       releaseAt = performance.now();
     });

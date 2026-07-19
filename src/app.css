@@ -381,6 +381,7 @@ html.diving.dive-title .down {
   width: 22.4px;
   height: 22.4px;
   line-height: 0;
+  transform-origin: 50% 100%; /* squat compresses onto planted feet */
   will-change: transform, opacity;
 }
 .veil-diver svg {
