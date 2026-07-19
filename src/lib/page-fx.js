@@ -276,96 +276,92 @@ export function initPageFx() {
         // when this callback fires late. 1300 = the decelerating-after-
         // takeoff keyframe (pop + 300ms): he pops fully visible, THEN
         // the world answers
-        t(1300, goDive);
+        t(1000, goDive); // the pop itself — zero delay, the world answers the jump
         const flyer = veil ? veil.querySelector('.veil-diver') : null;
         if (!flyer || !flyer.animate) {
           return;
         }
-        // a real jump, human-scale, on a strict clock: one full second to
-        // settle into the sumo squat (feet planted — origin is bottom
-        // center), then the pop — 13px, fast out of the hole. The takeoff
-        // is fully OPAQUE — you see him leave the ground — and only once
-        // he's straightened and decelerating (rel 1300ms) does the world
-        // answer: goDive fires there, and he fades through the reveal
-        // while hanging. Total 2400ms.
+        // a real jump on a strict clock, with real knees: one full second
+        // into a SUMO squat — feet planted (legs chain ground-up: shin
+        // pivots at the foot, thigh at the knee), knees bowing OUT, torso
+        // dropping 3 units to meet the hips — then the pop: 13px, fast
+        // out of the hole, and the world answers INSTANTLY: goDive fires
+        // at the pop (rel 1000ms) and the coin crossfades out over 3s
+        // while he hangs and dissolves inside it. Total 4000ms.
+        //
+        // Squat pose is hand-solved IK for a 3-unit torso drop with both
+        // limb segments 4.30 long: knee swings out to (±)26° at the
+        // ankle, 84° at the knee — the chain closes at the dropped hip.
+        const EASE_DOWN = 'cubic-bezier(0.4, 0, 0.5, 1)'; // the slow second down
+        const EASE_POP = 'cubic-bezier(0.1, 0.9, 0.2, 1)'; // fast, then immediate deceleration
+        const OFF = { squat: 0.25 /* 1000ms */, up: 0.325 /* 1300ms */, apex: 0.5 /* 2000ms */ };
+        const TIMING = { duration: 4000, fill: 'forwards' };
+        const pose = (transforms, extra) =>
+          transforms.map((transform, i) => ({
+            transform,
+            ...(extra ? extra[i] : {}),
+            offset: [0, OFF.squat, OFF.up, OFF.apex, 1][i],
+            easing: [EASE_DOWN, EASE_POP, 'linear', 'linear', undefined][i],
+          }));
+        // rest → squat → straightened → apex → gone, one column per beat.
+        // He starts thinning at the pop (with the coin crossfade) but is
+        // still ~90% there as he straightens — the takeoff stays visible;
+        // he dissolves with the marigold over the long hang.
         flyer.animate(
-          [
-            {
-              transform: 'translateY(0) scale(1, 1)',
-              opacity: 1,
-              easing: 'cubic-bezier(0.4, 0, 0.5, 1)', // the slow second down
-            },
-            {
-              // the squat — compressed, a touch wider, feet never leave
-              transform: 'translateY(0) scale(1.12, 0.8)',
-              opacity: 1,
-              offset: 0.417, // 1000ms
-              easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)', // the pop: fast, then immediate deceleration
-            },
-            {
-              // straightened, decelerating, STILL fully there — this is
-              // the visible takeoff; goDive fires at this moment
-              transform: 'translateY(-11px) scale(1, 1)',
-              opacity: 1,
-              offset: 0.542, // 1300ms
-              easing: 'linear',
-            },
-            {
-              // apex — thirteen pixels; the wave is arriving, fade underway
-              transform: 'translateY(-13px) scale(1, 1)',
-              opacity: 0.55,
-              offset: 0.833, // 2000ms
-              easing: 'linear',
-            },
-            {
-              transform: 'translateY(-13px) scale(1, 1)',
-              opacity: 0,
-            },
-          ],
-          {
-            duration: 2400,
-            fill: 'forwards',
-          },
+          pose(
+            ['translateY(0)', 'translateY(0)', 'translateY(-11px)', 'translateY(-13px)', 'translateY(-13px)'],
+            [{ opacity: 1 }, { opacity: 1 }, { opacity: 0.9 }, { opacity: 0.7 }, { opacity: 0 }],
+          ),
+          TIMING,
         );
-        // the arms ride the same clock: they drift up through the squat
-        // (gathering), then swing down past rest on the pop (the drive)
-        // and settle. WAAPI on purpose, not CSS keyframes: the whole gesture must
+        const joint = (el, angles) => {
+          if (el) {
+            el.animate(pose(angles.map((a) => `rotate(${a}deg)`)), TIMING);
+          }
+        };
+        const q = (sel) => flyer.querySelector(sel);
+        // torso rides down to the hips and back up with the pop
+        if (q('.torso')) {
+          q('.torso').animate(
+            pose(['translateY(0)', 'translateY(3px)', 'translateY(0)', 'translateY(0)', 'translateY(0)']),
+            TIMING,
+          );
+        }
+        // legs: s=+1 left, -1 right — mirrored sumo bend, straight otherwise
+        for (const s of [1, -1]) {
+          const side = s === 1 ? 'l' : 'r';
+          joint(q(`.shin-${side}`), [0, -26 * s, 0, 0, 0]);
+          joint(q(`.thigh-${side}`), [0, 84 * s, 0, 0, 0]);
+        }
+        // arms ride the same clock: up through the squat (gathering),
+        // down past rest on the pop (the drive), settle through the hang.
+        // Elbows (.fore-*) exist in the skeleton but stay straight here.
+        // WAAPI on purpose, not CSS keyframes: the whole gesture must
         // share the body animation's t=0 (a JS timer), and class-
         // triggered CSS would introduce a second timing authority.
-        // sign mirrors the whole gesture: +1 = left arm (its "up" is a
-        // clockwise rotation about the shoulder), -1 = right. The three
-        // angles — up 40, drive -12, settle -6 — live here once.
-        const armKeys = (s) => [
-          { transform: 'rotate(0deg)', easing: 'cubic-bezier(0.4, 0, 0.5, 1)' },
-          { transform: `rotate(${40 * s}deg)`, offset: 0.417, easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)' },
-          { transform: `rotate(${-12 * s}deg)`, offset: 0.542, easing: 'linear' },
-          { transform: `rotate(${-6 * s}deg)`, offset: 0.833, easing: 'linear' },
-          { transform: `rotate(${-6 * s}deg)` },
-        ];
-        const armL = flyer.querySelector('.arm-l');
-        const armR = flyer.querySelector('.arm-r');
-        if (armL && armR) {
-          armL.animate(armKeys(1), { duration: 2400, fill: 'forwards' });
-          armR.animate(armKeys(-1), { duration: 2400, fill: 'forwards' });
+        for (const s of [1, -1]) {
+          joint(q(`.arm-${s === 1 ? 'l' : 'r'}`), [0, 40 * s, -12 * s, -6 * s, -6 * s]);
         }
       });
     } else {
-      t(1400, goDive); // no animation to sync with — absolute time is fine
+      t(1100, goDive); // no animation to sync with — absolute time is fine
     }
     t(3000, () => {
+      // the wordmark emerges THROUGH the last second of the coin
+      // crossfade — no dead air after his fade
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(2800, () => {
+    t(4800, () => {
       if (veil) {
-        // fades complete by ~2.5s (flyer anim ends 100+2400; world
-        // dissolve ends ~1400+1000); the slack absorbs a main-thread
-        // stall delaying the dive-go transition's start — timers don't
-        // shift together, so a tight margin truncates it
+        // fades complete by ~4.5s (flyer anim ends 100+4000; coin
+        // crossfade ends ~1100+3000=4100); the slack absorbs a
+        // main-thread stall delaying the dive-go transition's start —
+        // timers don't shift together, so a tight margin truncates it
         veil.style.display = 'none';
       }
     });
-    t(4500, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
+    t(5200, () => de.classList.remove('diving', 'dive-go', 'dive-title'));
   }
 
   function measure() {
