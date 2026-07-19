@@ -273,8 +273,26 @@ export function initPageFx() {
         const fy0 = r.top + r.height / 2;
         // entry point on the current, lower-right of the drain — he drifts
         // there in slow motion while the released swarm streams past him
-        const ex = cw / 2 + Math.cos(0.9) * 0.22 * Scss - fx0;
-        const ey = ch / 2 + Math.sin(0.9) * 0.22 * Scss - fy0;
+        const cx0 = cw / 2;
+        const cy0 = ch / 2;
+        const eX = cx0 + Math.cos(0.9) * 0.22 * Scss;
+        const eY = cy0 + Math.sin(0.9) * 0.22 * Scss;
+        // local current at the entry (tangent minus the slight inward
+        // pitch): his exit runs WITH the stream, head-first along it, so
+        // the swarm overtakes and absorbs him instead of crossing him
+        const rl = Math.hypot(eX - cx0, eY - cy0);
+        const rx = (eX - cx0) / rl;
+        const ry = (eY - cy0) / rl;
+        let tx = -ry - rx * K;
+        let ty = rx - ry * K;
+        const tl = Math.hypot(tx, ty);
+        tx /= tl;
+        ty /= tl;
+        const rotEnd = (Math.atan2(ty, tx) * 180) / Math.PI + 90;
+        const ex = eX - fx0;
+        const ey = eY - fy0;
+        const dxs = tx * 0.22 * Scss;
+        const dys = ty * 0.22 * Scss;
         flyer.animate(
           [
             { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
@@ -285,22 +303,22 @@ export function initPageFx() {
               offset: 0.08,
             },
             {
-              transform: `translate(${ex * 0.2}px, ${ey * 0.14 - 74}px) rotate(34deg) scale(0.96)`,
+              transform: `translate(${ex * 0.2}px, ${ey * 0.14 - 74}px) rotate(40deg) scale(0.96)`,
               opacity: 1,
               offset: 0.32,
             },
             {
-              transform: `translate(${ex * 0.52}px, ${ey * 0.44 - 34}px) rotate(138deg) scale(0.72)`,
+              transform: `translate(${ex * 0.62 - dxs * 0.25}px, ${ey * 0.52 - dys * 0.25 - 24}px) rotate(${rotEnd - 60}deg) scale(0.7)`,
               opacity: 1,
-              offset: 0.68,
+              offset: 0.62,
             },
             {
-              transform: `translate(${ex * 0.72}px, ${ey * 0.66}px) rotate(172deg) scale(0.55)`,
+              transform: `translate(${ex}px, ${ey}px) rotate(${rotEnd}deg) scale(0.52)`,
               opacity: 1,
-              offset: 0.88,
+              offset: 0.82,
             },
             {
-              transform: `translate(${ex * 0.84}px, ${ey * 0.8}px) rotate(188deg) scale(0.45)`,
+              transform: `translate(${ex + dxs}px, ${ey + dys}px) rotate(${rotEnd + 6}deg) scale(0.45)`,
               opacity: 0,
             },
           ],

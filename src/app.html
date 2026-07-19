@@ -18,6 +18,13 @@
       )
         document.documentElement.classList.add('diving');
     </script>
+    <style>
+      /* inline so the very first paint is marigold even before the
+         stylesheet arrives — the hand-off can't flash any other color */
+      html.diving {
+        background: #e8a317;
+      }
+    </style>
     <link rel="preconnect" href="https://analytics.sixtom.com" crossorigin />
     <script
       defer
