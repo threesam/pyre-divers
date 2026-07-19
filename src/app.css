@@ -363,9 +363,10 @@ html.diving.dive-title .down {
   animation: none;
 }
 /* at handoff the garden shows only the little guy, so arrival is just him
-     on marigold. Corner-anchored with one rule — no measured pixels, works
-     at every viewport (the old 144.2px was a 1440×900 measurement of the
-     garden's tagline and meant nothing on phones). */
+     on marigold. Two homes: on phones he holds the corner (the garden's
+     tagline stacks there, no measured spot to match); on desktop he stands
+     exactly where the garden's figure stands — between "certainly" and
+     "uncertain" (144.2px measured at 1440×900: 2rem anchor + word + gap). */
 .veil-diver {
   position: absolute;
   right: 2rem;
@@ -375,6 +376,12 @@ html.diving.dive-title .down {
   line-height: 0;
   transform-origin: 50% 100%; /* squat compresses onto planted feet */
   will-change: transform, opacity;
+}
+@media (min-width: 769px) {
+  .veil-diver {
+    right: 144.2px;
+    bottom: 32px;
+  }
 }
 .veil-diver svg {
   width: 100%;
