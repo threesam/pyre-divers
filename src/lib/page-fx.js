@@ -321,10 +321,10 @@ export function initPageFx() {
           [B.s2, 'translate(-11px, -1px) rotate(-2deg)', EASE_STEP, 1],
           [B.s3, 'translate(-17px, -1.5px) rotate(-3deg)', EASE_STEP, 1],
           [B.plant, 'translate(-21px, 0px) rotate(-2deg)', EASE_POP, 1],
-          [B.leap, 'translate(-25px, -5px) rotate(-20deg)', 'linear', 1],
-          [B.fly, 'translate(-36px, -13px) rotate(-58deg)', 'linear', 0.9],
-          [B.out, 'translate(-46px, -17px) rotate(-80deg)', 'linear', 0.72],
-          [1, 'translate(-60px, -15px) rotate(-86deg)', undefined, 0],
+          [B.leap, 'translate(-25px, -5px) rotate(-18deg)', 'linear', 1],
+          [B.fly, 'translate(-36px, -13px) rotate(-45deg)', 'linear', 0.9],
+          [B.out, 'translate(-46px, -17px) rotate(-58deg)', 'linear', 0.72],
+          [1, 'translate(-60px, -15px) rotate(-62deg)', undefined, 0],
         ]);
         // torso leans into the run from the hip, straightens into the
         // dive line (the body angle comes from the root rotation)
@@ -346,7 +346,9 @@ export function initPageFx() {
         const legs = (thL, shL, thR, shR) => ({ thL, shL, thR, shR });
         const strideLfwd = legs(-6, -8, 6, -75); // left leg reaching, right heel up
         const strideRfwd = legs(-66, -75, 66, -8); // right leg reaching, left heel up
-        const together = legs(-35, -6, 35, -6); // feet under the hips / trailing in the dive
+        // the glide pose comes from Sam's sticky-note sketch: one leg
+        // straight along the body line, the other knee-bent, heel up
+        const glide = legs(-20, -85, 35, -4);
         const legBeats = [
           [0, legs(0, 0, 0, 0), EASE_STEP],
           [B.s1, strideLfwd, EASE_STEP],
@@ -354,8 +356,8 @@ export function initPageFx() {
           [B.s3, strideLfwd, EASE_STEP],
           [B.plant, legs(-30, -18, 30, -18), EASE_POP], // crouched, both feet down
           [B.leap, legs(-32, -6, 32, -6), 'linear'], // extended drive
-          [B.fly, together, 'linear'],
-          [1, together, undefined],
+          [B.fly, glide, 'linear'],
+          [1, glide, undefined],
         ];
         for (const [sel, key] of [
           ['.thigh-l', 'thL'],
@@ -382,8 +384,10 @@ export function initPageFx() {
           [B.s3, arms(-120, -15, 135, -35), EASE_STEP],
           [B.plant, arms(-120, -15, -10, -15), EASE_POP], // windup: both behind
           [B.leap, arms(-40, -8, 50, -8), 'linear'], // sweeping through
-          [B.fly, arms(75, 0, -75, 0), 'linear'], // the swan-V
-          [1, arms(75, 0, -75, 0), undefined],
+          // glide arms, per the sketch: both reach forward-DOWN toward
+          // the travel direction, nearly stacked so they read as one
+          [B.fly, arms(30, 8, 150, 0), 'linear'],
+          [1, arms(30, 8, 150, 0), undefined],
         ];
         for (const [sel, key] of [
           ['.arm-l', 'aL'],
