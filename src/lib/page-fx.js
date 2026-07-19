@@ -322,9 +322,12 @@ export function initPageFx() {
           [B.s3, 'translate(-17px, -1.5px) rotate(-3deg)', EASE_STEP, 1],
           [B.plant, 'translate(-21px, 0px) rotate(-2deg)', EASE_POP, 1],
           [B.leap, 'translate(-25px, -5px) rotate(-18deg)', 'linear', 1],
-          [B.fly, 'translate(-36px, -13px) rotate(-45deg)', 'linear', 0.9],
-          [B.out, 'translate(-46px, -17px) rotate(-58deg)', 'linear', 0.72],
-          [1, 'translate(-60px, -15px) rotate(-62deg)', undefined, 0],
+          [B.fly, 'translate(-36px, -13px) rotate(-45deg)', 'linear', 0.85],
+          // quick fade off the jump: gone ~1.5s after the leap, ending on
+          // the -58deg glide — no final drift pose
+          [B.out, 'translate(-46px, -17px) rotate(-58deg)', 'linear', 0.35],
+          [0.62, 'translate(-49px, -18px) rotate(-58deg)', 'linear', 0],
+          [1, 'translate(-49px, -18px) rotate(-58deg)', undefined, 0],
         ]);
         // torso leans into the run from the hip, straightens into the
         // dive line (the body angle comes from the root rotation)
