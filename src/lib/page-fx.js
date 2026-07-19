@@ -239,6 +239,7 @@ export function initPageFx() {
   const diving = document.documentElement.classList.contains('diving');
   const doDive = diving && !still;
   let titleAt = 0; // when the wordmark lands — the core disc fades in with it
+  let releaseAt = 0; // when the crowd follows the diver in — field appears + gather kicks
   function runDiveIntro(full) {
     if (!diving) {
       return;
@@ -291,17 +292,20 @@ export function initPageFx() {
         );
       });
     }
-    t(1250, () => de.classList.add('dive-go'));
-    t(2250, () => {
+    t(1150, () => de.classList.add('dive-go'));
+    t(1850, () => {
+      releaseAt = performance.now(); // he's in — now they all follow
+    });
+    t(2150, () => {
       if (veil) {
         veil.style.display = 'none';
       }
     });
-    t(2450, () => {
+    t(3750, () => {
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
-    t(4200, () =>
+    t(5500, () =>
       de.classList.remove('diving', 'dive-run', 'dive-go', 'dive-title'),
     );
   }
@@ -339,6 +343,7 @@ export function initPageFx() {
     const N_F = field.length;
     const glDive = doDive && !soft; // scatter + gather need the live loop
     let gather = 0;
+    let gatherArmed = glDive; // fires when releaseAt lands — the crowd follows him in
 
     const SIM_VS = `#version 300 es
     precision highp float;
@@ -374,7 +379,7 @@ export function initPageFx() {
       // dive arrival: u_gather steepens the current's inward pitch and
       // over-drives it — the field vacuum-sucks toward the drain, then
       // relaxes into the steady vortex as gather decays to zero
-      vec2 vdes = normalize(tang - radial * (K + u_gather)) * vpf * (1.0 + u_gather * 2.2);
+      vec2 vdes = normalize(tang - radial * (K + u_gather)) * vpf * (1.0 + u_gather * 3.0);
       vel += (vdes - vel) * min(0.16 * u_dt, 1.0); // firm steering — the flow closes behind the letters
       // smooth per-body wander (not white noise — that made bodies twirl on their
       // axis): a gentle force whose direction eases to a new random heading every
@@ -417,6 +422,7 @@ export function initPageFx() {
     uniform float uSpin;
     uniform float uCore;
     uniform float uCoreA;
+    uniform float uFieldA;
     uniform float uRCORE;
     uniform float uRE;
     layout(location=0) in vec3 aTpl;  // segId, end(0|1), side(-1|1)
@@ -461,6 +467,7 @@ export function initPageFx() {
         cR = c0 * aB.x - s0 * aB.y;
         sR = s0 * aB.x + c0 * aB.y;
         vFade = smoothstep(uRE * 0.3, uRE * 3.2, rn); // long ramp: outpaces the crowding, no dark ring
+        vFade *= uFieldA;                    // dive arrival: hidden until the diver lands
       }
 
       float w = max(uS * 0.0008, 0.09 * h);
@@ -646,10 +653,11 @@ export function initPageFx() {
         const r0 = R_E + (w * w - V_E * V_E) / C2;
         let rn = r0 * (1 + b.drift);
         if (scatter) {
-          // dive arrival: everyone seeds pushed outward — the outer field
-          // past the screen edges — so the crowd pours in from all sides
-          // while u_gather sucks the current toward the drain
-          rn = Math.min(0.735, rn * 1.25 + 0.14 + ((b.frac * 7.13) % 1) * 0.35);
+          // dive arrival: the steady field, displaced outward by a constant
+          // offset and hidden until the solo diver lands. Released, everyone
+          // travels the same distance home under u_gather — the wave pours in
+          // from all sides and collapses INTO the steady distribution.
+          rn = Math.min(0.74, rn + 0.22 + ((b.frac * 7.13) % 1) * 0.1);
         }
         const ang = Math.log(R_START / r0) / K + b.off;
         const px = cx + Math.cos(ang) * rn * Scss;
@@ -749,6 +757,7 @@ export function initPageFx() {
       'uSpin',
       'uCore',
       'uCoreA',
+      'uFieldA',
       'uRCORE',
       'uRE',
       'uInk',
@@ -804,6 +813,14 @@ export function initPageFx() {
             ? 0
             : 1,
       );
+      gl.uniform1f(
+        rU.uFieldA,
+        releaseAt
+          ? Math.min((performance.now() - releaseAt) / 150, 1)
+          : glDive
+            ? 0
+            : 1,
+      );
       gl.uniform1f(rU.uRCORE, R_CORE);
       gl.uniform1f(rU.uRE, R_E);
       gl.uniform3fv(rU.uInk, INK);
@@ -839,9 +856,6 @@ export function initPageFx() {
 
     const boot = () => {
       fit();
-      if (glDive) {
-        gather = 0.55; // the intro's vacuum — decays in the loop
-      }
       draw();
       runDiveIntro(glDive);
       if (!still && !soft) {
@@ -856,8 +870,16 @@ export function initPageFx() {
           last = now;
           step(dt);
           spin += (W_CORE * dt) / 60;
+          if (gatherArmed && releaseAt) {
+            gather = 1.4; // the vacuum — released with the crowd
+            gatherArmed = false;
+          }
           if (gather) {
-            gather = gather < 0.004 ? 0 : gather * 0.955 ** dt;
+            // crash, then ease: strong suction carries the displaced field
+            // its constant offset home (~1.9s), then hands off to the
+            // steady current — the intro ends exactly where a plain load
+            // lives, because the wave IS the steady field displaced
+            gather = Math.max(0, gather - ((gather > 0.5 ? 2.2 : 0.35) * dt) / 60);
           }
           draw();
           requestAnimationFrame(loop);
