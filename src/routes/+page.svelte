@@ -171,6 +171,8 @@
   <!-- at handoff the garden shows only the little guy — no words — so the
        veil matches: just him, anchored to the corner. One rule, every
        viewport. -->
+  <!-- arms are separate paths so the jump can articulate them: they pivot
+       at the shoulder (16,13 in viewBox units — see .veil-diver .arm) -->
   <span class="veil-diver"
     ><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"
       ><g
@@ -179,7 +181,10 @@
         stroke-linecap="round"
         fill="none"
         ><circle cx="16" cy="7" r="3.4" /><path
-          d="M16 10.5 L16 20 M16 13 L9 17 M16 13 L23 17 M16 20 L11 27 M16 20 L21 27"
+          d="M16 10.5 L16 20 M16 20 L11 27 M16 20 L21 27"
+        /><path class="arm arm-l" d="M16 13 L9 17" /><path
+          class="arm arm-r"
+          d="M16 13 L23 17"
         /></g
       ></svg
     ></span

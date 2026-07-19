@@ -389,6 +389,12 @@ html.diving.dive-title .down {
   height: 100%;
   display: block;
 }
+.veil-diver .arm {
+  /* pivot at the shoulder: transform-box makes the origin read in
+     viewBox units, so 16px 13px IS the joint */
+  transform-box: view-box;
+  transform-origin: 16px 13px;
+}
 html.dive-go #veil {
   pointer-events: none; /* he's airborne — the page is the world again */
 }

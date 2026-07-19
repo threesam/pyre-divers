@@ -311,6 +311,23 @@ export function initPageFx() {
             fill: 'forwards',
           },
         );
+        // the arms ride the same clock: they drift up through the squat
+        // (gathering), then swing down past rest on the pop (the drive)
+        // and settle. Left arm's "up" is a clockwise rotation about the
+        // shoulder, right arm's is counter-clockwise — mirrored signs.
+        const armKeys = (up, down, settle) => [
+          { transform: 'rotate(0deg)', easing: 'cubic-bezier(0.4, 0, 0.5, 1)' },
+          { transform: `rotate(${up}deg)`, offset: 0.5, easing: 'cubic-bezier(0.1, 0.9, 0.2, 1)' },
+          { transform: `rotate(${down}deg)`, offset: 0.65, easing: 'linear' },
+          { transform: `rotate(${settle}deg)`, offset: 0.82, easing: 'linear' },
+          { transform: `rotate(${settle}deg)` },
+        ];
+        const armL = flyer.querySelector('.arm-l');
+        const armR = flyer.querySelector('.arm-r');
+        if (armL && armR) {
+          armL.animate(armKeys(40, -12, -6), { duration: 2000, fill: 'forwards' });
+          armR.animate(armKeys(-40, 12, 6), { duration: 2000, fill: 'forwards' });
+        }
       });
     }
     t(1500, () => {
