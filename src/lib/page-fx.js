@@ -1516,6 +1516,7 @@ export function initPageFx() {
     // clean spread that never packs side by side.
     const TIP = 0.6; // flame tip — full opacity by here (see the fade)
     const SEED = 0.5; // single central entry point, ~halfway up the flame
+    const SPAWN_GAP = 1.8; // seconds between emergences — a staggered trickle
     const fanX = (b) => {
       const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
       const up = Math.max(0, rise - SEED); // risen since the central entry
@@ -1538,8 +1539,11 @@ export function initPageFx() {
         // emerge ~halfway up: pre-populate SEED→top on first paint, else
         // (re)seed at the SEED height. y at rise=SEED is FLAME_BASE*(1-SEED).
         const seedY = FLAME_BASE * (1 - SEED);
-        b.y = initial ? seedY - rand() * (seedY + 0.05) : seedY - rand() * 0.02;
+        // reseeds sit EXACTLY at the entry (rise == SEED → opacity 0), so the
+        // queue of waiting bodies is invisible, not a faint stack.
+        b.y = initial ? seedY - rand() * (seedY + 0.05) : seedY;
         b.x = fanX(b);
+        b.waiting = !initial;
       } else if (initial) {
         b.x = rand();
         b.y = rand();
@@ -1726,6 +1730,14 @@ export function initPageFx() {
     }
     drawRain(0); // warm draw — allocations + first strokes happen off-screen
     let last = performance.now();
+    let nextSpawn = 0; // gate: at most one body emerges per SPAWN_GAP
+    // spawn sequence: each emergence's lane is the PREVIOUS one stepped by the
+    // golden angle (over the [-1,1] span), so the stream never repeats, fills
+    // the fan evenly over time, and no two consecutive bodies land near each
+    // other — the "previous offsets the next" you get from a generator, but
+    // it's just this one running value.
+    let fanSeq = rand() * 2 - 1;
+    const GOLDEN = 2 * 0.618033988749895;
     const loop = (now) => {
       if (!joinVisible) {
         last = now;
@@ -1734,7 +1746,20 @@ export function initPageFx() {
       }
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
+      const nowS = now / 1000;
       for (const b of drops) {
+        if (b.waiting) {
+          // hold at the entry (invisible, at the fade-zero line) until its
+          // staggered turn; on emergence, take the next golden-stepped lane
+          if (nowS >= nextSpawn) {
+            b.waiting = false;
+            nextSpawn = nowS + SPAWN_GAP;
+            fanSeq = ((fanSeq + 1 + GOLDEN) % 2) - 1;
+            b.fan = fanSeq;
+          } else {
+            continue;
+          }
+        }
         b.y -= b.v * dt;
         if (deskQ.matches) {
           b.x = fanX(b);
