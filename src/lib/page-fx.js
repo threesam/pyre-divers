@@ -1515,18 +1515,18 @@ export function initPageFx() {
     // (spread across the rocks), draw INWARD to a narrow throat just above,
     // then flare out wide and wandering to fill the space. b.birth is the
     // body's offset at the mouth, b.fan its random flare heading/amount.
-    const NECK = 0.16; // rise at the throat (~just above the mouth)
+    const NECK = 0.22; // rise at the throat — a longer, tighter neck
     const fanX = (b) => {
       const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
       const converge = Math.min(1, rise / NECK); // mouth spread → 0 at throat
       const flare = Math.max(0, (rise - NECK) / (1 - NECK)); // 0 throat → 1 top
       const wobble =
-        Math.sin(b.y * 4 + b.noisePh) * 0.05 +
-        Math.sin(b.y * 9 + b.noisePh * 1.7) * 0.022;
+        Math.sin(b.y * 4 + b.noisePh) * 0.038 +
+        Math.sin(b.y * 9 + b.noisePh * 1.7) * 0.016;
       return (
         FLAME_X +
         b.birth * (1 - converge) + // pinch the rock spread into the throat
-        b.fan * 0.5 * Math.pow(flare, 0.82) + // then spray out wide
+        b.fan * 0.3 * Math.pow(flare, 0.95) + // then spray out — tighter cone
         wobble * Math.min(1, flare * 1.5) // fluid wander, only above the throat
       );
     };
