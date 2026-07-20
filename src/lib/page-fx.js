@@ -287,7 +287,7 @@ export function initPageFx() {
         // he sails into the swarm as the coin crossfades out (goDive at
         // the leap, rel 1000ms, zero delay). Beats (rel ms):
         //   150/450/750 = foot strikes · 900 = plant · 1000 = LEAP
-        //   1400 = mid-flight · 2000 = laid out · 4000 = gone
+        //   1400 = mid-plunge · 2000 = shrinking · 4000 = a speck at the eye
         // WAAPI on purpose, not CSS keyframes: every element must share
         // this callback's t=0, and class-triggered CSS would introduce
         // a second timing authority.
@@ -311,23 +311,36 @@ export function initPageFx() {
           }
         };
         const q = (sel) => flyer.querySelector(sel);
-        // root: the journey. Steps drift left with a little bob; the
-        // leap arcs up-left while the whole figure rotates head-first.
-        // He stays ~90% there through the launch, dissolving in the
-        // coin crossfade across the long glide.
+        // he JOINS the swarm instead of fading: the vortex eye is the
+        // viewport centre (the sim seeds at cw/2, ch/2), so measure the
+        // vector from his resting centre to it and fly him there while
+        // shrinking to particle scale — he plunges into the crowd and
+        // becomes one more body in the swirl. A tiny end-fade only covers
+        // the veil teardown once he's already a dot among thousands.
+        const fr = flyer.getBoundingClientRect();
+        const eyeDX = document.documentElement.clientWidth / 2 - (fr.left + fr.width / 2);
+        const eyeDY = document.documentElement.clientHeight / 2 - (fr.top + fr.height / 2);
+        // f = fraction of the way to the vortex eye (dead centre, the sim's
+        // cw/2,ch/2). He dives straight DOWN THE MIDDLE and shrinks to a
+        // point at the eye — down the throat of the vortex, into the swarm.
+        const toEye = (f, deg, s) =>
+          `translate(${(eyeDX * f).toFixed(1)}px, ${(eyeDY * f).toFixed(1)}px) rotate(${deg}deg) scale(${s})`;
+        // root: the journey. Steps drift left with a bob; the leap fires
+        // him head-first off the ground; then the plunge down the middle.
         kf(flyer, [
           [0, 'translate(0px, 0px) rotate(0deg)', EASE_STEP, 1],
           [B.s1, 'translate(-5px, -1.5px) rotate(-3deg)', EASE_STEP, 1],
           [B.s2, 'translate(-11px, -1px) rotate(-2deg)', EASE_STEP, 1],
           [B.s3, 'translate(-17px, -1.5px) rotate(-3deg)', EASE_STEP, 1],
           [B.plant, 'translate(-21px, 0px) rotate(-2deg)', EASE_POP, 1],
-          [B.leap, 'translate(-25px, -5px) rotate(-18deg)', 'linear', 1],
-          [B.fly, 'translate(-36px, -13px) rotate(-45deg)', 'linear', 0.85],
-          // quick fade off the jump: gone ~1.5s after the leap, ending on
-          // the -58deg glide — no final drift pose
-          [B.out, 'translate(-46px, -17px) rotate(-58deg)', 'linear', 0.35],
-          [0.62, 'translate(-49px, -18px) rotate(-58deg)', 'linear', 0],
-          [1, 'translate(-49px, -18px) rotate(-58deg)', undefined, 0],
+          [B.leap, 'translate(-25px, -5px) rotate(-18deg) scale(1)', EASE_POP, 1],
+          // launch, then a sustained plunge to dead centre, shrinking to a
+          // point — he dives down the middle and joins the swirl. Opaque
+          // the whole way; only the last frame (a speck at the eye) fades.
+          [B.fly, toEye(0.22, -46, 0.8), 'linear', 1],
+          [0.6, toEye(0.55, -64, 0.44), 'cubic-bezier(0.3,0,0.5,1)', 1],
+          [0.85, toEye(0.85, -82, 0.16), 'linear', 1],
+          [1, toEye(1, -94, 0.03), undefined, 0],
         ]);
         // torso leans into the run from the hip, straightens into the
         // dive line (the body angle comes from the root rotation)
