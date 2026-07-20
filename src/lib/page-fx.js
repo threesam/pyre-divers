@@ -1663,10 +1663,12 @@ export function initPageFx() {
       ctx2.lineJoin = 'round';
       const h0 = 0.02 * S;
       ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.09);
-      const base = deskQ.matches ? FLAME_BASE : 1.02;
       for (const b of drops) {
-        // they take form as they rise: faint at the flame's mouth, whole higher up
-        const a = Math.min(1, Math.max(0, (base - b.y) / 0.28));
+        // they take form as they rise out of the flame: 0 at the mouth,
+        // fading into full existence by the tip — just as they start drifting
+        const a = deskQ.matches
+          ? Math.min(1, Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE) / TIP)
+          : Math.min(1, Math.max(0, (1.02 - b.y) / 0.28));
         if (a <= 0.01) {
           continue;
         }
