@@ -33,51 +33,29 @@ export function initPageFx() {
   const TILT = PI + Math.atan(K); // rail heading: tangent + pitch
   const HEAD_PX = 9; // bodies at least this tall get a head
 
-  // ── pose library: diver / spread-eagle / arms-up / reach / tuck, all jittered
+  // ── pose library. Constrained by construction so the crowd never reads
+  // as anatomically wrong, and with headroom for the ±swim (see uSwim):
+  //   arms  — always down-and-out, never past ~81° from the torso (feet-ward,
+  //           = PI/2), so the ±7.5° arm swim stays ≤ 90°. Each side splays
+  //           independently for variety, never up over the shoulders.
+  //   legs  — down, splayed, always ≥ 30° apart at rest, so the ±8° (counter-
+  //           phase) leg swim keeps them ≥ 20° from each other.
   function makePose(rand) {
-    const t = rand();
-    const jit = () => (rand() - 0.5) * 0.26;
-    let aL,
+    const DOWN = PI * 0.5;
+    const armCap = 1.42; // ~81° — the hard cap before swim
+    const aL = DOWN + (0.1 + rand() * (armCap - 0.1)); // down-left
+    const aR = DOWN - (0.1 + rand() * (armCap - 0.1)); // down-right
+    const half = 0.26 + rand() * 0.36; // half-separation, 15°–36° (≥30° apart)
+    const lL = DOWN + half;
+    const lR = DOWN - half;
+    const tuck = rand() < 0.12 ? 0.62 : 1; // occasional pulled-in limbs
+    return {
+      aL,
       aR,
       lL,
       lR,
-      arm = 1,
-      leg = 1;
-    if (t < 0.3) {
-      aL = PI * 0.66;
-      aR = PI * 0.34;
-      lL = PI * 0.5 + 0.18;
-      lR = PI * 0.5 - 0.18;
-    } else if (t < 0.5) {
-      aL = -PI * 0.78;
-      aR = -PI * 0.22;
-      lL = PI * 0.5 + 0.34;
-      lR = PI * 0.5 - 0.34;
-    } else if (t < 0.7) {
-      aL = -PI * 0.6;
-      aR = -PI * 0.4;
-      lL = PI * 0.5 + 0.12;
-      lR = PI * 0.5 - 0.12;
-    } else if (t < 0.9) {
-      aL = -PI * 0.55;
-      aR = PI * 0.42;
-      lL = PI * 0.5 + 0.1;
-      lR = PI * 0.5 - 0.26;
-    } else {
-      aL = PI * 0.8;
-      aR = PI * 0.2;
-      lL = PI * 0.5 + 0.46;
-      lR = PI * 0.5 - 0.46;
-      arm = 0.62;
-      leg = 0.62;
-    }
-    return {
-      aL: aL + jit(),
-      aR: aR + jit(),
-      lL: lL + jit(),
-      lR: lR + jit(),
-      arm: arm * (0.88 + rand() * 0.24),
-      leg: leg * (0.88 + rand() * 0.24),
+      arm: tuck * (0.86 + rand() * 0.26),
+      leg: tuck * (0.86 + rand() * 0.26),
     };
   }
 
@@ -88,8 +66,15 @@ export function initPageFx() {
       b.off = b.lane * (TAU / LANES) + (rand() - 0.5) * 0.03;
       b.r0 = R_START * Math.exp(-K * b.phi);
     }
-    const hJit =
-      (rand() - 0.5) * 0.55 + (rand() < 0.07 ? (rand() - 0.5) * 2.4 : 0);
+    // heading jitter off the spiral base line (velocity ≈ the spiral tangent).
+    // capped at ±69° (1.204 rad) so no body ever points wildly across the flow.
+    const hJit = Math.max(
+      -1.204,
+      Math.min(
+        1.204,
+        (rand() - 0.5) * 0.55 + (rand() < 0.07 ? (rand() - 0.5) * 2.4 : 0),
+      ),
+    );
     b.hJit = hJit;
     b.cR = Math.cos(TILT + hJit);
     b.sR = Math.sin(TILT + hJit);
