@@ -292,7 +292,12 @@ export function initPageFx() {
         // this callback's t=0, and class-triggered CSS would introduce
         // a second timing authority.
         const EASE_STEP = 'cubic-bezier(0.4, 0, 0.6, 1)'; // stride rhythm
-        const EASE_POP = 'cubic-bezier(0.1, 0.9, 0.2, 1)'; // launch: fast, then immediate deceleration
+        const EASE_POP = 'cubic-bezier(0.1, 0.9, 0.2, 1)'; // limb pop: fast, then settle
+        // the crouch ACCELERATES the body into the launch (ease-in) so his
+        // velocity is high at take-off and flows straight into the arc — no
+        // dip-then-spike kink at the leap (the old ease-out popped then
+        // stalled before the plunge).
+        const EASE_LAUNCH = 'cubic-bezier(0.5, 0, 0.9, 0.75)';
         const TIMING = { duration: 4000, fill: 'forwards' };
         // beat offsets of 4000ms
         const B = { s1: 0.0375, s2: 0.1125, s3: 0.1875, plant: 0.225, leap: 0.25, fly: 0.35, out: 0.5 };
@@ -311,36 +316,56 @@ export function initPageFx() {
           }
         };
         const q = (sel) => flyer.querySelector(sel);
-        // he JOINS the swarm instead of fading: the vortex eye is the
-        // viewport centre (the sim seeds at cw/2, ch/2), so measure the
-        // vector from his resting centre to it and fly him there while
-        // shrinking to particle scale — he plunges into the crowd and
-        // becomes one more body in the swirl. A tiny end-fade only covers
-        // the veil teardown once he's already a dot among thousands.
+        // TARGET: the "d" of "divers" — he dives THROUGH its bowl and joins
+        // the swarm. Measured from the wordmark (laid out even at opacity 0);
+        // falls back to the vortex eye (viewport centre, the sim's cw/2,ch/2)
+        // if it isn't there. The bowl sits low-left in the glyph.
         const fr = flyer.getBoundingClientRect();
-        const eyeDX = document.documentElement.clientWidth / 2 - (fr.left + fr.width / 2);
-        const eyeDY = document.documentElement.clientHeight / 2 - (fr.top + fr.height / 2);
-        // f = fraction of the way to the vortex eye (dead centre, the sim's
-        // cw/2,ch/2). He dives straight DOWN THE MIDDLE and shrinks to a
-        // point at the eye — down the throat of the vortex, into the swarm.
-        const toEye = (f, deg, s) =>
-          `translate(${(eyeDX * f).toFixed(1)}px, ${(eyeDY * f).toFixed(1)}px) rotate(${deg}deg) scale(${s})`;
-        // root: the journey. Steps drift left with a bob; the leap fires
-        // him head-first off the ground; then the plunge down the middle.
+        const rcx = fr.left + fr.width / 2;
+        const rcy = fr.top + fr.height / 2;
+        const kR = document.querySelector('.wordmark .k')?.getBoundingClientRect();
+        const targetX = kR ? kR.left + kR.height * 0.32 : document.documentElement.clientWidth / 2;
+        const targetY = kR ? kR.top + kR.height * 0.58 : document.documentElement.clientHeight / 2;
+        const dX = targetX - rcx;
+        const dY = targetY - rcy;
+        // ONE smooth projectile arc from the leap into the "d": horizontal
+        // speed ~constant, Y a gravity-like parabola (fast up off the launch,
+        // apex, then a plunge down into the bowl), shrinking to a speck.
+        // Sampled densely with linear tweening so the piecewise path reads as
+        // a single continuous curve — the fix for the old kink. Opaque until
+        // the speck, then gone.
+        const LX = -25;
+        const LY = -5; // arc[0] equals the leap position, so take-off is seamless
+        const APEX = 64; // lift above the straight chord at mid-arc, px
+        const arc = [];
+        const AN = 14;
+        for (let i = 0; i <= AN; i += 1) {
+          const u = i / AN; // uniform along the flight timeline
+          // path progress: starts at the launch speed (0.35 slope, so no
+          // stall) and accelerates into the vortex (no jump to a constant
+          // sprint) — a smooth pull inward, matching the take-off velocity.
+          const s = 0.35 * u + 0.65 * u * u;
+          const x = LX + (dX - LX) * s;
+          const y = LY + (dY - LY) * s - 4 * APEX * s * (1 - s);
+          const rot = -18 + s * -78; // head tips down as he dives in
+          const sc = 1 - s * s * 0.97; // holds size early, shrinks into the bowl
+          const op = s > 0.92 ? 0 : 1;
+          const off = B.leap + u * (1 - B.leap);
+          arc.push([
+            +off.toFixed(4),
+            `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${rot.toFixed(1)}deg) scale(${sc.toFixed(3)})`,
+            'linear',
+            op,
+          ]);
+        }
+        // root: run (steps + bob) → crouch → accelerating launch → the arc.
         kf(flyer, [
-          [0, 'translate(0px, 0px) rotate(0deg)', EASE_STEP, 1],
-          [B.s1, 'translate(-5px, -1.5px) rotate(-3deg)', EASE_STEP, 1],
-          [B.s2, 'translate(-11px, -1px) rotate(-2deg)', EASE_STEP, 1],
-          [B.s3, 'translate(-17px, -1.5px) rotate(-3deg)', EASE_STEP, 1],
-          [B.plant, 'translate(-21px, 0px) rotate(-2deg)', EASE_POP, 1],
-          [B.leap, 'translate(-25px, -5px) rotate(-18deg) scale(1)', EASE_POP, 1],
-          // launch, then a sustained plunge to dead centre, shrinking to a
-          // point — he dives down the middle and joins the swirl. Opaque
-          // the whole way; only the last frame (a speck at the eye) fades.
-          [B.fly, toEye(0.22, -46, 0.8), 'linear', 1],
-          [0.6, toEye(0.55, -64, 0.44), 'cubic-bezier(0.3,0,0.5,1)', 1],
-          [0.85, toEye(0.85, -82, 0.16), 'linear', 1],
-          [1, toEye(1, -94, 0.03), undefined, 0],
+          [0, 'translate(0px, 0px) rotate(0deg) scale(1)', EASE_STEP, 1],
+          [B.s1, 'translate(-5px, -1.5px) rotate(-3deg) scale(1)', EASE_STEP, 1],
+          [B.s2, 'translate(-11px, -1px) rotate(-2deg) scale(1)', EASE_STEP, 1],
+          [B.s3, 'translate(-17px, -1.5px) rotate(-3deg) scale(1)', EASE_STEP, 1],
+          [B.plant, 'translate(-21px, 0px) rotate(-2deg) scale(1)', EASE_LAUNCH, 1],
+          ...arc,
         ]);
         // torso leans into the run from the hip, straightens into the
         // dive line (the body angle comes from the root rotation)
@@ -420,9 +445,10 @@ export function initPageFx() {
     } else {
       t(1100, goDive); // no animation to sync with — absolute time is fine
     }
-    t(3000, () => {
-      // the wordmark emerges THROUGH the last second of the coin
-      // crossfade — no dead air after his fade
+    t(3300, () => {
+      // the wordmark fades in RIGHT BEFORE he vanishes (~3860ms), so the
+      // "d" materialises just as he plunges through its bowl — he dives
+      // through the d into the swarm
       de.classList.add('dive-title');
       titleAt = performance.now();
     });
