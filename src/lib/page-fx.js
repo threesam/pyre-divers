@@ -1519,10 +1519,13 @@ export function initPageFx() {
     const fanX = (b) => {
       const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
       const up = Math.max(0, rise - SEED); // risen since the central entry
-      const band = up * 1.05; // 0 at the entry point, widening as they rise
+      // ARC: up^1.8 so each body leaves the entry going straight up, then
+      // curves outward as it rises — a fountain arc, not a straight ray.
+      // Coefficient kept low for a tight fan.
+      const band = Math.pow(up, 1.8) * 0.85;
       const wander =
-        (Math.sin(b.y * 3 + b.noisePh) * 0.02 +
-          Math.sin(b.y * 6.5 + b.noisePh * 1.7) * 0.011) *
+        (Math.sin(b.y * 3 + b.noisePh) * 0.018 +
+          Math.sin(b.y * 6.5 + b.noisePh * 1.7) * 0.01) *
         Math.min(1, up * 4); // ~0 at the entry, so the point stays clean
       return FLAME_X + b.fan * band + wander;
     };
