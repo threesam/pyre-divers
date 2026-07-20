@@ -1301,88 +1301,9 @@ export function initPageFx() {
   addEventListener('scroll', syncDown, { passive: true });
   syncDown();
 
-  // ── desktop wheel flight: one deliberate flick = one smooth, unbroken
-  // ride to the other screen. proximity snap alone waits for the trackpad
-  // momentum to die (~80% of the way) before animating the rest — that
-  // read as a stall. reduced-motion users keep native scrolling.
-  const fineQ = matchMedia('(min-width: 769px) and (pointer: fine)');
-  if (!still) {
-    let flying = false;
-    let cooldownUntil = 0;
-    const releaseFlight = () => {
-      flying = false;
-      cooldownUntil = performance.now() + 250; // swallow leftover inertia
-    };
-    const fly = (target) => {
-      // own the whole animation: ua smooth-scroll easings drag their tails
-      // and proximity snap can grab the wheel mid-ride — both read as a
-      // stall near the end. a fixed tween with snap parked = one motion.
-      flying = true;
-      const s = document.scrollingElement || document.documentElement;
-      const from = s.scrollTop;
-      const to = target.offsetTop;
-      const dur = 620;
-      // ease-out only: launch at speed (matches the flick's momentum —
-      // an ease-in reads as a dead stop), land gently
-      const ease = (t) => 1 - (1 - t) ** 3;
-      // parking the snap forces a root style recalc — pay it on a
-      // stationary frame, then start the tween clock one frame later
-      document.documentElement.style.scrollSnapType = 'none';
-      let t0 = 0;
-      const step = (now) => {
-        if (!t0) {
-          t0 = now;
-          requestAnimationFrame(step);
-          return;
-        }
-        const p = Math.min((now - t0) / dur, 1);
-        s.scrollTop = from + (to - from) * ease(p);
-        if (p < 1) {
-          requestAnimationFrame(step);
-        } else {
-          releaseFlight();
-          requestAnimationFrame(() => {
-            document.documentElement.style.scrollSnapType = '';
-          });
-        }
-      };
-      requestAnimationFrame(step);
-    };
-    addEventListener(
-      'wheel',
-      (e) => {
-        if (!fineQ.matches) {
-          return;
-        }
-        if (document.documentElement.classList.contains('diving')) {
-          e.preventDefault(); // the intro owns the viewport — no flight underneath
-          return;
-        }
-        if (flying || performance.now() < cooldownUntil) {
-          e.preventDefault();
-          return;
-        }
-        if (Math.abs(e.deltaY) < 2) {
-          return; // trackpad noise
-        }
-        const s = document.scrollingElement || document.documentElement;
-        const vh = document.documentElement.clientHeight;
-        const splashTarget = document.getElementById('splash');
-        const joinTarget = document.getElementById('join');
-        if (!splashTarget || !joinTarget) {
-          return;
-        }
-        if (e.deltaY > 0 && s.scrollTop < vh * 0.5) {
-          e.preventDefault();
-          fly(joinTarget);
-        } else if (e.deltaY < 0 && s.scrollTop > vh * 0.5) {
-          e.preventDefault();
-          fly(splashTarget);
-        }
-      },
-      { passive: false },
-    );
-  }
+  // scrolling is intentionally free — native everywhere, no snap and no
+  // wheel-driven section flight. The two screens just stack; the chevron's
+  // #join anchor still glides via scroll-behavior: smooth.
 
   // ── screen two: the pyre. A GLSL flame burns at a third of the width;
   // white divers and glowing flecks rise out of it (desktop) or drift up
