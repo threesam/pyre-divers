@@ -579,6 +579,8 @@ export function initPageFx() {
     uniform float uFieldA;
     uniform float uRCORE;
     uniform float uRE;
+    uniform float uSwimT;   // seconds — drives the gentle limb swim
+    uniform float uSwim;    // 0 (reduced motion) or 1 — swim amplitude gate
     layout(location=0) in vec3 aTpl;  // segId, end(0|1), side(-1|1)
     layout(location=1) in vec4 aA;    // core: ang0, radFrac, 0, size · field: 0,0,0,size
     layout(location=2) in vec4 aB;    // core: rotC, rotS · field: cos(jit), sin(jit) · zw: armLen, legLen
@@ -595,7 +597,18 @@ export function initPageFx() {
     const float K = ${K};
     const float H_MIN = ${H_MIN};
 
+    vec2 rot2(vec2 v, float a) {
+      float c = cos(a), s = sin(a);
+      return vec2(v.x * c - v.y * s, v.x * s + v.y * c);
+    }
+
     void main() {
+      // gentle swim: oscillate each limb a few degrees about its baked
+      // pose. Phase from a stable per-instance attribute (aC) so the crowd
+      // shimmers out of sync; amplitude gated by uSwim (0 = reduced motion).
+      float swPhase = fract(sin(dot(aC.xy, vec2(12.9898, 78.233))) * 43758.5453) * 6.2831853;
+      float armSwim = 0.13 * sin(uSwimT * 1.6 + swPhase) * uSwim;       // ~7.5deg
+      float legSwim = 0.07 * sin(uSwimT * 1.9 + swPhase + 1.7) * uSwim; // gentler flutter
       vec2 center;
       float h, cR, sR;
       vFade = 1.0;
@@ -633,10 +646,10 @@ export function initPageFx() {
 
       vec2 p0, p1;
       if      (seg == 0) { p0 = vec2(0.0, -0.21); p1 = vec2(0.0, 0.21); }
-      else if (seg == 1) { p0 = vec2(0.0, -0.105); p1 = p0 + aC.xy * aB.z; }
-      else if (seg == 2) { p0 = vec2(0.0, -0.105); p1 = p0 + aC.zw * aB.z; }
-      else if (seg == 3) { p0 = vec2(0.0, 0.21);  p1 = p0 + aD.xy * aB.w; }
-      else if (seg == 4) { p0 = vec2(0.0, 0.21);  p1 = p0 + aD.zw * aB.w; }
+      else if (seg == 1) { p0 = vec2(0.0, -0.105); p1 = p0 + rot2(aC.xy,  armSwim) * aB.z; }
+      else if (seg == 2) { p0 = vec2(0.0, -0.105); p1 = p0 + rot2(aC.zw, -armSwim) * aB.z; }
+      else if (seg == 3) { p0 = vec2(0.0, 0.21);  p1 = p0 + rot2(aD.xy,  legSwim) * aB.w; }
+      else if (seg == 4) { p0 = vec2(0.0, 0.21);  p1 = p0 + rot2(aD.zw, -legSwim) * aB.w; }
       else               { p0 = vec2(0.0, -0.32); p1 = p0; }
 
       mat2 R = mat2(cR, sR, -sR, cR);
@@ -915,9 +928,14 @@ export function initPageFx() {
       'uRCORE',
       'uRE',
       'uInk',
+      'uSwimT',
+      'uSwim',
     ]) {
       rU[n] = gl.getUniformLocation(prog, n);
     }
+    // reduced motion → no limb swim (the amplitude uniform zeroes it out
+    // in the shader; the vortex flow is the site's identity and stays)
+    const swimOn = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1;
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -967,6 +985,8 @@ export function initPageFx() {
       gl.uniform1f(rU.uRCORE, R_CORE);
       gl.uniform1f(rU.uRE, R_E);
       gl.uniform3fv(rU.uInk, INK);
+      gl.uniform1f(rU.uSwimT, performance.now() * 0.001);
+      gl.uniform1f(rU.uSwim, swimOn);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(rU.uCore, 0);
       gl.bindVertexArray(renderVaos[active]);
