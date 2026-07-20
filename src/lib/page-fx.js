@@ -1511,20 +1511,19 @@ export function initPageFx() {
     // riser colors — warm white (#f0e8dd) and salmon (#d6855e)
     const emberMix = (t) =>
       `rgb(${Math.round(240 - 26 * t)}, ${Math.round(232 - 99 * t)}, ${Math.round(221 - 127 * t)})`;
-    // horizontal position — each body rides its own lane (b.fan) so the
-    // crowd never packs side by side; the band widens as they drift up.
-    const TIP = 0.6; // flame tip — the band widens (they drift apart) above here
-    const SEED = 0.5; // bodies emerge ~halfway up (nothing fills in below this)
+    // horizontal position — every body enters at the flame's centre and fans
+    // out along its own lane (b.fan) as it rises: one entry point, then a
+    // clean spread that never packs side by side.
+    const TIP = 0.6; // flame tip — full opacity by here (see the fade)
+    const SEED = 0.5; // single central entry point, ~halfway up the flame
     const fanX = (b) => {
       const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
-      const drift = Math.max(0, (rise - TIP) / (1 - TIP)); // widen above the tip
-      // NO convergence — each body keeps its OWN horizontal lane (b.fan)
-      // across a band, so they never pile up side by side. The band is a bit
-      // open at emergence and widens as they drift up. Wander stays gentle.
-      const band = 0.13 + drift * 0.4;
+      const up = Math.max(0, rise - SEED); // risen since the central entry
+      const band = up * 1.05; // 0 at the entry point, widening as they rise
       const wander =
-        Math.sin(b.y * 3 + b.noisePh) * 0.02 +
-        Math.sin(b.y * 6.5 + b.noisePh * 1.7) * 0.011;
+        (Math.sin(b.y * 3 + b.noisePh) * 0.02 +
+          Math.sin(b.y * 6.5 + b.noisePh * 1.7) * 0.011) *
+        Math.min(1, up * 4); // ~0 at the entry, so the point stays clean
       return FLAME_X + b.fan * band + wander;
     };
     const seedDrop = (b, initial) => {
