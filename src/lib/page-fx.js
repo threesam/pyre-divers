@@ -1511,41 +1511,32 @@ export function initPageFx() {
     // riser colors — warm white (#f0e8dd) and salmon (#d6855e)
     const emberMix = (t) =>
       `rgb(${Math.round(240 - 26 * t)}, ${Math.round(232 - 99 * t)}, ${Math.round(221 - 127 * t)})`;
-    // horizontal position — a REVERSE FLUID FUNNEL: bodies leave the mouth
-    // (spread across the rocks), draw INWARD to a narrow throat just above,
-    // then flare out wide and wandering to fill the space. b.birth is the
-    // body's offset at the mouth, b.fan its random flare heading/amount.
-    const NECK = 0.14; // throat — pinch the mouth spread just above the rocks
-    const TIP = 0.6; // flame tip — bodies hold a tight column until here, then drift
+    // horizontal position — each body rides its own lane (b.fan) so the
+    // crowd never packs side by side; the band widens as they drift up.
+    const TIP = 0.6; // flame tip — the band widens (they drift apart) above here
+    const SEED = 0.5; // bodies emerge ~halfway up (nothing fills in below this)
     const fanX = (b) => {
       const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
-      const converge = Math.min(1, rise / NECK); // mouth spread → 0 at throat
-      const drift = Math.max(0, (rise - TIP) / (1 - TIP)); // 0 up the flame, 0→1 above the tip
-      // a tight gentle snake up the column, opening into a soft drift once it
-      // clears the flame tip — a slow wander, not a shot-off branch
-      const snake =
-        Math.sin(b.y * 5 + b.noisePh) * 0.018 +
-        (Math.sin(b.y * 3.2 + b.noisePh) * 0.05 +
-          Math.sin(b.y * 6.5 + b.noisePh * 1.7) * 0.022) *
-          drift;
-      return (
-        FLAME_X +
-        b.birth * (1 - converge) + // pinch the rock spread into the throat
-        b.fan * 0.16 * drift + // gentle spread above the tip — drift, not branch
-        snake
-      );
+      const drift = Math.max(0, (rise - TIP) / (1 - TIP)); // widen above the tip
+      // NO convergence — each body keeps its OWN horizontal lane (b.fan)
+      // across a band, so they never pile up side by side. The band is a bit
+      // open at emergence and widens as they drift up. Wander stays gentle.
+      const band = 0.13 + drift * 0.4;
+      const wander =
+        Math.sin(b.y * 3 + b.noisePh) * 0.02 +
+        Math.sin(b.y * 6.5 + b.noisePh * 1.7) * 0.011;
+      return FLAME_X + b.fan * band + wander;
     };
     const seedDrop = (b, initial) => {
       b.col = emberMix(rand());
       b.fan = (rand() - 0.5) * 2; // [-1, 1] — random flare heading + amount
-      b.birth = (rand() - 0.5) * 0.1; // offset at the mouth (across the rocks)
       b.noisePh = rand() * TAU;
       b.vx = 0;
       if (deskQ.matches) {
-        // pre-populate the plume on first paint, else emit at the mouth
-        b.y = initial
-          ? FLAME_BASE - rand() * (FLAME_BASE + 0.05)
-          : FLAME_BASE - rand() * 0.03;
+        // emerge ~halfway up: pre-populate SEED→top on first paint, else
+        // (re)seed at the SEED height. y at rise=SEED is FLAME_BASE*(1-SEED).
+        const seedY = FLAME_BASE * (1 - SEED);
+        b.y = initial ? seedY - rand() * (seedY + 0.05) : seedY - rand() * 0.02;
         b.x = fanX(b);
       } else if (initial) {
         b.x = rand();
@@ -1561,7 +1552,7 @@ export function initPageFx() {
       b.hsR = 0;
     };
     const drops = [];
-    for (let i = 0; i < 70; i++) {
+    for (let i = 0; i < 35; i++) {
       const b = dress({}, rand);
       seedDrop(b, true);
       b.v = 0.02 + rand() * 0.035;
@@ -1667,7 +1658,7 @@ export function initPageFx() {
         // they take form as they rise out of the flame: 0 at the mouth,
         // fading into full existence by the tip — just as they start drifting
         const a = deskQ.matches
-          ? Math.min(1, Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE) / TIP)
+          ? Math.min(1, Math.max(0, ((FLAME_BASE - b.y) / FLAME_BASE - SEED) / (TIP - SEED)))
           : Math.min(1, Math.max(0, (1.02 - b.y) / 0.28));
         if (a <= 0.01) {
           continue;
