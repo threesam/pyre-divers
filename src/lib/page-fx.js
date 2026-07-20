@@ -1521,8 +1521,8 @@ export function initPageFx() {
       const converge = Math.min(1, rise / NECK); // mouth spread → 0 at throat
       const flare = Math.max(0, (rise - NECK) / (1 - NECK)); // 0 throat → 1 top
       const wobble =
-        Math.sin(b.y * 4 + b.noisePh) * 0.038 +
-        Math.sin(b.y * 9 + b.noisePh * 1.7) * 0.016;
+        Math.sin(b.y * 5 + b.noisePh) * 0.08 +
+        Math.sin(b.y * 12 + b.noisePh * 1.7) * 0.032;
       return (
         FLAME_X +
         b.birth * (1 - converge) + // pinch the rock spread into the throat
