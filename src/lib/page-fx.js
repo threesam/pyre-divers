@@ -148,7 +148,7 @@ export function initPageFx() {
     return out;
   }
 
-  function addBody(p, px, py, cR, sR, h, b, withHead) {
+  function addBody(p, px, py, cR, sR, h, b, withHead, armSwim = 0, legSwim = 0) {
     const fx = -sR,
       fy = cR;
     const s2 = h * 0.21;
@@ -165,28 +165,23 @@ export function initPageFx() {
       sy = py - fy * h * 0.105;
     const hx = px + fx * s2,
       hy = py + fy * s2;
-    const aL = h * b.arm,
-      lL = h * b.leg;
-    p.moveTo(sx, sy);
-    p.lineTo(
-      sx + (b.aLx * cR - b.aLy * sR) * aL,
-      sy + (b.aLx * sR + b.aLy * cR) * aL,
-    );
-    p.moveTo(sx, sy);
-    p.lineTo(
-      sx + (b.aRx * cR - b.aRy * sR) * aL,
-      sy + (b.aRx * sR + b.aRy * cR) * aL,
-    );
-    p.moveTo(hx, hy);
-    p.lineTo(
-      hx + (b.lLx * cR - b.lLy * sR) * lL,
-      hy + (b.lLx * sR + b.lLy * cR) * lL,
-    );
-    p.moveTo(hx, hy);
-    p.lineTo(
-      hx + (b.lRx * cR - b.lRy * sR) * lL,
-      hy + (b.lRx * sR + b.lRy * cR) * lL,
-    );
+    const aLen = h * b.arm,
+      lLen = h * b.leg;
+    // a limb: its baked dir (dx,dy) is first swum by `sw` (a local rotation,
+    // same gentle mechanic as the swarm shader), then oriented by the body
+    // (cR,sR), from the joint (ox,oy). sw=0 → identical to the static pose.
+    const limb = (dx, dy, sw, len, ox, oy) => {
+      const c = Math.cos(sw),
+        s = Math.sin(sw);
+      const rx = dx * c - dy * s,
+        ry = dx * s + dy * c;
+      p.moveTo(ox, oy);
+      p.lineTo(ox + (rx * cR - ry * sR) * len, oy + (rx * sR + ry * cR) * len);
+    };
+    limb(b.aLx, b.aLy, armSwim, aLen, sx, sy);
+    limb(b.aRx, b.aRy, -armSwim, aLen, sx, sy);
+    limb(b.lLx, b.lLy, legSwim, lLen, hx, hy);
+    limb(b.lRx, b.lRy, -legSwim, lLen, hx, hy);
   }
 
   /** @type {HTMLCanvasElement | null} */ let ground = null;
@@ -1516,23 +1511,31 @@ export function initPageFx() {
     // riser colors — warm white (#f0e8dd) and salmon (#d6855e)
     const emberMix = (t) =>
       `rgb(${Math.round(240 - 26 * t)}, ${Math.round(232 - 99 * t)}, ${Math.round(221 - 127 * t)})`;
+    // desktop flow field: bodies rise from the flame in a tight central
+    // stem, converge to a point ~50% up, then fan into 3 upward forks —
+    // one of which trails off to the top-right. FORK_DIR is normalized-x
+    // drift/second once above the split.
+    const FORK_DIR = [-0.085, 0.0, 0.08];
+    const SPLIT_Y = 0.42; // ~50% up from the mouth (0.82) to the top
     const seedDrop = (b, initial) => {
       b.col = emberMix(rand());
+      b.fork = (rand() * 3) | 0;
+      b.trail = b.fork === 2 && rand() < 0.4; // the top-right stragglers
+      b.noisePh = rand() * TAU;
+      b.vx = 0;
       if (initial && deskQ.matches) {
-        // seed along the plume: as if each body already rose from the flame —
-        // the higher it is, the further it has drifted
+        // pre-populate the whole plume so it's alive on arrival
         const rise = rand();
-        b.y = FLAME_BASE - rise * (FLAME_BASE + 0.1);
-        b.x = FLAME_X + (rand() - 0.5) * (0.05 + rise * 0.22);
-        b.vx = (rand() - 0.5) * 0.02;
+        b.y = FLAME_BASE - rise * (FLAME_BASE + 0.05);
+        b.x = FLAME_X + (rand() - 0.5) * (0.02 + rise * rise * 0.34);
       } else if (initial) {
         b.x = rand();
         b.y = rand();
         b.vx = (rand() - 0.5) * 0.006;
       } else if (deskQ.matches) {
-        b.x = FLAME_X + (rand() - 0.5) * 0.08;
-        b.y = FLAME_BASE - rand() * 0.04;
-        b.vx = (rand() - 0.5) * 0.02;
+        // emit from a tight central point at the flame's mouth
+        b.x = FLAME_X + (rand() - 0.5) * 0.02;
+        b.y = FLAME_BASE - rand() * 0.03;
       } else {
         b.x = rand();
         b.y = 1.05 + rand() * 0.05;
@@ -1545,7 +1548,8 @@ export function initPageFx() {
       seedDrop(b, true);
       b.v = 0.02 + rand() * 0.035;
       b.swayPh = rand() * TAU;
-      b.swayA = 6 + rand() * 12;
+      b.swayA = 4 + rand() * 9; // gentler — the flow field carries the spread now
+      b.swimPh = rand() * TAU;
       b.rot = (rand() - 0.5) * 0.5; // head-first UP, loosely
       drops.push(b);
     }
@@ -1662,6 +1666,8 @@ export function initPageFx() {
           h0 * b.size,
           b,
           h0 * b.size >= HEAD_PX,
+          0.13 * Math.sin(t * 1.6 + b.swimPh),
+          0.07 * Math.sin(t * 1.9 + b.swimPh + 1.7),
         );
         ctx2.stroke(path);
       }
@@ -1718,8 +1724,21 @@ export function initPageFx() {
       last = now;
       for (const b of drops) {
         b.y -= b.v * dt;
+        if (deskQ.matches) {
+          if (b.y > SPLIT_Y) {
+            // stem: converge toward the central line
+            b.vx = (FLAME_X - b.x) * 1.1;
+          } else {
+            // above the split: fan out along the fork, ramping in with height
+            // (ramp² so each branch holds together low then splays near the top)
+            const ramp = Math.min(1, (SPLIT_Y - b.y) / 0.18);
+            const spread = ramp * ramp;
+            b.vx = FORK_DIR[b.fork] * spread + (b.trail ? 0.14 * spread : 0);
+          }
+          b.vx += Math.sin(b.y * 7 + b.noisePh) * 0.008; // loose flow-field wobble
+        }
         b.x += b.vx * dt;
-        if (b.y < -0.08) {
+        if (b.y < -0.08 || b.x < -0.06 || b.x > 1.06) {
           seedDrop(b, false);
         }
       }
