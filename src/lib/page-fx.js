@@ -1511,19 +1511,29 @@ export function initPageFx() {
     // riser colors — warm white (#f0e8dd) and salmon (#d6855e)
     const emberMix = (t) =>
       `rgb(${Math.round(240 - 26 * t)}, ${Math.round(232 - 99 * t)}, ${Math.round(221 - 127 * t)})`;
-    // horizontal position from a random per-body fan: converged at the mouth,
-    // spreading wider (and wandering, via two out-of-phase waves) the higher a
-    // body has risen — a loose random spread that fills the space, no forks.
+    // horizontal position — a REVERSE FLUID FUNNEL: bodies leave the mouth
+    // (spread across the rocks), draw INWARD to a narrow throat just above,
+    // then flare out wide and wandering to fill the space. b.birth is the
+    // body's offset at the mouth, b.fan its random flare heading/amount.
+    const NECK = 0.16; // rise at the throat (~just above the mouth)
     const fanX = (b) => {
       const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
+      const converge = Math.min(1, rise / NECK); // mouth spread → 0 at throat
+      const flare = Math.max(0, (rise - NECK) / (1 - NECK)); // 0 throat → 1 top
       const wobble =
         Math.sin(b.y * 4 + b.noisePh) * 0.05 +
-        Math.sin(b.y * 9 + b.noisePh * 1.7) * 0.02;
-      return FLAME_X + (b.fan * 0.42 + wobble) * Math.pow(rise, 0.8);
+        Math.sin(b.y * 9 + b.noisePh * 1.7) * 0.022;
+      return (
+        FLAME_X +
+        b.birth * (1 - converge) + // pinch the rock spread into the throat
+        b.fan * 0.5 * Math.pow(flare, 0.82) + // then spray out wide
+        wobble * Math.min(1, flare * 1.5) // fluid wander, only above the throat
+      );
     };
     const seedDrop = (b, initial) => {
       b.col = emberMix(rand());
-      b.fan = (rand() - 0.5) * 2; // [-1, 1] — random heading + amount
+      b.fan = (rand() - 0.5) * 2; // [-1, 1] — random flare heading + amount
+      b.birth = (rand() - 0.5) * 0.1; // offset at the mouth (across the rocks)
       b.noisePh = rand() * TAU;
       b.vx = 0;
       if (deskQ.matches) {
