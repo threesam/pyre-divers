@@ -1515,19 +1515,24 @@ export function initPageFx() {
     // (spread across the rocks), draw INWARD to a narrow throat just above,
     // then flare out wide and wandering to fill the space. b.birth is the
     // body's offset at the mouth, b.fan its random flare heading/amount.
-    const NECK = 0.22; // rise at the throat — a longer, tighter neck
+    const NECK = 0.14; // throat — pinch the mouth spread just above the rocks
+    const TIP = 0.6; // flame tip — bodies hold a tight column until here, then drift
     const fanX = (b) => {
       const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
       const converge = Math.min(1, rise / NECK); // mouth spread → 0 at throat
-      const flare = Math.max(0, (rise - NECK) / (1 - NECK)); // 0 throat → 1 top
-      const wobble =
-        Math.sin(b.y * 5 + b.noisePh) * 0.08 +
-        Math.sin(b.y * 12 + b.noisePh * 1.7) * 0.032;
+      const drift = Math.max(0, (rise - TIP) / (1 - TIP)); // 0 up the flame, 0→1 above the tip
+      // a tight gentle snake up the column, opening into a soft drift once it
+      // clears the flame tip — a slow wander, not a shot-off branch
+      const snake =
+        Math.sin(b.y * 5 + b.noisePh) * 0.018 +
+        (Math.sin(b.y * 3.2 + b.noisePh) * 0.05 +
+          Math.sin(b.y * 6.5 + b.noisePh * 1.7) * 0.022) *
+          drift;
       return (
         FLAME_X +
         b.birth * (1 - converge) + // pinch the rock spread into the throat
-        b.fan * 0.3 * Math.pow(flare, 0.95) + // then spray out — tighter cone
-        wobble * Math.min(1, flare * 1.5) // fluid wander, only above the throat
+        b.fan * 0.16 * drift + // gentle spread above the tip — drift, not branch
+        snake
       );
     };
     const seedDrop = (b, initial) => {
