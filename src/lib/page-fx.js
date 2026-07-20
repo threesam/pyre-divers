@@ -1511,36 +1511,49 @@ export function initPageFx() {
     // riser colors — warm white (#f0e8dd) and salmon (#d6855e)
     const emberMix = (t) =>
       `rgb(${Math.round(240 - 26 * t)}, ${Math.round(232 - 99 * t)}, ${Math.round(221 - 127 * t)})`;
-    // desktop flow field: bodies rise from the flame in a tight central
-    // stem, converge to a point ~50% up, then fan into 3 upward forks —
-    // one of which trails off to the top-right. FORK_DIR is normalized-x
-    // drift/second once above the split.
-    const FORK_DIR = [-0.085, 0.0, 0.08];
-    const SPLIT_Y = 0.42; // ~50% up from the mouth (0.82) to the top
+    // horizontal position — a REVERSE FLUID FUNNEL: bodies leave the mouth
+    // (spread across the rocks), draw INWARD to a narrow throat just above,
+    // then flare out wide and wandering to fill the space. b.birth is the
+    // body's offset at the mouth, b.fan its random flare heading/amount.
+    const NECK = 0.16; // rise at the throat (~just above the mouth)
+    const fanX = (b) => {
+      const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
+      const converge = Math.min(1, rise / NECK); // mouth spread → 0 at throat
+      const flare = Math.max(0, (rise - NECK) / (1 - NECK)); // 0 throat → 1 top
+      const wobble =
+        Math.sin(b.y * 4 + b.noisePh) * 0.05 +
+        Math.sin(b.y * 9 + b.noisePh * 1.7) * 0.022;
+      return (
+        FLAME_X +
+        b.birth * (1 - converge) + // pinch the rock spread into the throat
+        b.fan * 0.5 * Math.pow(flare, 0.82) + // then spray out wide
+        wobble * Math.min(1, flare * 1.5) // fluid wander, only above the throat
+      );
+    };
     const seedDrop = (b, initial) => {
       b.col = emberMix(rand());
-      b.fork = (rand() * 3) | 0;
-      b.trail = b.fork === 2 && rand() < 0.4; // the top-right stragglers
+      b.fan = (rand() - 0.5) * 2; // [-1, 1] — random flare heading + amount
+      b.birth = (rand() - 0.5) * 0.1; // offset at the mouth (across the rocks)
       b.noisePh = rand() * TAU;
       b.vx = 0;
-      if (initial && deskQ.matches) {
-        // pre-populate the whole plume so it's alive on arrival
-        const rise = rand();
-        b.y = FLAME_BASE - rise * (FLAME_BASE + 0.05);
-        b.x = FLAME_X + (rand() - 0.5) * (0.02 + rise * rise * 0.34);
+      if (deskQ.matches) {
+        // pre-populate the plume on first paint, else emit at the mouth
+        b.y = initial
+          ? FLAME_BASE - rand() * (FLAME_BASE + 0.05)
+          : FLAME_BASE - rand() * 0.03;
+        b.x = fanX(b);
       } else if (initial) {
         b.x = rand();
         b.y = rand();
         b.vx = (rand() - 0.5) * 0.006;
-      } else if (deskQ.matches) {
-        // emit from a tight central point at the flame's mouth
-        b.x = FLAME_X + (rand() - 0.5) * 0.02;
-        b.y = FLAME_BASE - rand() * 0.03;
       } else {
         b.x = rand();
         b.y = 1.05 + rand() * 0.05;
         b.vx = (rand() - 0.5) * 0.006;
       }
+      b.px = b.x; // previous x, for the movement-following heading
+      b.hcR = 1; // heading (cos/sin); starts pointing straight up
+      b.hsR = 0;
     };
     const drops = [];
     for (let i = 0; i < 70; i++) {
@@ -1550,7 +1563,6 @@ export function initPageFx() {
       b.swayPh = rand() * TAU;
       b.swayA = 4 + rand() * 9; // gentler — the flow field carries the spread now
       b.swimPh = rand() * TAU;
-      b.rot = (rand() - 0.5) * 0.5; // head-first UP, loosely
       drops.push(b);
     }
     const mkRock = (cx, cy, rx, ry) => {
@@ -1661,8 +1673,8 @@ export function initPageFx() {
           path,
           px,
           b.y * rh,
-          Math.cos(b.rot),
-          Math.sin(b.rot),
+          b.hcR,
+          b.hsR,
           h0 * b.size,
           b,
           h0 * b.size >= HEAD_PX,
@@ -1725,19 +1737,24 @@ export function initPageFx() {
       for (const b of drops) {
         b.y -= b.v * dt;
         if (deskQ.matches) {
-          if (b.y > SPLIT_Y) {
-            // stem: converge toward the central line
-            b.vx = (FLAME_X - b.x) * 1.1;
-          } else {
-            // above the split: fan out along the fork, ramping in with height
-            // (ramp² so each branch holds together low then splays near the top)
-            const ramp = Math.min(1, (SPLIT_Y - b.y) / 0.18);
-            const spread = ramp * ramp;
-            b.vx = FORK_DIR[b.fork] * spread + (b.trail ? 0.14 * spread : 0);
-          }
-          b.vx += Math.sin(b.y * 7 + b.noisePh) * 0.008; // loose flow-field wobble
+          b.x = fanX(b);
+        } else {
+          b.x += b.vx * dt;
         }
-        b.x += b.vx * dt;
+        // heading follows movement: the head points along the velocity
+        // (mostly up, leaning toward the horizontal drift). Smoothed so the
+        // wander doesn't make it twitch.
+        const mdx = b.x - b.px;
+        const mUp = Math.max(b.v * dt, 1e-5); // upward step (screen-up = +)
+        const ml = Math.hypot(mdx, mUp);
+        const tcR = mUp / ml;
+        const tsR = mdx / ml;
+        let hc = b.hcR + (tcR - b.hcR) * 0.12;
+        let hs = b.hsR + (tsR - b.hsR) * 0.12;
+        const hl = Math.hypot(hc, hs) || 1;
+        b.hcR = hc / hl;
+        b.hsR = hs / hl;
+        b.px = b.x;
         if (b.y < -0.08 || b.x < -0.06 || b.x > 1.06) {
           seedDrop(b, false);
         }
