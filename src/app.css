@@ -366,9 +366,13 @@ html.diving.dive-title .down {
                where he centres on the "threesam" wordmark's midline;
        desktop 22.4px (1.4em of 16px) at right 144.2 / bottom 32, standing
                between "certainly" and "uncertain".
-     The switch is 768px because that is Tailwind's `md:` — the garden's own
-     breakpoint, so both sites change homes on the same pixel (769 left a
-     one-pixel window where they disagreed). */
+     The switch below is 768px, NOT the 769px this file uses everywhere else
+     — deliberately. His homes are the garden's, so his breakpoint has to be
+     the garden's too: Tailwind's `md:`, which starts AT 768. Leave it; at
+     769 there was a one-pixel window where the garden had already gone
+     inline and he was still holding the corner. Everything else here keeps
+     the local 769 convention, since it answers to this page, not to that
+     one. */
 .veil-diver {
   position: absolute;
   right: 24px;
