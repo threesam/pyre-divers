@@ -359,23 +359,35 @@ html.diving.dive-title .down {
   animation: none;
 }
 /* at handoff the garden shows only the little guy, so arrival is just him
-     on marigold. Two homes: on phones he holds the corner (the garden's
-     tagline stacks there, no measured spot to match); on desktop he stands
-     exactly where the garden's figure stands — between "certainly" and
-     "uncertain" (144.2px measured at 1440×900: 2rem anchor + word + gap). */
+     on marigold. He must land on the garden's EXACT spot — same size, same
+     corner offsets — or the hop reads as a cut instead of a continuation.
+     Both homes measured live on threesam.com:
+       phones  19.6px (1.4em of its 14px tagline) at right 24 / bottom 31.8,
+               where he centres on the "threesam" wordmark's midline;
+       desktop 22.4px (1.4em of 16px) at right 144.2 / bottom 32, standing
+               between "certainly" and "uncertain".
+     The switch below is 768px, NOT the 769px this file uses everywhere else
+     — deliberately. His homes are the garden's, so his breakpoint has to be
+     the garden's too: Tailwind's `md:`, which starts AT 768. Leave it; at
+     769 there was a one-pixel window where the garden had already gone
+     inline and he was still holding the corner. Everything else here keeps
+     the local 769 convention, since it answers to this page, not to that
+     one. */
 .veil-diver {
   position: absolute;
-  right: 2rem;
-  bottom: 26px;
-  width: 22.4px;
-  height: 22.4px;
+  right: 24px;
+  bottom: 31.8px;
+  width: 19.6px;
+  height: 19.6px;
   line-height: 0;
   will-change: transform, opacity;
 }
-@media (min-width: 769px) {
+@media (min-width: 768px) {
   .veil-diver {
     right: 144.2px;
     bottom: 32px;
+    width: 22.4px;
+    height: 22.4px;
   }
 }
 .veil-diver svg {
