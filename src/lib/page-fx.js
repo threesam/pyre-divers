@@ -427,7 +427,7 @@ export function initPageFx() {
           ['.shin-r', 'shR'],
         ]) {
           kf(
-            q(sel),
+            sel$(sel),
             legBeats.map(([o, p, e]) => [o, `rotate(${p[key]}deg)`, e]),
           );
         }
@@ -457,7 +457,7 @@ export function initPageFx() {
           ['.fore-r', 'fR'],
         ]) {
           kf(
-            q(sel),
+            sel$(sel),
             armBeats.map(([o, p, e]) => [o, `rotate(${p[key]}deg)`, e]),
           );
         }
