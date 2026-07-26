@@ -7,8 +7,9 @@ August 6, 2026, live on StreamYard.
 SvelteKit (adapter-vercel), no runtime dependencies. The page is a canvas
 whirlpool of thousands of tiny hand-drawn stick figures riding a log-spiral
 current into a dark drain, over a three-point ember gradient (`src/lib/page-fx.js`
-— the outer field animates; the ~8k bodies at the center are baked once into a
-static layer; honors `prefers-reduced-motion`). Arriving from threesam.com with
+— WebGL draws the core instanced per frame, sized to the device; the Canvas2D
+fallback bakes a small center pile; honors `prefers-reduced-motion`). Arriving
+from threesam.com with
 `?dive` opens on the garden's marigold so the hand-off reads as one scene.
 
 Beyond the page:
