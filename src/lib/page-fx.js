@@ -148,7 +148,18 @@ export function initPageFx() {
     return out;
   }
 
-  function addBody(p, px, py, cR, sR, h, b, withHead, armSwim = 0, legSwim = 0) {
+  function addBody(
+    p,
+    px,
+    py,
+    cR,
+    sR,
+    h,
+    b,
+    withHead,
+    armSwim = 0,
+    legSwim = 0,
+  ) {
     const fx = -sR,
       fy = cR;
     const s2 = h * 0.21;
@@ -280,7 +291,15 @@ export function initPageFx() {
         const EASE_LAUNCH = 'cubic-bezier(0.5, 0, 0.9, 0.75)';
         const TIMING = { duration: 4000, fill: 'forwards' };
         // beat offsets of 4000ms
-        const B = { s1: 0.0375, s2: 0.1125, s3: 0.1875, plant: 0.225, leap: 0.25, fly: 0.35, out: 0.5 };
+        const B = {
+          s1: 0.0375,
+          s2: 0.1125,
+          s3: 0.1875,
+          plant: 0.225,
+          leap: 0.25,
+          fly: 0.35,
+          out: 0.5,
+        };
         // kf(el, frames): frames = [offset, transform, easingToNext?, opacity?]
         const kf = (el, frames) => {
           if (el) {
@@ -295,7 +314,7 @@ export function initPageFx() {
             );
           }
         };
-        const q = (sel) => flyer.querySelector(sel);
+        const sel$ = (sel) => flyer.querySelector(sel);
         // TARGET: the "d" of "divers" — he dives THROUGH its bowl and joins
         // the swarm. Measured from the wordmark (laid out even at opacity 0);
         // falls back to the vortex eye (viewport centre, the sim's cw/2,ch/2)
@@ -303,9 +322,15 @@ export function initPageFx() {
         const fr = flyer.getBoundingClientRect();
         const rcx = fr.left + fr.width / 2;
         const rcy = fr.top + fr.height / 2;
-        const kR = document.querySelector('.wordmark .k')?.getBoundingClientRect();
-        const targetX = kR ? kR.left + kR.height * 0.32 : document.documentElement.clientWidth / 2;
-        const targetY = kR ? kR.top + kR.height * 0.58 : document.documentElement.clientHeight / 2;
+        const kR = document
+          .querySelector('.wordmark .k')
+          ?.getBoundingClientRect();
+        const targetX = kR
+          ? kR.left + kR.height * 0.32
+          : document.documentElement.clientWidth / 2;
+        const targetY = kR
+          ? kR.top + kR.height * 0.58
+          : document.documentElement.clientHeight / 2;
         const dX = targetX - rcx;
         const dY = targetY - rcy;
         // ONE smooth projectile arc from the leap into the "d": horizontal
@@ -332,7 +357,7 @@ export function initPageFx() {
           const op = s > 0.92 ? 0 : 1;
           const off = B.leap + u * (1 - B.leap);
           arc.push([
-            +off.toFixed(4),
+            Number(off.toFixed(4)),
             `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${rot.toFixed(1)}deg) scale(${sc.toFixed(3)})`,
             'linear',
             op,
@@ -341,15 +366,30 @@ export function initPageFx() {
         // root: run (steps + bob) → crouch → accelerating launch → the arc.
         kf(flyer, [
           [0, 'translate(0px, 0px) rotate(0deg) scale(1)', EASE_STEP, 1],
-          [B.s1, 'translate(-5px, -1.5px) rotate(-3deg) scale(1)', EASE_STEP, 1],
+          [
+            B.s1,
+            'translate(-5px, -1.5px) rotate(-3deg) scale(1)',
+            EASE_STEP,
+            1,
+          ],
           [B.s2, 'translate(-11px, -1px) rotate(-2deg) scale(1)', EASE_STEP, 1],
-          [B.s3, 'translate(-17px, -1.5px) rotate(-3deg) scale(1)', EASE_STEP, 1],
-          [B.plant, 'translate(-21px, 0px) rotate(-2deg) scale(1)', EASE_LAUNCH, 1],
+          [
+            B.s3,
+            'translate(-17px, -1.5px) rotate(-3deg) scale(1)',
+            EASE_STEP,
+            1,
+          ],
+          [
+            B.plant,
+            'translate(-21px, 0px) rotate(-2deg) scale(1)',
+            EASE_LAUNCH,
+            1,
+          ],
           ...arc,
         ]);
         // torso leans into the run from the hip, straightens into the
         // dive line (the body angle comes from the root rotation)
-        kf(q('.torso'), [
+        kf(sel$('.torso'), [
           [0, 'rotate(0deg)', EASE_STEP],
           [B.s1, 'rotate(-8deg)', EASE_STEP],
           [B.plant, 'rotate(-6deg)', EASE_POP],
@@ -915,7 +955,9 @@ export function initPageFx() {
     }
     // reduced motion → no limb swim (the amplitude uniform zeroes it out
     // in the shader; the vortex flow is the site's identity and stays)
-    const swimOn = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1;
+    const swimOn = matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 0
+      : 1;
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -1022,7 +1064,10 @@ export function initPageFx() {
             // its constant offset home (~1.9s), then hands off to the
             // steady current — the intro ends exactly where a plain load
             // lives, because the wave IS the steady field displaced
-            gather = Math.max(0, gather - ((gather > 0.5 ? 2.2 : 0.35) * dt) / 60);
+            gather = Math.max(
+              0,
+              gather - ((gather > 0.5 ? 2.2 : 0.35) * dt) / 60,
+            );
           }
           draw();
           requestAnimationFrame(loop);
@@ -1523,7 +1568,7 @@ export function initPageFx() {
       // ARC: up^1.8 so each body leaves the entry going straight up, then
       // curves outward as it rises — a fountain arc, not a straight ray.
       // Coefficient kept low for a tight fan.
-      const band = Math.pow(up, 1.8) * 0.85;
+      const band = up ** 1.8 * 0.85;
       const wander =
         (Math.sin(b.y * 3 + b.noisePh) * 0.018 +
           Math.sin(b.y * 6.5 + b.noisePh * 1.7) * 0.01) *
@@ -1664,7 +1709,13 @@ export function initPageFx() {
         // they take form as they rise out of the flame: 0 at the mouth,
         // fading into full existence by the tip — just as they start drifting
         const a = deskQ.matches
-          ? Math.min(1, Math.max(0, ((FLAME_BASE - b.y) / FLAME_BASE - SEED) / (TIP - SEED)))
+          ? Math.min(
+              1,
+              Math.max(
+                0,
+                ((FLAME_BASE - b.y) / FLAME_BASE - SEED) / (TIP - SEED),
+              ),
+            )
           : Math.min(1, Math.max(0, (1.02 - b.y) / 0.28));
         if (a <= 0.01) {
           continue;
@@ -1774,8 +1825,8 @@ export function initPageFx() {
         const ml = Math.hypot(mdx, mUp);
         const tcR = mUp / ml;
         const tsR = mdx / ml;
-        let hc = b.hcR + (tcR - b.hcR) * 0.12;
-        let hs = b.hsR + (tsR - b.hsR) * 0.12;
+        const hc = b.hcR + (tcR - b.hcR) * 0.12;
+        const hs = b.hsR + (tsR - b.hsR) * 0.12;
         const hl = Math.hypot(hc, hs) || 1;
         b.hcR = hc / hl;
         b.hsR = hs / hl;
