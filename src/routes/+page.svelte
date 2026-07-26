@@ -46,7 +46,7 @@
   <title>pyre divers</title>
   <meta
     name="description"
-    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 2026."
+    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 6, 2026."
   />
   <link rel="canonical" href="https://pyredivers.com/" />
   <meta property="og:type" content="website" />
@@ -54,7 +54,7 @@
   <meta property="og:title" content="pyre divers" />
   <meta
     property="og:description"
-    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 2026."
+    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 6, 2026."
   />
   <meta property="og:url" content="https://pyredivers.com/" />
   <meta property="og:image" content="https://pyredivers.com/og.png" />
@@ -69,7 +69,7 @@
   <meta name="twitter:title" content="pyre divers" />
   <meta
     name="twitter:description"
-    content="two builders, live and unedited. first dive: august 2026."
+    content="two builders, live and unedited. first dive: august 6, 2026."
   />
   <meta name="twitter:image" content="https://pyredivers.com/og.png" />
   <link
@@ -180,11 +180,7 @@
 <div id="veil" aria-hidden="true">
   <span class="veil-diver"
     ><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"
-      ><g
-        stroke="#1a1a14"
-        stroke-width="2.6"
-        stroke-linecap="round"
-        fill="none"
+      ><g stroke="#1a1a14" stroke-width="2.6" stroke-linecap="round" fill="none"
         ><g class="torso"
           ><circle cx="16" cy="7" r="3.4" /><path d="M16 10.5 L16 20" /><g
             class="arm arm-l"
@@ -220,7 +216,7 @@
       two builders, live. no script. no polish. no edits. conversations with the
       ones who jumped before they were ready.
     </p>
-    <p class="patch">first dive: august 2026.</p>
+    <p class="patch">first dive: august 6.</p>
     <form id="join-form" novalidate>
       <div class="fieldwrap">
         <input
