@@ -1,0 +1,46 @@
+# Lockdown gates: every PR and every push to master must hold the line on
+# strict ESLint (js.configs.all, waivers documented in eslint.config.mjs),
+# strict TS (svelte-check --fail-on-warnings — .js counts too, the tsconfig
+# runs allowJs + checkJs + strict), prettier formatting, unit tests, and a
+# real production build. Same bar threesam.com holds; see its ci.yml.
+#
+# npm, not pnpm: this repo's lockfile of record is package-lock.json and
+# Vercel installs from it, so `npm ci` is the frozen, reproducible install.
+# Each gate is its own step so a red run names the thing that broke.
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `prepare` (svelte-kit sync) runs off the back of this, so $types
+      # exist before anything tries to typecheck them.
+      - name: install (frozen)
+        run: npm ci
+
+      - name: lint (eslint)
+        run: npm run lint
+
+      - name: typecheck (svelte-check, zero warnings)
+        run: npm run typecheck
+
+      - name: format (prettier --check)
+        run: npm run format:check
+
+      - name: unit tests (node --test)
+        run: npm test
+
+      - name: build (vite production)
+        run: npm run build
