@@ -9,9 +9,10 @@
     "prepare": "svelte-kit sync || echo ''",
     "test": "node --test",
     "lint": "eslint .",
+    "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "svelte-kit sync && npm run lint && svelte-check --tsconfig ./tsconfig.json && npm run format:check && npm test"
+    "check": "npm run lint && npm run typecheck && npm run format:check && npm test"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
