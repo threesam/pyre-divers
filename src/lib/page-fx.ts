@@ -1,15 +1,120 @@
-// @ts-nocheck -- verbatim generative-art sim, untyped by design; typed
-// refactor happens per-module as features start touching these systems.
-// the page's moving parts — verbatim port of the shipped inline script.
-// runs once on mount; the landing never unmounts, so no teardown yet.
-import { LISTMONK, subscribeFlow } from './subscribe.ts';
+// the page's moving parts. Runs once on mount; the landing never unmounts,
+// so there is no teardown yet.
+//
+// Three systems share one stick-figure model (see Pose): the WebGL2 swarm on
+// screen one, its Canvas2D fallback, and the risers on screen two. Every body
+// is "dressed" once — pose baked into cos/sin pairs — then drawn by whichever
+// renderer owns it.
+import { LISTMONK, subscribeFlow } from './subscribe';
 
-export function initPageFx() {
+/** Seeded PRNG. The same souls every load. */
+type Rand = () => number;
+
+/**
+ * A dressed body: limb directions baked to cos/sin so neither the shader nor
+ * the 2D path has to run trigonometry per frame. `off`/`r0` are set only for
+ * bodies seeded onto a spiral lane.
+ */
+interface Pose {
+  drift: number;
+  size: number;
+  off?: number;
+  r0?: number;
+  hJit: number;
+  cR: number;
+  sR: number;
+  cJ: number;
+  sJ: number;
+  arm: number;
+  leg: number;
+  aLx: number;
+  aLy: number;
+  aRx: number;
+  aRy: number;
+  lLx: number;
+  lLy: number;
+  lRx: number;
+  lRy: number;
+}
+
+/** Seeded onto a log-spiral lane — the swarm and the 2D fallback's rails. */
+type SpiralBody = Pose & { lane: number; phi: number };
+/** A swarm particle: spiral-seeded, plus its place in the speed distribution. */
+type FieldBody = SpiralBody & { frac: number };
+/** Phyllotaxis disc at the drain — packed by angle and radius instead. */
+type CoreBody = Pose & { ang0: number; radFrac: number };
+/** The loose heap at the spiral's mouth (2D fallback only). */
+type PileBody = Pose & { a: number; r: number };
+
+/** A riser on screen two: a body that climbs out of the flame. */
+interface Riser extends Pose {
+  col: string;
+  fan: number;
+  noisePh: number;
+  x: number;
+  y: number;
+  px: number;
+  vx: number;
+  v: number;
+  waiting: boolean;
+  hcR: number;
+  hsR: number;
+  swayPh: number;
+  swayA: number;
+  swimPh: number;
+}
+
+/** An ember drifting up beside the risers (desktop only). */
+interface Fleck {
+  x: number;
+  y: number;
+  v: number;
+  drift: number;
+  r: number;
+  ph: number;
+  warm: number;
+}
+
+/** A hand-wobbled stone at the flame's mouth. */
+interface Rock {
+  cx: number;
+  cy: number;
+  pts: [number, number][];
+}
+
+/** One WAAPI keyframe: [offset, transform, easingToNext?, opacity?]. */
+type Frame = [number, string, (string | undefined)?, (number | undefined)?];
+
+/** Leg rotations for one beat of the dive: thigh/shin, left and right. */
+interface LegPose {
+  thL: number;
+  shL: number;
+  thR: number;
+  shR: number;
+}
+/** Arm rotations for one beat: upper/fore, left and right. */
+interface ArmPose {
+  aL: number;
+  fL: number;
+  aR: number;
+  fR: number;
+}
+
+/** Required element, or a loud failure — these all ship in +page.svelte. */
+function must<T extends Element>(selector: string): T {
+  const el = document.querySelector<T>(selector);
+  if (!el) {
+    throw new Error(`page-fx: required element ${selector} is missing`);
+  }
+  return el;
+}
+
+export function initPageFx(): void {
   // headless audits (lighthouse) run swiftshader: every gl context they
   // create is a long task. they get the chunked static frame, gl-free.
   const headlessAudit = /HeadlessChrome/.test(navigator.userAgent);
   // ── seeded rng: the same souls every load
-  function mulberry32(seed) {
+  function mulberry32(seed: number): Rand {
     let a = seed | 0;
     return () => {
       a = (a + 0x6d2b79f5) | 0;
@@ -40,7 +145,7 @@ export function initPageFx() {
   //           independently for variety, never up over the shoulders.
   //   legs  — down, splayed, always ≥ 30° apart at rest, so the ±8° (counter-
   //           phase) leg swim keeps them ≥ 20° from each other.
-  function makePose(rand) {
+  function makePose(rand: Rand) {
     const DOWN = PI * 0.5;
     const armCap = 1.42; // ~81° — the hard cap before swim
     const aL = DOWN + (0.1 + rand() * (armCap - 0.1)); // down-left
@@ -59,13 +164,22 @@ export function initPageFx() {
     };
   }
 
-  function dress(b, rand) {
-    b.drift = (rand() + rand() - 1) * 0.8 * GAP;
-    b.size = 0.86 + rand() * 0.26;
-    if (b.lane !== undefined) {
-      b.off = b.lane * (TAU / LANES) + (rand() - 0.5) * 0.03;
-      b.r0 = R_START * Math.exp(-K * b.phi);
-    }
+  // Dresses a seed in place and hands it back widened. The draw order below is
+  // load-bearing: the seeded rng makes the same crowd every visit, so moving a
+  // rand() call rebuilds the artwork.
+  function dress<T extends object>(seed: T, rand: Rand): T & Pose {
+    // Only lane-seeded bodies carry spiral coordinates — the phyllotaxis disc,
+    // the pile and the risers all pass different shapes through here.
+    const { lane, phi } = seed as { lane?: number; phi?: number };
+    const drift = (rand() + rand() - 1) * 0.8 * GAP;
+    const size = 0.86 + rand() * 0.26;
+    const spiral =
+      lane === undefined
+        ? null
+        : {
+            off: lane * (TAU / LANES) + (rand() - 0.5) * 0.03,
+            r0: R_START * Math.exp(-K * (phi ?? 0)),
+          };
     // heading jitter off the spiral base line (velocity ≈ the spiral tangent).
     // capped at ±69° (1.204 rad) so no body ever points wildly across the flow.
     const hJit = Math.max(
@@ -75,23 +189,27 @@ export function initPageFx() {
         (rand() - 0.5) * 0.55 + (rand() < 0.07 ? (rand() - 0.5) * 2.4 : 0),
       ),
     );
-    b.hJit = hJit;
-    b.cR = Math.cos(TILT + hJit);
-    b.sR = Math.sin(TILT + hJit);
-    b.cJ = Math.cos(hJit);
-    b.sJ = Math.sin(hJit); // jitter alone, for velocity-oriented bodies
     const p = makePose(rand);
-    b.arm = 0.36 * p.arm;
-    b.leg = 0.36 * p.leg;
-    b.aLx = Math.cos(p.aL);
-    b.aLy = Math.sin(p.aL);
-    b.aRx = Math.cos(p.aR);
-    b.aRy = Math.sin(p.aR);
-    b.lLx = Math.cos(p.lL);
-    b.lLy = Math.sin(p.lL);
-    b.lRx = Math.cos(p.lR);
-    b.lRy = Math.sin(p.lR);
-    return b;
+    return Object.assign(seed, {
+      drift,
+      size,
+      ...(spiral ?? {}),
+      hJit,
+      cR: Math.cos(TILT + hJit),
+      sR: Math.sin(TILT + hJit),
+      cJ: Math.cos(hJit),
+      sJ: Math.sin(hJit), // jitter alone, for velocity-oriented bodies
+      arm: 0.36 * p.arm,
+      leg: 0.36 * p.leg,
+      aLx: Math.cos(p.aL),
+      aLy: Math.sin(p.aL),
+      aRx: Math.cos(p.aR),
+      aRy: Math.sin(p.aR),
+      lLx: Math.cos(p.lL),
+      lLy: Math.sin(p.lL),
+      lRx: Math.cos(p.lR),
+      lRy: Math.sin(p.lR),
+    });
   }
 
   // ── flow model (shared by sim + fallback tuning): constant deceleration —
@@ -103,18 +221,18 @@ export function initPageFx() {
     R_E = 0.046,
     V_E = 0.012,
     C2 = 0.02;
-  function tune(fontDevPx, S) {
+  function tune(fontDevPx: number, S: number) {
     R_CORE = (0.315 * fontDevPx) / S;
     R_E = 0.92 * R_CORE;
     V_E = W_CORE * R_E;
     C2 = (V_RIM_W * V_RIM_W - V_E * V_E) / (R_START - R_E);
   }
-  const speedN = (rn) =>
+  const speedN = (rn: number) =>
     Math.sqrt(Math.max(V_E * V_E + C2 * (rn - R_E), 0.25 * V_E * V_E));
 
   // field styles (physics-driven bodies)
   // built lazily by startGL — the software-gl path never touches it
-  const field = [];
+  const field: FieldBody[] = [];
   function buildField() {
     if (field.length) {
       return;
@@ -122,41 +240,41 @@ export function initPageFx() {
     const rand = mulberry32(777);
     const N = 6000; // dense enough that the carved letterforms stay crisp
     for (let i = 0; i < N; i++) {
-      const b = dress({ lane: i % LANES, phi: 0 }, rand);
-      b.frac = (i + 0.25 + rand() * 0.5) / N;
-      field.push(b);
+      const dressed = dress({ lane: i % LANES, phi: 0 }, rand);
+      const frac = (i + 0.25 + rand() * 0.5) / N;
+      field.push({ ...dressed, frac });
     }
   }
 
   // phyllotaxis (sunflower) core: golden-angle packing fills the disc evenly —
   // crisp edge, readable bodies to dead center. Regenerated per resize, count
   // tied to area so the packing density holds.
-  function makeCore() {
+  function makeCore(): CoreBody[] {
     const rand = mulberry32(4200);
     const n = Math.max(
       60,
       Math.round((PI * R_CORE * R_CORE) / (1.16 * H_MIN) ** 2),
     );
     const GOLD = PI * (3 - Math.sqrt(5));
-    const out = [];
+    const out: CoreBody[] = [];
     for (let i = 0; i < n; i++) {
-      const b = dress({}, rand);
-      b.ang0 = i * GOLD + (rand() - 0.5) * 0.15;
-      b.radFrac = Math.sqrt((i + 0.5) / n) * (1 + (rand() - 0.5) * 0.06);
-      out.push(b);
+      const dressed = dress({}, rand);
+      const ang0 = i * GOLD + (rand() - 0.5) * 0.15;
+      const radFrac = Math.sqrt((i + 0.5) / n) * (1 + (rand() - 0.5) * 0.06);
+      out.push({ ...dressed, ang0, radFrac });
     }
     return out;
   }
 
   function addBody(
-    p,
-    px,
-    py,
-    cR,
-    sR,
-    h,
-    b,
-    withHead,
+    p: Path2D,
+    px: number,
+    py: number,
+    cR: number,
+    sR: number,
+    h: number,
+    b: Pose,
+    withHead: boolean,
     armSwim = 0,
     legSwim = 0,
   ) {
@@ -181,7 +299,14 @@ export function initPageFx() {
     // a limb: its baked dir (dx,dy) is first swum by `sw` (a local rotation,
     // same gentle mechanic as the swarm shader), then oriented by the body
     // (cR,sR), from the joint (ox,oy). sw=0 → identical to the static pose.
-    const limb = (dx, dy, sw, len, ox, oy) => {
+    const limb = (
+      dx: number,
+      dy: number,
+      sw: number,
+      len: number,
+      ox: number,
+      oy: number,
+    ) => {
       const c = Math.cos(sw),
         s = Math.sin(sw);
       const rx = dx * c - dy * s,
@@ -195,16 +320,14 @@ export function initPageFx() {
     limb(b.lRx, b.lRy, -legSwim, lLen, hx, hy);
   }
 
-  /** @type {HTMLCanvasElement | null} */ let ground = null;
-  /** @type {HTMLCanvasElement | null} */ let baked = null;
+  let ground: HTMLCanvasElement | null = null;
+  let baked: HTMLCanvasElement | null = null;
   let L = 0,
     CX = 0,
     CY = 0;
   const CUTS = [18, 30, 48, 72];
 
-  const canvas = /** @type {HTMLCanvasElement} */ (
-    document.getElementById('sea')
-  );
+  const canvas = must<HTMLCanvasElement>('#sea');
   const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
   let seaVisible = true;
   const splashEl = document.getElementById('splash');
@@ -231,7 +354,7 @@ export function initPageFx() {
   const doDive = diving && !still;
   let titleAt = 0; // when the wordmark lands — the core disc fades in with it
   let releaseAt = 0; // when the crowd follows the diver in — field appears + gather kicks
-  function runDiveIntro(full) {
+  function runDiveIntro(full: boolean) {
     if (!diving) {
       return;
     }
@@ -251,7 +374,7 @@ export function initPageFx() {
       de.classList.remove('diving');
       return;
     }
-    const t = (ms, fn) => setTimeout(fn, ms);
+    const t = (ms: number, fn: () => void) => setTimeout(fn, ms);
     // liftoff IS the trigger — and liftoff is the POP, not the squat.
     // The squat is a full second of anticipation starting the moment the
     // page lands (no lead-in); ~300ms after takeoff the swarm releases
@@ -289,7 +412,10 @@ export function initPageFx() {
         // dip-then-spike kink at the leap (the old ease-out popped then
         // stalled before the plunge).
         const EASE_LAUNCH = 'cubic-bezier(0.5, 0, 0.9, 0.75)';
-        const TIMING = { duration: 4000, fill: 'forwards' };
+        const TIMING: KeyframeAnimationOptions = {
+          duration: 4000,
+          fill: 'forwards',
+        };
         // beat offsets of 4000ms
         const B = {
           s1: 0.0375,
@@ -301,7 +427,7 @@ export function initPageFx() {
           out: 0.5,
         };
         // kf(el, frames): frames = [offset, transform, easingToNext?, opacity?]
-        const kf = (el, frames) => {
+        const kf = (el: Element | null, frames: Frame[]) => {
           if (el) {
             el.animate(
               frames.map(([offset, transform, easing, opacity]) => ({
@@ -314,7 +440,7 @@ export function initPageFx() {
             );
           }
         };
-        const sel$ = (sel) => flyer.querySelector(sel);
+        const sel$ = (sel: string) => flyer.querySelector(sel);
         // TARGET: the "d" of "divers" — he dives THROUGH its bowl and joins
         // the swarm. Measured from the wordmark (laid out even at opacity 0);
         // falls back to the vortex eye (viewport centre, the sim's cw/2,ch/2)
@@ -342,7 +468,7 @@ export function initPageFx() {
         const LX = -25;
         const LY = -5; // arc[0] equals the leap position, so take-off is seamless
         const APEX = 64; // lift above the straight chord at mid-arc, px
-        const arc = [];
+        const arc: Frame[] = [];
         const AN = 14;
         for (let i = 0; i <= AN; i += 1) {
           const u = i / AN; // uniform along the flight timeline
@@ -404,13 +530,18 @@ export function initPageFx() {
         // ~120deg, back stride ~60deg. Knee folds are LOCAL to the thigh
         // (the shin nests inside it), so a fold is the same number on
         // both sides: ~0 straight, -75 = heel kicked up behind.
-        const legs = (thL, shL, thR, shR) => ({ thL, shL, thR, shR });
+        const legs = (
+          thL: number,
+          shL: number,
+          thR: number,
+          shR: number,
+        ): LegPose => ({ thL, shL, thR, shR });
         const strideLfwd = legs(-6, -8, 6, -75); // left leg reaching, right heel up
         const strideRfwd = legs(-66, -75, 66, -8); // right leg reaching, left heel up
         // the glide pose comes from Sam's sticky-note sketch: one leg
         // straight along the body line, the other knee-bent, heel up
         const glide = legs(-20, -85, 35, -4);
-        const legBeats = [
+        const legBeats: [number, LegPose, string | undefined][] = [
           [0, legs(0, 0, 0, 0), EASE_STEP],
           [B.s1, strideLfwd, EASE_STEP],
           [B.s2, strideRfwd, EASE_STEP],
@@ -425,10 +556,10 @@ export function initPageFx() {
           ['.shin-l', 'shL'],
           ['.thigh-r', 'thR'],
           ['.shin-r', 'shR'],
-        ]) {
+        ] as const) {
           kf(
             sel$(sel),
-            legBeats.map(([o, p, e]) => [o, `rotate(${p[key]}deg)`, e]),
+            legBeats.map(([o, p, e]): Frame => [o, `rotate(${p[key]}deg)`, e]),
           );
         }
         // arms are exaggerated pendulums (visually tuned): the forward
@@ -437,8 +568,13 @@ export function initPageFx() {
         // side. Elbows flex more on the reaching arm. On the leap both
         // sweep through into a swan-V (±75 — wide enough that the arms
         // read separate from the head at 22px), elbows straight.
-        const arms = (aL, fL, aR, fR) => ({ aL, fL, aR, fR });
-        const armBeats = [
+        const arms = (
+          aL: number,
+          fL: number,
+          aR: number,
+          fR: number,
+        ): ArmPose => ({ aL, fL, aR, fR });
+        const armBeats: [number, ArmPose, string | undefined][] = [
           [0, arms(0, 0, 0, 0), EASE_STEP],
           [B.s1, arms(-120, -15, 135, -35), EASE_STEP], // left back, right reaching
           [B.s2, arms(15, -35, -10, -15), EASE_STEP], // left reaching, right back
@@ -455,10 +591,10 @@ export function initPageFx() {
           ['.fore-l', 'fL'],
           ['.arm-r', 'aR'],
           ['.fore-r', 'fR'],
-        ]) {
+        ] as const) {
           kf(
             sel$(sel),
-            armBeats.map(([o, p, e]) => [o, `rotate(${p[key]}deg)`, e]),
+            armBeats.map(([o, p, e]): Frame => [o, `rotate(${p[key]}deg)`, e]),
           );
         }
       });
@@ -506,7 +642,7 @@ export function initPageFx() {
   // deflect off the letterforms, so the word stays carved out of the crowd.
   // Per frame the CPU issues one update pass + two instanced draws.
   // ════════════════════════════════════════════════════════════════════════
-  function startGL(gl) {
+  function startGL(gl: WebGL2RenderingContext) {
     measure();
     buildField();
     const dbg = gl.getExtension('WEBGL_debug_renderer_info');
@@ -719,17 +855,25 @@ export function initPageFx() {
       frag = vec4(uInk * a, a);
     }`;
 
-    function compile(type, src) {
+    // Both throw rather than return null: startGL's caller catches and falls
+    // back to Canvas2D, so a dead pipeline degrades instead of half-running.
+    function compile(type: number, src: string): WebGLShader {
       const s = gl.createShader(type);
+      if (!s) {
+        throw new Error('page-fx: gl.createShader returned null');
+      }
       gl.shaderSource(s, src);
       gl.compileShader(s);
       if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-        throw new Error(gl.getShaderInfoLog(s));
+        throw new Error(gl.getShaderInfoLog(s) ?? 'shader compile failed');
       }
       return s;
     }
-    function link(vs, fs, tf) {
+    function link(vs: string, fs: string, tf?: string[]): WebGLProgram {
       const p = gl.createProgram();
+      if (!p) {
+        throw new Error('page-fx: gl.createProgram returned null');
+      }
       gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
       gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
       if (tf) {
@@ -737,7 +881,7 @@ export function initPageFx() {
       }
       gl.linkProgram(p);
       if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
-        throw new Error(gl.getProgramInfoLog(p));
+        throw new Error(gl.getProgramInfoLog(p) ?? 'program link failed');
       }
       return p;
     }
@@ -745,7 +889,7 @@ export function initPageFx() {
     const prog = link(VS, FS);
 
     // template: 6 segments × two triangles
-    const tpl = [];
+    const tpl: number[] = [];
     for (let seg = 0; seg < 6; seg++) {
       const c = [
         [0, -1],
@@ -761,7 +905,10 @@ export function initPageFx() {
     gl.bindBuffer(gl.ARRAY_BUFFER, tplBuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tpl), gl.STATIC_DRAW);
 
-    function styleBuffer(list, pack) {
+    function styleBuffer(
+      list: Pose[],
+      pack: (b: Pose, f: Float32Array, o: number) => void,
+    ) {
       const f = new Float32Array(list.length * 16);
       let o = 0;
       for (const b of list) {
@@ -789,8 +936,7 @@ export function initPageFx() {
     const flowStyle = styleBuffer(field, (b, f, o) => {
       f[o + 3] = b.size;
     });
-    /** @type {{ buf: WebGLBuffer | null, count: number } | null} */
-    let drain = null;
+    let drain: { buf: WebGLBuffer | null; count: number } | null = null;
     function rebuildCore() {
       const list = makeCore();
       const f = new Float32Array(list.length * 16);
@@ -846,7 +992,8 @@ export function initPageFx() {
           // from all sides and collapses INTO the steady distribution.
           rn = Math.min(0.74, rn + 0.22 + ((b.frac * 7.13) % 1) * 0.1);
         }
-        const ang = Math.log(R_START / r0) / K + b.off;
+        // lane-seeded, so dress() has set off — see pathBody for the same note
+        const ang = Math.log(R_START / r0) / K + (b.off ?? 0);
         const px = cx + Math.cos(ang) * rn * Scss;
         const py = cy + Math.sin(ang) * rn * Scss;
         P[i * 2] = px;
@@ -884,7 +1031,7 @@ export function initPageFx() {
       gl.enableVertexAttribArray(sVelLoc);
       gl.vertexAttribPointer(sVelLoc, 2, gl.FLOAT, false, 0, 0);
     }
-    function bindCommon(styleBuf) {
+    function bindCommon(styleBuf: WebGLBuffer | null) {
       gl.bindBuffer(gl.ARRAY_BUFFER, tplBuf);
       gl.enableVertexAttribArray(0);
       gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 12, 0);
@@ -908,7 +1055,7 @@ export function initPageFx() {
       gl.vertexAttribPointer(6, 2, gl.FLOAT, false, 0, 0);
       gl.vertexAttribDivisor(6, 1);
     }
-    let coreVao = null;
+    let coreVao: WebGLVertexArrayObject | null = null;
     function rebuildCoreVao() {
       if (!drain) {
         return;
@@ -922,7 +1069,7 @@ export function initPageFx() {
     }
 
     // uniforms
-    const sU = {};
+    const sU: Record<string, WebGLUniformLocation | null> = {};
     for (const n of [
       'u_res',
       'u_dt',
@@ -936,7 +1083,7 @@ export function initPageFx() {
     ]) {
       sU[n] = gl.getUniformLocation(simProg, n);
     }
-    const rU = {};
+    const rU: Record<string, WebGLUniformLocation | null> = {};
     for (const n of [
       'uRes',
       'uS',
@@ -965,9 +1112,9 @@ export function initPageFx() {
 
     let spin = 0;
     // dive-arrival reveal ramps: 0 until the moment lands, then fade in
-    const fadeIn = (at, ms) =>
+    const fadeIn = (at: number, ms: number) =>
       at ? Math.min((performance.now() - at) / ms, 1) : glDive ? 0 : 1;
-    function step(dt) {
+    function step(dt: number) {
       gl.useProgram(simProg);
       gl.uniform2f(sU.u_res, cw, ch);
       gl.uniform1f(sU.u_dt, dt);
@@ -1045,7 +1192,7 @@ export function initPageFx() {
       runDiveIntro(glDive);
       if (!still && !soft) {
         let last = performance.now();
-        const loop = (now) => {
+        const loop = (now: number) => {
           if (!seaVisible) {
             last = now;
             requestAnimationFrame(loop);
@@ -1074,7 +1221,7 @@ export function initPageFx() {
         };
         requestAnimationFrame(loop);
       }
-      let rT;
+      let rT: ReturnType<typeof setTimeout>;
       const onRs = () => {
         const vv = window.visualViewport;
         if (vv && vv.scale !== 1) {
@@ -1108,12 +1255,20 @@ export function initPageFx() {
   // Canvas2D fallback: bake the crowd once, rotate the image — a spinning
   // log-spiral reads as suction. No carving here, so "pyre" paints white.
   // ════════════════════════════════════════════════════════════════════════
-  function startCanvas2D(ctx, softStatic) {
+  function startCanvas2D(
+    ctxIn: CanvasRenderingContext2D | null,
+    softStatic: boolean,
+  ) {
+    if (!ctxIn) {
+      return; // no gl and no 2d — the page still reads, it just sits still
+    }
+    // bound to a const so the narrowing survives into the raf/resize closures
+    const ctx = ctxIn;
     document.documentElement.classList.add('no-gl');
     // full-spiral rail population — used by the Canvas2D fallback only
-    const bodies = [];
+    const bodies: SpiralBody[] = [];
     const laneRand = mulberry32(420);
-    const buildLane = (lane) => {
+    const buildLane = (lane: number) => {
       const n = Math.round(15.4 * PHI_T);
       const w = Array.from({ length: n }, () => 0.78 + laneRand() * 0.44);
       const total = w.reduce((a, b) => a + b, 0);
@@ -1123,7 +1278,7 @@ export function initPageFx() {
         bodies.push(dress({ lane, phi: (acc / total) * PHI_T }, laneRand));
       }
     };
-    const pile = [];
+    const pile: PileBody[] = [];
     {
       const rand = mulberry32(4200);
       for (let i = 0; i < 60; i++) {
@@ -1138,9 +1293,11 @@ export function initPageFx() {
       new Path2D(),
       new Path2D(),
     ];
-    const pathBody = (paths, b) => {
-      const r = b.r0 * (1 + b.drift);
-      const ang = b.phi + b.off;
+    const pathBody = (paths: Path2D[], b: SpiralBody) => {
+      // lane-seeded bodies always carry off/r0 — dress() sets both whenever a
+      // lane is present, and every body here came from buildLane.
+      const r = (b.r0 ?? 0) * (1 + b.drift);
+      const ang = b.phi + (b.off ?? 0);
       const ca = Math.cos(ang),
         sa = Math.sin(ang);
       const px = L / 2 + ca * r * S,
@@ -1160,7 +1317,7 @@ export function initPageFx() {
                 : 4;
       addBody(paths[k], px, py, cR, sR, h, b, h >= HEAD_PX);
     };
-    const pathPile = (paths, b) => {
+    const pathPile = (paths: Path2D[], b: PileBody) => {
       const rot = b.a * 7;
       addBody(
         paths[0],
@@ -1173,7 +1330,7 @@ export function initPageFx() {
         false,
       );
     };
-    const strokePaths = (c, paths) => {
+    const strokePaths = (c: CanvasRenderingContext2D, paths: Path2D[]) => {
       c.strokeStyle = '#212614';
       c.lineJoin = 'round';
       const widths = [
@@ -1213,7 +1370,7 @@ export function initPageFx() {
     let bakeRun = 0;
     // soft-gl machines get the same frame built in sub-frame slices so no
     // single task crosses the long-task line (that was 800ms of tbt)
-    function bakeChunked(onSlice) {
+    function bakeChunked(onSlice: () => void) {
       const c = newBaked();
       if (!c) {
         return;
@@ -1247,7 +1404,7 @@ export function initPageFx() {
       requestAnimationFrame(step);
     }
 
-    function paintGround(c) {
+    function paintGround(c: CanvasRenderingContext2D) {
       c.fillStyle = '#e25822';
       c.fillRect(0, 0, W, H);
       let g = c.createRadialGradient(
@@ -1295,7 +1452,7 @@ export function initPageFx() {
     }
 
     let theta = 0;
-    function frame(c) {
+    function frame(c: CanvasRenderingContext2D) {
       if (!ground || !baked) {
         return;
       }
@@ -1317,7 +1474,7 @@ export function initPageFx() {
       });
       if (!still && !softStatic) {
         let last = performance.now();
-        const loop = (now) => {
+        const loop = (now: number) => {
           if (!seaVisible) {
             last = now;
             requestAnimationFrame(loop);
@@ -1360,8 +1517,8 @@ export function initPageFx() {
     joinForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = joinForm.querySelector('button');
-      const emailInput = /** @type {HTMLInputElement | null} */ (
-        joinForm.querySelector('input[name="email"]')
+      const emailInput = joinForm.querySelector<HTMLInputElement>(
+        'input[name="email"]',
       );
       if (!btn || !emailInput) {
         return;
@@ -1399,9 +1556,7 @@ export function initPageFx() {
   // screen-two modules land in their own tasks — keeps hydration's
   // main-thread work under the long-task threshold (lighthouse tbt)
   setTimeout(function fire() {
-    const c = /** @type {HTMLCanvasElement} */ (
-      document.getElementById('fire')
-    );
+    const c = must<HTMLCanvasElement>('#fire');
     const joinEl = document.getElementById('join');
     const g = headlessAudit
       ? null
@@ -1411,9 +1566,7 @@ export function initPageFx() {
           premultipliedAlpha: true,
         });
     if (!joinEl || !g) {
-      if (c) {
-        c.style.display = 'none';
-      }
+      c.style.display = 'none';
       return;
     }
     const dbg2 = g.getExtension('WEBGL_debug_renderer_info');
@@ -1465,7 +1618,7 @@ export function initPageFx() {
       float a = clamp(smoothstep(0.05, 0.3, i) + glow * 0.45, 0.0, 1.0);
       frag = vec4(col * a, a);
     }`;
-    const mk = (ty, src) => {
+    const mk = (ty: number, src: string) => {
       const s = g.createShader(ty);
       if (!s) {
         return null;
@@ -1481,6 +1634,10 @@ export function initPageFx() {
       return;
     }
     const p2 = g.createProgram();
+    if (!p2) {
+      c.style.display = 'none';
+      return;
+    }
     g.attachShader(p2, v2);
     g.attachShader(p2, f2);
     g.linkProgram(p2);
@@ -1518,7 +1675,7 @@ export function initPageFx() {
     } else {
       fireVisible = true;
     }
-    const drawFire = (t) => {
+    const drawFire = (t: number) => {
       g.viewport(0, 0, fw, fh);
       g.uniform2f(uRes2, fw, fh);
       g.uniform1f(uT2, t);
@@ -1532,7 +1689,7 @@ export function initPageFx() {
     if (deskQ.matches) {
       drawFire(0); // warm the pipeline off-screen — first visible frame stays cheap
     }
-    const loop = (now) => {
+    const loop = (now: number) => {
       if (fireVisible && deskQ.matches) {
         drawFire(now * 0.001);
       }
@@ -1543,18 +1700,16 @@ export function initPageFx() {
 
   // ── the risers: white divers (and flecks, on desktop) floating up
   setTimeout(function rain() {
-    const c = /** @type {HTMLCanvasElement} */ (
-      document.getElementById('rain')
-    );
+    const c = must<HTMLCanvasElement>('#rain');
     const joinEl = document.getElementById('join');
-    if (!joinEl) {
+    const ctx2 = c.getContext('2d');
+    if (!joinEl || !ctx2) {
       return;
     }
-    const ctx2 = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d'));
     const rand = mulberry32(77);
     // each body's ink: randomly interpolated between the two approved
     // riser colors — warm white (#f0e8dd) and salmon (#d6855e)
-    const emberMix = (t) =>
+    const emberMix = (t: number) =>
       `rgb(${Math.round(240 - 26 * t)}, ${Math.round(232 - 99 * t)}, ${Math.round(221 - 127 * t)})`;
     // horizontal position — every body enters at the flame's centre and fans
     // out along its own lane (b.fan) as it rises: one entry point, then a
@@ -1562,7 +1717,7 @@ export function initPageFx() {
     const TIP = 0.6; // flame tip — full opacity by here (see the fade)
     const SEED = 0.5; // single central entry point, ~halfway up the flame
     const SPAWN_GAP = 1.8; // seconds between emergences — a staggered trickle
-    const fanX = (b) => {
+    const fanX = (b: Riser) => {
       const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
       const up = Math.max(0, rise - SEED); // risen since the central entry
       // ARC: up^1.8 so each body leaves the entry going straight up, then
@@ -1575,7 +1730,7 @@ export function initPageFx() {
         Math.min(1, up * 4); // ~0 at the entry, so the point stays clean
       return FLAME_X + b.fan * band + wander;
     };
-    const seedDrop = (b, initial) => {
+    const seedDrop = (b: Riser, initial: boolean) => {
       b.col = emberMix(rand());
       b.fan = (rand() - 0.5) * 2; // [-1, 1] — random flare heading + amount
       b.noisePh = rand() * TAU;
@@ -1602,9 +1757,26 @@ export function initPageFx() {
       b.hcR = 1; // heading (cos/sin); starts pointing straight up
       b.hsR = 0;
     };
-    const drops = [];
+    const drops: Riser[] = [];
     for (let i = 0; i < 35; i++) {
-      const b = dress({}, rand);
+      // zero the riser fields before seeding so a complete body — never a
+      // half-built one — is what enters the pool
+      const b: Riser = Object.assign(dress({}, rand), {
+        col: '',
+        fan: 0,
+        noisePh: 0,
+        x: 0,
+        y: 0,
+        px: 0,
+        vx: 0,
+        v: 0,
+        waiting: false,
+        hcR: 1,
+        hsR: 0,
+        swayPh: 0,
+        swayA: 0,
+        swimPh: 0,
+      });
       seedDrop(b, true);
       b.v = 0.02 + rand() * 0.035;
       b.swayPh = rand() * TAU;
@@ -1612,8 +1784,8 @@ export function initPageFx() {
       b.swimPh = rand() * TAU;
       drops.push(b);
     }
-    const mkRock = (cx, cy, rx, ry) => {
-      const pts = [];
+    const mkRock = (cx: number, cy: number, rx: number, ry: number): Rock => {
+      const pts: [number, number][] = [];
       const n = 9;
       for (let i = 0; i < n; i++) {
         const ang = (i / n) * TAU;
@@ -1629,7 +1801,7 @@ export function initPageFx() {
       mkRock(FLAME_X + 0.008, FLAME_BASE + 0.028, 0.062, 0.033),
     ];
 
-    const flecks = [];
+    const flecks: Fleck[] = [];
     for (let i = 0; i < 90; i++) {
       flecks.push({
         x: 0,
@@ -1641,7 +1813,7 @@ export function initPageFx() {
         warm: rand(),
       });
     }
-    const seedFleck = (f, initial) => {
+    const seedFleck = (f: Fleck, initial: boolean) => {
       f.x = FLAME_X + (rand() - 0.5) * 0.05;
       f.y = initial ? rand() * FLAME_BASE : FLAME_BASE - rand() * 0.1;
     };
@@ -1661,7 +1833,7 @@ export function initPageFx() {
     addEventListener('resize', sizeRain);
     let rockGlow = 1;
     let rockBlur = 0;
-    const drawRock = (r) => {
+    const drawRock = (r: Rock) => {
       const n = r.pts.length;
       ctx2.beginPath();
       for (let i = 0; i <= n; i++) {
@@ -1699,7 +1871,7 @@ export function initPageFx() {
     } else {
       joinVisible = true;
     }
-    const drawRain = (t) => {
+    const drawRain = (t: number) => {
       ctx2.clearRect(0, 0, rw, rh);
       ctx2.lineCap = 'round';
       ctx2.lineJoin = 'round';
@@ -1789,7 +1961,7 @@ export function initPageFx() {
     // it's just this one running value.
     let fanSeq = rand() * 2 - 1;
     const GOLDEN = 2 * 0.618033988749895;
-    const loop = (now) => {
+    const loop = (now: number) => {
       if (!joinVisible) {
         last = now;
         requestAnimationFrame(loop);
