@@ -8,6 +8,9 @@ import { listPublishedEpisodes } from '$lib/server/queries';
 export const prerender = true;
 
 const SITE = 'https://pyredivers.com';
+// apple wants 1400–3000px square; this is the 3000 export. og-square is 1200
+// and would be rejected outright.
+const COVER = `${SITE}/assets/social/podcast-cover-3000x3000.png`;
 
 export const GET: RequestHandler = async () => {
   const published = await listPublishedEpisodes();
@@ -18,16 +21,17 @@ export const GET: RequestHandler = async () => {
       'two builders, live and unedited. conversations with the ones who jumped before they were ready.',
     id: SITE,
     link: SITE,
-    // TODO: swap for the real 3000x3000 cover before submitting to
-    // apple/spotify — og-square is 1200 and directories want >=1400.
-    image: `${SITE}/og-square.png`,
+    language: 'en-us',
+    image: COVER,
     favicon: `${SITE}/og-square.png`,
     copyright: `pyre divers, ${new Date().getFullYear()}`,
     podcast: true,
     category: 'Technology',
     author: {
       name: "Salvatore D'Angelo",
-      email: 'salvatoredangelo@protonmail.com',
+      // apple mails this address to verify feed ownership at submission, so it
+      // has to be one that reads — and one tied to the show, not to sam.
+      email: 'sam@pyredivers.com',
     },
   });
 
@@ -49,13 +53,21 @@ export const GET: RequestHandler = async () => {
     });
   }
 
-  // the `feed` package has no typed option for <itunes:explicit>; apple and
-  // spotify require it, so inject it rather than fight the extension api.
+  // the `feed` package emits <image> and <googleplay:image> but never
+  // <itunes:image>, and has no typed option for <itunes:explicit> or
+  // <itunes:type> — all three are required or expected by apple and spotify,
+  // so inject them rather than fight the extension api. Without itunes:image
+  // apple rejects the feed at submission.
   const rss = feed
     .rss2()
     .replace(
       '</channel>',
-      '  <itunes:explicit>false</itunes:explicit>\n</channel>',
+      [
+        `  <itunes:image href="${COVER}"/>`,
+        '  <itunes:explicit>false</itunes:explicit>',
+        '  <itunes:type>episodic</itunes:type>',
+        '</channel>',
+      ].join('\n'),
     );
 
   return new Response(rss, {
