@@ -5,8 +5,8 @@
 // screen one, its Canvas2D fallback, and the risers on screen two. Every body
 // is "dressed" once — pose baked into cos/sin pairs — then drawn by whichever
 // renderer owns it.
+import { DEFAULT_LOOK, LOOKS, type LookConfig } from './looks';
 import { LISTMONK, subscribeFlow } from './subscribe';
-import { LOOKS, DEFAULT_LOOK, type LookConfig } from './looks';
 
 /** Seeded PRNG. The same souls every load. */
 type Rand = () => number;
@@ -812,6 +812,11 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
         // actually fills. At 1 it dims toward an eye instead.
         vFade = mix(1.0, smoothstep(uRE * 0.05, uRE * 0.5, rn), uFadeCore);
         vFade *= uFieldA;                    // dive arrival: hidden until the diver lands
+        // No radial falloff here on purpose. Fading each body individually makes
+        // every figure see-through, so overlapping limbs show through one
+        // another and the crowd reads as stacked glass. The edges are veiled by
+        // #splash::after instead — one translucent layer over the finished
+        // crowd, which dims the field as a whole while each body stays solid.
       }
 
       float w = max(uS * 0.0008, 0.09 * h);

@@ -17,11 +17,7 @@
   });
 </script>
 
-<section
-  id="splash"
-  data-look={look}
-  aria-label="pyre divers — the whirlpool"
->
+<section id="splash" data-look={look} aria-label="pyre divers — the whirlpool">
   <canvas id="sea" aria-hidden="true"></canvas>
   <h1 class="wordmark">
     <span class="line"
