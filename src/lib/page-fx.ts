@@ -6,6 +6,7 @@
 // is "dressed" once — pose baked into cos/sin pairs — then drawn by whichever
 // renderer owns it.
 import { LISTMONK, subscribeFlow } from './subscribe';
+import { LOOKS, DEFAULT_LOOK, type LookConfig } from './looks';
 
 /** Seeded PRNG. The same souls every load. */
 type Rand = () => number;
@@ -109,7 +110,7 @@ function must<T extends Element>(selector: string): T {
   return el;
 }
 
-export function initPageFx(): void {
+export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
   // headless audits (lighthouse) run swiftshader: every gl context they
   // create is a long task. they get the chunked static frame, gl-free.
   const headlessAudit = /HeadlessChrome/.test(navigator.userAgent);
@@ -131,7 +132,7 @@ export function initPageFx(): void {
   const LANES = 3;
   const R_START = 0.72; // spiral starts past every corner
   const K = 0.02124; // log-spiral pitch
-  const H_MIN = 0.005; // size floor
+  const H_MIN = 0.013; // SPIKE: size floor raised — inner bodies stay big enough to overlap into solid ink
   const GAP = 1 - Math.exp((-TAU * K) / LANES); // ring gap as a fraction of r
   const PHI_T = Math.log(R_START / 0.004) / K; // fallback: full span rim → drain
   const OMEGA = TAU / 64; // fallback rotation: one rev per 64 s
@@ -222,7 +223,7 @@ export function initPageFx(): void {
     V_E = 0.012,
     C2 = 0.02;
   function tune(fontDevPx: number, S: number) {
-    R_CORE = (0.315 * fontDevPx) / S;
+    R_CORE = (0.72 * fontDevPx) / S; // SPIKE: wider, so the density ramp reads
     R_E = 0.92 * R_CORE;
     V_E = W_CORE * R_E;
     C2 = (V_RIM_W * V_RIM_W - V_E * V_E) / (R_START - R_E);
@@ -249,6 +250,10 @@ export function initPageFx(): void {
   // phyllotaxis (sunflower) core: golden-angle packing fills the disc evenly —
   // crisp edge, readable bodies to dead center. Regenerated per resize, count
   // tied to area so the packing density holds.
+  // SPIKE: density-graded disc. sqrt(u) is UNIFORM area density — it can
+  // never read as "densest toward the middle". Raising the exponent pulls
+  // bodies inward so density climbs continuously and only goes solid at the
+  // core, which is what the cover art actually does.
   function makeCore(): CoreBody[] {
     const rand = mulberry32(4200);
     const n = Math.max(
@@ -260,7 +265,8 @@ export function initPageFx(): void {
     for (let i = 0; i < n; i++) {
       const dressed = dress({}, rand);
       const ang0 = i * GOLD + (rand() - 0.5) * 0.15;
-      const radFrac = Math.sqrt((i + 0.5) / n) * (1 + (rand() - 0.5) * 0.06);
+      const u = (i + 0.5) / n;
+      const radFrac = u ** 0.85 * (1 + (rand() - 0.5) * 0.06);
       out.push({ ...dressed, ang0, radFrac });
     }
     return out;
@@ -684,12 +690,22 @@ export function initPageFx(): void {
       float rn = r / u_Scss;
       vec2 radial = rel / r;
       vec2 tang = vec2(-radial.y, radial.x);
-      float vmag = sqrt(max(u_VE * u_VE + u_C2 * (rn - u_RE), 0.25 * u_VE * u_VE));
+      // RANKINE VORTEX: a real whirlpool is a free vortex outside a core that
+      // rotates as a solid body. Outside u_RE the deceleration law holds;
+      // inside, omega goes constant so the crowd orbits as one mass instead of
+      // whipping to infinite angular speed at the pinhole. The blend factor mixes the
+      // two across a band, and the same factor tapers the spiral pitch to
+      // zero — which is what stops everything draining into the middle and
+      // lets the field settle at a steady density instead.
+      float core = smoothstep(u_RE, u_RE * 2.4, rn);   // 0 in the core, 1 outside
+      float vFree = sqrt(max(u_VE * u_VE + u_C2 * (rn - u_RE), 0.25 * u_VE * u_VE));
+      float vSolid = (u_VE / max(u_RE, 1e-4)) * rn;    // omega * r
+      float vmag = mix(vSolid, vFree, core);
       float vpf = vmag * u_Scss / 60.0;             // local current, px per frame
       // dive arrival: u_gather steepens the current's inward pitch and
       // over-drives it — the field vacuum-sucks toward the drain, then
       // relaxes into the steady vortex as gather decays to zero
-      vec2 vdes = normalize(tang - radial * (K + u_gather)) * vpf * (1.0 + u_gather * 3.0);
+      vec2 vdes = normalize(tang - radial * (K * core + u_gather)) * vpf * (1.0 + u_gather * 3.0);
       vel += (vdes - vel) * min(0.16 * u_dt, 1.0); // firm steering — the flow closes behind the letters
       // smooth per-body wander (not white noise — that made bodies twirl on their
       // axis): a gentle force whose direction eases to a new random heading every
@@ -704,9 +720,9 @@ export function initPageFx(): void {
       pos += vel * u_dt;
       vel *= pow(0.97, u_dt); // bleed cursor impulse; steering re-energizes
 
-      // swallowed by the disc (or lost past the rim) → resurface at the rim
+      // only the rim escape remains — nothing is swallowed now, the core holds
       float rn2 = length(pos - u_center) / u_Scss;
-      if (rn2 < u_RE * 0.98 || rn2 > 0.745) {
+      if (rn2 > 0.745) {
         float a = hash(pos + vel) * 6.2831853;
         vec2 dir = vec2(cos(a), sin(a));
         pos = u_center + dir * ${R_START} * u_Scss;
@@ -737,6 +753,7 @@ export function initPageFx(): void {
     uniform float uRE;
     uniform float uSwimT;   // seconds — drives the gentle limb swim
     uniform float uSwim;    // 0 (reduced motion) or 1 — swim amplitude gate
+    uniform float uFadeCore; // 0 = solid drain (inverse), 1 = faded eye (ember)
     layout(location=0) in vec3 aTpl;  // segId, end(0|1), side(-1|1)
     layout(location=1) in vec4 aA;    // core: ang0, radFrac, 0, size · field: 0,0,0,size
     layout(location=2) in vec4 aB;    // core: rotC, rotS · field: cos(jit), sin(jit) · zw: armLen, legLen
@@ -771,7 +788,7 @@ export function initPageFx(): void {
       if (uCore > 0.5) {
         float ang = aA.x + uSpin;            // the sunflower disc spins as one
         float r = aA.y * uRCORE;
-        vFade = smoothstep(uRE * 0.3, uRE * 3.2, r); // same long ramp as the field — one smooth dim
+        vFade = 1.0; // SPIKE: solid core — the disc reads as a filled hole
         vFade *= uCoreA;                     // dive arrival: the disc lands with the wordmark
         float ca = cos(ang), sa = sin(ang);
         center = uRes * 0.5 + vec2(ca, sa) * r * uS;
@@ -789,7 +806,11 @@ export function initPageFx(): void {
         float c0 = -vdir.y, s0 = vdir.x;
         cR = c0 * aB.x - s0 * aB.y;
         sR = s0 * aB.x + c0 * aB.y;
-        vFade = smoothstep(uRE * 0.3, uRE * 3.2, rn); // long ramp: outpaces the crowding, no dark ring
+        // uFadeCore picks the look's core treatment. At 0 the crowd stays
+        // fully opaque and goes solid at the drain — the tonal ramp then comes
+        // from DENSITY and SIZE alone, which is the only way the middle ever
+        // actually fills. At 1 it dims toward an eye instead.
+        vFade = mix(1.0, smoothstep(uRE * 0.05, uRE * 0.5, rn), uFadeCore);
         vFade *= uFieldA;                    // dive arrival: hidden until the diver lands
       }
 
@@ -982,8 +1003,15 @@ export function initPageFx(): void {
       const scatter = glDive && !releaseAt;
       for (let i = 0; i < N_F; i++) {
         const b = field[i];
-        const w = V_E + (V_RIM_W - V_E) * b.frac;
-        const r0 = R_E + (w * w - V_E * V_E) / C2;
+        // SPIKE: seed from near the pinhole outward. The old mapping started
+        // at R_E, which left a literal hole in the middle that took seconds of
+        // drift to fill — the crowd began further UP the funnel than it ends.
+        // With the rankine core there is no drain, so wherever bodies are
+        // seeded is where they stay: the distribution IS the artwork.
+        // frac^1.9 crowds the middle, and the log-spiral angle below still
+        // lays them on the arms.
+        const R_IN = 0.002; // right to the pinhole — 0.012 left a bright eye
+        const r0 = R_IN + (R_START - R_IN) * b.frac ** 1.9;
         let rn = r0 * (1 + b.drift);
         if (scatter) {
           // dive arrival: the steady field, displaced outward by a constant
@@ -1002,10 +1030,21 @@ export function initPageFx(): void {
         const r = Math.max(Math.hypot(rel[0], rel[1]), 1e-3);
         const tang = [-rel[1] / r, rel[0] / r];
         const rad = [rel[0] / r, rel[1] / r];
-        const dx = tang[0] - rad[0] * K,
-          dy = tang[1] - rad[1] * K;
+        // Seed to the SAME rankine profile the shader runs, tapering both the
+        // pitch and the speed inside the core. Seeding centre bodies at
+        // speedN's floor (0.5*V_E) launched them outward on frame one, which
+        // is what kept re-opening the hole in the middle.
+        const rnLocal = r / Scss;
+        const coreMix = Math.min(
+          1,
+          Math.max(0, (rnLocal - R_E) / (R_E * 2.4 - R_E)),
+        );
+        const dx = tang[0] - rad[0] * (K * coreMix),
+          dy = tang[1] - rad[1] * (K * coreMix);
         const dl = Math.hypot(dx, dy);
-        const v = (speedN(r / Scss) * Scss) / 60;
+        const vLocal =
+          coreMix * speedN(rnLocal) + (1 - coreMix) * (V_E / R_E) * rnLocal;
+        const v = (vLocal * Scss) / 60;
         V[i * 2] = (dx / dl) * v;
         V[i * 2 + 1] = (dy / dl) * v;
       }
@@ -1097,6 +1136,7 @@ export function initPageFx(): void {
       'uInk',
       'uSwimT',
       'uSwim',
+      'uFadeCore',
     ]) {
       rU[n] = gl.getUniformLocation(prog, n);
     }
@@ -1156,13 +1196,12 @@ export function initPageFx(): void {
       gl.uniform3fv(rU.uInk, INK);
       gl.uniform1f(rU.uSwimT, performance.now() * 0.001);
       gl.uniform1f(rU.uSwim, swimOn);
+      gl.uniform1f(rU.uFadeCore, look.fadeCore ? 1 : 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(rU.uCore, 0);
       gl.bindVertexArray(renderVaos[active]);
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, N_F);
-      gl.uniform1f(rU.uCore, 1);
-      gl.bindVertexArray(coreVao);
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, drain.count);
+      // SPIKE: no second system. The vortex IS the core now.
       gl.bindVertexArray(null);
     }
 

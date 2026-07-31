@@ -37,6 +37,15 @@ section {
 }
 #splash {
   background-color: #e25822;
+}
+/* The gradient mirrors with the wordmark: whichever word is ink has to sit on
+   the light side, or it lands on the darkest corner and goes muddy. */
+#splash[data-look='inverse'] {
+  background-image:
+    radial-gradient(circle at 84% 84%, #b91c1c 0%, rgba(185, 28, 28, 0) 72%),
+    radial-gradient(circle at 22% 16%, #f5b942 0%, rgba(245, 185, 66, 0) 66%);
+}
+#splash[data-look='ember'] {
   background-image:
     radial-gradient(circle at 16% 84%, #b91c1c 0%, rgba(185, 28, 28, 0) 72%),
     radial-gradient(circle at 78% 16%, #f5b942 0%, rgba(245, 185, 66, 0) 66%);
@@ -66,10 +75,21 @@ section {
   white-space: nowrap;
   transform: translateY(-0.05em);
 }
-.wordmark .w {
+/* "inverse": white divers over the ink-filled core. A dark divers there puts
+   the d's bowl on solid ink and the word reads "livers" — which is why the
+   core treatment and these colours ship as one look, not two toggles. */
+#splash[data-look='inverse'] .wordmark .w {
+  color: #212614;
+}
+#splash[data-look='inverse'] .wordmark .k {
   color: #ffffff;
 }
-.wordmark .k {
+/* "ember": the original. Works because that look fades the core to an eye,
+   leaving the d's bowl light enough to read. */
+#splash[data-look='ember'] .wordmark .w {
+  color: #ffffff;
+}
+#splash[data-look='ember'] .wordmark .k {
   color: #212614;
 }
 .down {
