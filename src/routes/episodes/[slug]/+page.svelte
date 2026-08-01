@@ -1,4 +1,12 @@
 <script lang="ts">
+  // Epilogue, imported on this route only — it is the one page with long-form
+  // text, and the landing page should not carry four @font-face blocks it never
+  // paints. Regular and bold, each with an italic: transcripts need to mark
+  // speakers and emphasis, which the single-weight brand face cannot do.
+  import '@fontsource/epilogue/400.css';
+  import '@fontsource/epilogue/400-italic.css';
+  import '@fontsource/epilogue/700.css';
+  import '@fontsource/epilogue/700-italic.css';
   import { resolve } from '$app/paths';
   import type { PageProps } from './$types';
 
@@ -91,6 +99,21 @@
 </main>
 
 <style>
+  /* Epilogue is the reading face, and it lives HERE rather than globally: this
+     is the only route with long-form text. A transcript is thousands of words
+     in a 42rem column with speakers to mark, and Pyre Display — the brand face
+     the landing page wears — ships one weight and no italic, so there is
+     nothing to mark them with. Loading it per-route keeps the landing page's
+     critical css free of four @font-face blocks it would never use.
+     Headings stay on the brand face; only the prose changes. Epilogue's bold
+     and italic ship for when transcript copy carries markup — no rule for
+     strong/b here yet, because nothing emits any and svelte-check is held to
+     --fail-on-warnings, which counts an unused selector. */
+  .desc,
+  .segment {
+    font-family: 'Epilogue', ui-sans-serif, system-ui, sans-serif;
+  }
+
   .episode {
     max-width: 42rem;
     margin: 0 auto;
