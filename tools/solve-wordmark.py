@@ -31,12 +31,45 @@ from fontTools.ttLib import TTFont
 ROOT = Path(__file__).resolve().parent.parent
 FONT = ROOT / "tools" / "pyre-display.ttf"
 TEXT = "pyre divers"
-# The counter's centre, measured from the "d"'s origin. The bowl is the face's
-# own "o" translated +2, and that ring's counter spans x[144,536].
-COUNTER_CX = 340.0
-# ...and its vertical centre above the baseline: the "o" ring's counter spans
-# y[62,473], and the bowl is the "o" translated in x only.
-COUNTER_CY = (62 + 473) / 2
+# The d's counter — the hole the vortex core sits in — is MEASURED off the
+# built face, not written down. It was hard-coded, which quietly defeated the
+# "re-run me when the face changes" instruction this whole script exists for:
+# a changed bowl would print fresh-looking numbers aimed at the old hole.
+def counter_centre(font):
+    """Centre of the d's counter, in font units from the glyph's origin."""
+    from fontTools.pens.recordingPen import RecordingPen
+
+    glyph_set = font.getGlyphSet()
+    pen = RecordingPen()
+    glyph_set[font.getBestCmap()[ord("d")]].draw(pen)
+
+    contours, current = [], []
+    for op, args in pen.value:
+        if op == "moveTo" and current:
+            contours.append(current)
+            current = []
+        current.append((op, args))
+    contours.append(current)
+
+    def box(contour):
+        pts = [p for _, args in contour for p in args if isinstance(p, tuple)]
+        xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+        return min(xs), min(ys), max(xs), max(ys)
+
+    boxes = [box(c) for c in contours]
+    outer = max(boxes, key=lambda b: (b[2] - b[0]) * (b[3] - b[1]))
+    inner = [
+        b
+        for b in boxes
+        if b is not outer
+        and b[0] >= outer[0]
+        and b[1] >= outer[1]
+        and b[2] <= outer[2]
+        and b[3] <= outer[3]
+    ]
+    assert len(inner) == 1, f"expected one counter in the d, found {len(inner)}"
+    x0, y0, x1, y1 = inner[0]
+    return (x0 + x1) / 2, (y0 + y1) / 2
 
 
 def main():
@@ -45,6 +78,7 @@ def main():
     upm = face.upem
 
     tt = TTFont(FONT)
+    counter_cx, counter_cy = counter_centre(tt)
     glyph_set = tt.getGlyphSet()
     order = tt.getGlyphOrder()
     d_glyph = order.index(tt.getBestCmap()[ord("d")])
@@ -72,7 +106,7 @@ def main():
         counter = None
         for gid, x in placed:
             if gid == d_glyph and counter is None:
-                counter = x + COUNTER_CX
+                counter = x + counter_cx
             box = bounds(gid)
             if box is None:
                 continue
@@ -93,12 +127,12 @@ def main():
 
     # Vertical: with line-height 1 the grid centres the line box, and the
     # baseline falls (ascent - descent)/2 below that centre. The d's counter
-    # sits COUNTER_CY above the baseline, so the gap between the counter and the
+    # sits counter_cy above the baseline, so the gap between the counter and the
     # box centre is the difference — lift by it and the counter lands on the
     # vortex core. Per-face: hhea moves when the face does.
     hhea = tt["hhea"]
     baseline_drop = (hhea.ascender + hhea.descender) / 2  # descender is negative
-    rise = COUNTER_CY - baseline_drop
+    rise = counter_cy - baseline_drop
 
     print(f"  word-spacing: {word_spacing / upm:+.4f}em;   /* .wordmark */")
     print(f"  translateX:   {shift / upm:+.4f}em;   /* .wordmark .line */")

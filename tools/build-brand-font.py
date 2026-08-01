@@ -35,6 +35,7 @@ import math
 from pathlib import Path
 
 from fontTools.misc.transform import Transform
+from fontTools.pens.boundsPen import BoundsPen
 from fontTools.pens.cu2quPen import Cu2QuPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
@@ -292,7 +293,18 @@ def embolden(font):
     # fsSelection: clear REGULAR (bit 6), set BOLD (bit 5)
     font["OS/2"].fsSelection = (font["OS/2"].fsSelection & ~0x40) | 0x20
     font["head"].macStyle |= 0x01  # bold
-    _ = glyf
+
+    # Growing every outline pushes the tallest and deepest glyphs past the
+    # metrics inherited from the regular — ink reaches 1077/-290 against a
+    # declared 1059/272. usWin* is a clipping box on some rasterisers, so leave
+    # it too small and accents lose their tops. Raised to cover the real ink.
+    # hhea and the typo metrics are deliberately NOT touched: they drive line
+    # spacing, and bold has to set on the same baseline grid as regular or
+    # swapping weight reflows the paragraph.
+    ink_top = max(glyf[n].yMax for n in font.getGlyphOrder() if glyf[n].numberOfContours)
+    ink_bottom = min(glyf[n].yMin for n in font.getGlyphOrder() if glyf[n].numberOfContours)
+    font["OS/2"].usWinAscent = max(font["OS/2"].usWinAscent, ink_top)
+    font["OS/2"].usWinDescent = max(font["OS/2"].usWinDescent, -ink_bottom)
 
 
 def rename(font, style="Regular"):
@@ -390,7 +402,39 @@ def verify_bold():
             regular["hmtx"][name][0] == bold["hmtx"][name][0]
         ), f"bold advance moved: {name}"
     assert bold["OS/2"].usWeightClass == 700
-    print(f"verified bold: stem {thin:.0f} -> {thick:.0f} ({thick / thin:.2f}x), advances intact")
+
+    # Advances are held, so the extra mass eats into side bearings and glyphs
+    # overhang a little more than they did. Some overhang is the face's own
+    # design — "j" already reaches 141 units left of its origin so its tail can
+    # tuck under the previous letter — so an absolute bound would fail on a
+    # correct build. What must hold is that emboldening adds no more overhang
+    # than the growth accounts for: half the pen each side, plus a unit of
+    # rounding. More than that means the outline moved, not just thickened.
+    limit = BOLD_GROWTH / 2 + 1
+    thin_set, thick_set = regular.getGlyphSet(), bold.getGlyphSet()
+    worst = 0.0
+    for name in regular.getGlyphOrder():
+        a, b = BoundsPen(thin_set), BoundsPen(thick_set)
+        thin_set[name].draw(a)
+        thick_set[name].draw(b)
+        if not a.bounds or not b.bounds:
+            continue
+        advance = thin_set[name].width
+        added = max(
+            (-b.bounds[0]) - (-a.bounds[0]),
+            (b.bounds[2] - advance) - (a.bounds[2] - advance),
+        )
+        assert added <= limit, f"{name}: bold overhangs {added:.0f}u more than regular"
+        worst = max(worst, added)
+
+    ink_top = max(
+        bold["glyf"][n].yMax for n in bold.getGlyphOrder() if bold["glyf"][n].numberOfContours
+    )
+    assert bold["OS/2"].usWinAscent >= ink_top, "bold ink exceeds its own clipping box"
+    print(
+        f"verified bold: stem {thin:.0f} -> {thick:.0f} ({thick / thin:.2f}x), "
+        f"advances intact, overhang grew at most {worst:.0f}u (limit {limit:.0f})"
+    )
 
 
 def subset_woff2(font, path):
