@@ -1205,7 +1205,13 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
     };
     // wait for the wordmark font so first paint and sizing agree
     if (document.fonts && document.fonts.load) {
-      document.fonts.load("700 100px 'Comfortaa'").then(boot, boot);
+      // Must name the face the wordmark actually uses. This asked for
+      // Comfortaa 700 long after the site stopped shipping Comfortaa, so it
+      // matched nothing and resolved instantly — boot ran against fallback
+      // metrics. font-display:block hides that visually, but the dive
+      // choreography measures the laid-out "d" to aim the diver at its bowl,
+      // and a fallback box aims him somewhere else.
+      document.fonts.load("400 100px 'Pyre Display'").then(boot, boot);
     } else {
       boot();
     }
