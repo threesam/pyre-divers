@@ -347,11 +347,15 @@ button.join {
   position: relative;
   isolation: isolate;
   font: inherit;
+  /* Size, not weight, carries the primary action. The brand face ships one cut,
+     so 700 here would be a synthetic bold and engines fake it differently —
+     the site's only call to action would render at a different weight per
+     browser. Scale gives the emphasis and looks the same everywhere. */
   font-weight: 400;
-  font-size: 1rem;
+  font-size: 1.2rem;
   border: none;
   cursor: pointer;
-  padding: 0.85rem 1rem;
+  padding: 0.8rem 1rem;
   background: none;
   color: #1c1917;
 }
