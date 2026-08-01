@@ -42,8 +42,6 @@ interface Pose {
 type SpiralBody = Pose & { lane: number; phi: number };
 /** A swarm particle: spiral-seeded, plus its place in the speed distribution. */
 type FieldBody = SpiralBody & { frac: number };
-/** Phyllotaxis disc at the drain — packed by angle and radius instead. */
-type CoreBody = Pose & { ang0: number; radFrac: number };
 /** The loose heap at the spiral's mouth (2D fallback only). */
 type PileBody = Pose & { a: number; r: number };
 
@@ -132,7 +130,8 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
   const LANES = 3;
   const R_START = 0.72; // spiral starts past every corner
   const K = 0.02124; // log-spiral pitch
-  const H_MIN = 0.013; // SPIKE: size floor raised — inner bodies stay big enough to overlap into solid ink
+  // size floor: inner bodies stay big enough to overlap into solid ink
+  const H_MIN = 0.013;
   const GAP = 1 - Math.exp((-TAU * K) / LANES); // ring gap as a fraction of r
   const PHI_T = Math.log(R_START / 0.004) / K; // fallback: full span rim → drain
   const OMEGA = TAU / 64; // fallback rotation: one rev per 64 s
@@ -223,7 +222,7 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
     V_E = 0.012,
     C2 = 0.02;
   function tune(fontDevPx: number, S: number) {
-    R_CORE = (0.72 * fontDevPx) / S; // SPIKE: wider, so the density ramp reads
+    R_CORE = (0.72 * fontDevPx) / S; // wide enough that the density ramp reads
     R_E = 0.92 * R_CORE;
     V_E = W_CORE * R_E;
     C2 = (V_RIM_W * V_RIM_W - V_E * V_E) / (R_START - R_E);
@@ -250,27 +249,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
   // phyllotaxis (sunflower) core: golden-angle packing fills the disc evenly —
   // crisp edge, readable bodies to dead center. Regenerated per resize, count
   // tied to area so the packing density holds.
-  // SPIKE: density-graded disc. sqrt(u) is UNIFORM area density — it can
-  // never read as "densest toward the middle". Raising the exponent pulls
-  // bodies inward so density climbs continuously and only goes solid at the
-  // core, which is what the cover art actually does.
-  function makeCore(): CoreBody[] {
-    const rand = mulberry32(4200);
-    const n = Math.max(
-      60,
-      Math.round((PI * R_CORE * R_CORE) / (1.16 * H_MIN) ** 2),
-    );
-    const GOLD = PI * (3 - Math.sqrt(5));
-    const out: CoreBody[] = [];
-    for (let i = 0; i < n; i++) {
-      const dressed = dress({}, rand);
-      const ang0 = i * GOLD + (rand() - 0.5) * 0.15;
-      const u = (i + 0.5) / n;
-      const radFrac = u ** 0.85 * (1 + (rand() - 0.5) * 0.06);
-      out.push({ ...dressed, ang0, radFrac });
-    }
-    return out;
-  }
 
   function addBody(
     p: Path2D,
@@ -358,7 +336,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
   // dives into the current → veil lifts on the converging swarm → wordmark.
   const diving = document.documentElement.classList.contains('diving');
   const doDive = diving && !still;
-  let titleAt = 0; // when the wordmark lands — the core disc fades in with it
   let releaseAt = 0; // when the crowd follows the diver in — field appears + gather kicks
   function runDiveIntro(full: boolean) {
     if (!diving) {
@@ -612,7 +589,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
       // "d" materialises just as he plunges through its bowl — he dives
       // through the d into the swarm
       de.classList.add('dive-title');
-      titleAt = performance.now();
     });
     t(4800, () => {
       if (veil) {
@@ -746,8 +722,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
     uniform float uS;       // device px
     uniform float uDpr;
     uniform float uSpin;
-    uniform float uCore;
-    uniform float uCoreA;
     uniform float uFieldA;
     uniform float uRCORE;
     uniform float uRE;
@@ -785,39 +759,27 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
       vec2 center;
       float h, cR, sR;
       vFade = 1.0;
-      if (uCore > 0.5) {
-        float ang = aA.x + uSpin;            // the sunflower disc spins as one
-        float r = aA.y * uRCORE;
-        vFade = 1.0; // SPIKE: solid core — the disc reads as a filled hole
-        vFade *= uCoreA;                     // dive arrival: the disc lands with the wordmark
-        float ca = cos(ang), sa = sin(ang);
-        center = uRes * 0.5 + vec2(ca, sa) * r * uS;
-        h = max(0.052 * r, H_MIN) * aA.w * uS;
-        cR = ca * aB.x - sa * aB.y;
-        sR = sa * aB.x + ca * aB.y;
-      } else {
-        vec2 pC = aPos * uDpr;
-        vec2 rel = pC - uRes * 0.5;
-        float rn = max(length(rel), 1e-3) / uS;
-        center = pC;
-        h = max(0.052 * rn, H_MIN) * aA.w * uS;
-        // head-first along the velocity, plus the personal jitter
-        vec2 vdir = normalize(aVel + vec2(1e-5, 0.0));
-        float c0 = -vdir.y, s0 = vdir.x;
-        cR = c0 * aB.x - s0 * aB.y;
-        sR = s0 * aB.x + c0 * aB.y;
-        // uFadeCore picks the look's core treatment. At 0 the crowd stays
-        // fully opaque and goes solid at the drain — the tonal ramp then comes
-        // from DENSITY and SIZE alone, which is the only way the middle ever
-        // actually fills. At 1 it dims toward an eye instead.
-        vFade = mix(1.0, smoothstep(uRE * 0.05, uRE * 0.5, rn), uFadeCore);
-        vFade *= uFieldA;                    // dive arrival: hidden until the diver lands
-        // No radial falloff here on purpose. Fading each body individually makes
-        // every figure see-through, so overlapping limbs show through one
-        // another and the crowd reads as stacked glass. The edges are veiled by
-        // #splash::after instead — one translucent layer over the finished
-        // crowd, which dims the field as a whole while each body stays solid.
-      }
+      vec2 pC = aPos * uDpr;
+      vec2 rel = pC - uRes * 0.5;
+      float rn = max(length(rel), 1e-3) / uS;
+      center = pC;
+      h = max(0.052 * rn, H_MIN) * aA.w * uS;
+      // head-first along the velocity, plus the personal jitter
+      vec2 vdir = normalize(aVel + vec2(1e-5, 0.0));
+      float c0 = -vdir.y, s0 = vdir.x;
+      cR = c0 * aB.x - s0 * aB.y;
+      sR = s0 * aB.x + c0 * aB.y;
+      // uFadeCore picks the look's core treatment. At 0 the crowd stays
+      // fully opaque and goes solid at the drain — the tonal ramp then comes
+      // from DENSITY and SIZE alone, which is the only way the middle ever
+      // actually fills. At 1 it dims toward an eye instead.
+      vFade = mix(1.0, smoothstep(uRE * 0.05, uRE * 0.5, rn), uFadeCore);
+      vFade *= uFieldA;                    // dive arrival: hidden until the diver lands
+      // No radial falloff here on purpose. Fading each body individually makes
+      // every figure see-through, so overlapping limbs show through one
+      // another and the crowd reads as stacked glass. The edges are veiled by
+      // #splash::after instead — one translucent layer over the finished
+      // crowd, which dims the field as a whole while each body stays solid.      }
 
       float w = max(uS * 0.0008, 0.09 * h);
       float halfW = w * 0.5 + 1.0;
@@ -962,36 +924,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
     const flowStyle = styleBuffer(field, (b, f, o) => {
       f[o + 3] = b.size;
     });
-    let drain: { buf: WebGLBuffer | null; count: number } | null = null;
-    function rebuildCore() {
-      const list = makeCore();
-      const f = new Float32Array(list.length * 16);
-      let o = 0;
-      for (const b of list) {
-        f[o] = b.ang0;
-        f[o + 1] = b.radFrac;
-        f[o + 3] = b.size;
-        o += 4;
-        f[o++] = b.cR;
-        f[o++] = b.sR;
-        f[o++] = b.arm;
-        f[o++] = b.leg;
-        f[o++] = b.aLx;
-        f[o++] = b.aLy;
-        f[o++] = b.aRx;
-        f[o++] = b.aRy;
-        f[o++] = b.lLx;
-        f[o++] = b.lLy;
-        f[o++] = b.lRx;
-        f[o++] = b.lRy;
-      }
-      if (!drain) {
-        drain = { buf: gl.createBuffer(), count: 0 };
-      }
-      gl.bindBuffer(gl.ARRAY_BUFFER, drain.buf);
-      gl.bufferData(gl.ARRAY_BUFFER, f, gl.STATIC_DRAW);
-      drain.count = list.length;
-    }
 
     // particle state (ping-pong)
     const posBufs = [gl.createBuffer(), gl.createBuffer()];
@@ -1008,7 +940,7 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
       const scatter = glDive && !releaseAt;
       for (let i = 0; i < N_F; i++) {
         const b = field[i];
-        // SPIKE: seed from near the pinhole outward. The old mapping started
+        // seed from near the pinhole outward. The old mapping started
         // at R_E, which left a literal hole in the middle that took seconds of
         // drift to fill — the crowd began further UP the funnel than it ends.
         // With the rankine core there is no drain, so wherever bodies are
@@ -1099,18 +1031,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
       gl.vertexAttribPointer(6, 2, gl.FLOAT, false, 0, 0);
       gl.vertexAttribDivisor(6, 1);
     }
-    let coreVao: WebGLVertexArrayObject | null = null;
-    function rebuildCoreVao() {
-      if (!drain) {
-        return;
-      }
-      if (!coreVao) {
-        coreVao = gl.createVertexArray();
-      }
-      gl.bindVertexArray(coreVao);
-      bindCommon(drain.buf);
-      gl.bindVertexArray(null);
-    }
 
     // uniforms
     const sU: Record<string, WebGLUniformLocation | null> = {};
@@ -1133,8 +1053,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
       'uS',
       'uDpr',
       'uSpin',
-      'uCore',
-      'uCoreA',
       'uFieldA',
       'uRCORE',
       'uRE',
@@ -1172,6 +1090,12 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
       gl.uniform1f(sU.u_gather, gather);
       const out = 1 - active;
       gl.bindVertexArray(simVaos[active]);
+      // Clear ARRAY_BUFFER before the feedback draw. Writing to a buffer that
+      // is simultaneously bound to a non-feedback target is undefined, and both
+      // seedParticles and the vao setup leave a pos/vel buffer bound there when
+      // they finish — the very buffers this is about to write. Unbinding here
+      // rather than after each of them means no future caller can reopen it.
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
       gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, posBufs[out]);
       gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, velBufs[out]);
       gl.enable(gl.RASTERIZER_DISCARD);
@@ -1185,16 +1109,12 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
     }
 
     function draw() {
-      if (!drain) {
-        return;
-      }
       gl.useProgram(prog);
       gl.viewport(0, 0, W, H);
       gl.uniform2f(rU.uRes, W, H);
       gl.uniform1f(rU.uS, S);
       gl.uniform1f(rU.uDpr, dpr);
       gl.uniform1f(rU.uSpin, spin);
-      gl.uniform1f(rU.uCoreA, fadeIn(titleAt, 800));
       gl.uniform1f(rU.uFieldA, fadeIn(releaseAt, 150));
       gl.uniform1f(rU.uRCORE, R_CORE);
       gl.uniform1f(rU.uRE, R_E);
@@ -1203,10 +1123,8 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
       gl.uniform1f(rU.uSwim, swimOn);
       gl.uniform1f(rU.uFadeCore, look.fadeCore ? 1 : 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform1f(rU.uCore, 0);
       gl.bindVertexArray(renderVaos[active]);
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, N_F);
-      // SPIKE: no second system. The vortex IS the core now.
       gl.bindVertexArray(null);
     }
 
@@ -1226,8 +1144,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
         seedParticles();
         seededW = cw;
       }
-      rebuildCore();
-      rebuildCoreVao();
     }
 
     const boot = () => {
