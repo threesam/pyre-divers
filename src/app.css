@@ -82,20 +82,22 @@ section {
   background-color: inherit;
   background-image: inherit;
   /* These stops are the VEIL's alpha, not the crowd's — the crowd shows
-     through at 1 minus each. Clear through the eye, then 0.62 and 0.92, so the
-     corners nearly dissolve into the background and the density reads as depth.
-     Raise to bury the edges further, lower to bring the crowd forward. */
+     through at 1 minus each. Clear only through the eye, then 0.80 and a full
+     1.0, so the corners go entirely to background and the crowd reads as a
+     dense knot around the drain rather than a field. Lower these to bring the
+     edges back; raising is no longer possible at the corner, it is already
+     opaque there. */
   -webkit-mask-image: radial-gradient(
     circle farthest-corner at 50% 50%,
-    rgba(0, 0, 0, 0) 24%,
-    rgba(0, 0, 0, 0.62) 64%,
-    rgba(0, 0, 0, 0.92) 100%
+    rgba(0, 0, 0, 0) 18%,
+    rgba(0, 0, 0, 0.8) 56%,
+    rgba(0, 0, 0, 1) 100%
   );
   mask-image: radial-gradient(
     circle farthest-corner at 50% 50%,
-    rgba(0, 0, 0, 0) 24%,
-    rgba(0, 0, 0, 0.62) 64%,
-    rgba(0, 0, 0, 0.92) 100%
+    rgba(0, 0, 0, 0) 18%,
+    rgba(0, 0, 0, 0.8) 56%,
+    rgba(0, 0, 0, 1) 100%
   );
 }
 .wordmark {
