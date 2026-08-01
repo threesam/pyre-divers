@@ -33,5 +33,8 @@
     "typescript": "6.0.3",
     "typescript-eslint": "8.64.0",
     "vite": "8.1.5"
+  },
+  "dependencies": {
+    "@fontsource/epilogue": "5.2.8"
   }
 }

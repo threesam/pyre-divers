@@ -108,7 +108,9 @@
   h1 {
     margin: 1.2rem 0 0;
     font-size: clamp(1.6rem, 5vw, 2.2rem);
-    font-weight: 700;
+    /* 400, not 700: this is Pyre Display, which ships a single weight, so 700
+       would be engine-synthesised and thicken differently per browser. */
+    font-weight: 400;
     letter-spacing: -0.01em;
     background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
     -webkit-background-clip: text;

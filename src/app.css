@@ -25,17 +25,19 @@ body {
   overflow-x: hidden;
   background: #10120a;
   color: #e7e2da;
-  font-family: 'Pyre Display', ui-rounded, system-ui, sans-serif;
+  /* Epilogue reads; Pyre Display shows. The split is the point: Epilogue has
+     real 400/500/700 so body copy can emphasise, and it is drawn for running
+     text — a transcript is thousands of words in a 42rem column. */
+  font-family: 'Epilogue', ui-sans-serif, system-ui, sans-serif;
 }
-/* The face ships one weight. h1/h2/strong default to bold, so without this the
-   browser fakes it — and synthetic bold differs per engine, which would make
-   headings thicken on someone else's Firefox. One honest weight everywhere. */
+/* Headings carry the brand face. It ships ONE weight, so 400 is forced here —
+   h1/h2 default to bold and the browser would synthesise it, differently per
+   engine. Body text is Epilogue and keeps its real weights. */
 h1,
 h2,
 h3,
-h4,
-strong,
-b {
+h4 {
+  font-family: 'Pyre Display', ui-rounded, system-ui, sans-serif;
   font-weight: 400;
 }
 section {
@@ -83,20 +85,21 @@ section {
   pointer-events: none;
   background-color: inherit;
   background-image: inherit;
-  /* The stops are the veil's own alpha, so the crowd shows through at 1 minus
-     each: clear to 42%, then 0.08 and 0.18 — the corners keep over four fifths
-     of the crowd, just enough to settle them back. Raise to push further. */
+  /* These stops are the VEIL's alpha, not the crowd's — the crowd shows
+     through at 1 minus each. Clear through the eye, then 0.62 and 0.92, so the
+     corners nearly dissolve into the background and the density reads as depth.
+     Raise to bury the edges further, lower to bring the crowd forward. */
   -webkit-mask-image: radial-gradient(
     circle farthest-corner at 50% 50%,
-    rgba(0, 0, 0, 0) 42%,
-    rgba(0, 0, 0, 0.08) 76%,
-    rgba(0, 0, 0, 0.18) 100%
+    rgba(0, 0, 0, 0) 24%,
+    rgba(0, 0, 0, 0.62) 64%,
+    rgba(0, 0, 0, 0.92) 100%
   );
   mask-image: radial-gradient(
     circle farthest-corner at 50% 50%,
-    rgba(0, 0, 0, 0) 42%,
-    rgba(0, 0, 0, 0.08) 76%,
-    rgba(0, 0, 0, 0.18) 100%
+    rgba(0, 0, 0, 0) 24%,
+    rgba(0, 0, 0, 0.62) 64%,
+    rgba(0, 0, 0, 0.92) 100%
   );
 }
 .wordmark {
