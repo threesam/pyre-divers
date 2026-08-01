@@ -11,6 +11,17 @@
   font-display: block;
   src: url('/fonts/pyre-display.woff2') format('woff2');
 }
+/* A real 700, grown from the regular by tools/build-brand-font.py rather than
+   left to the browser — synthetic bold is faked differently by every engine, so
+   the one place the site shouts would shout at a different weight per browser.
+   Its own file, so pages that never set 700 never fetch it. */
+@font-face {
+  font-family: 'Pyre Display';
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+  src: url('/fonts/pyre-display-700.woff2') format('woff2');
+}
 /* no scroll snap: the page scrolls freely, native everywhere. The two
      screens just stack. scroll-behavior stays for the chevron's #join
      anchor glide (a deliberate click, not a scroll grab). */
@@ -27,9 +38,11 @@ body {
   color: #e7e2da;
   font-family: 'Pyre Display', ui-rounded, system-ui, sans-serif;
 }
-/* The face ships ONE weight. h1/h2 default to bold and the browser would
-   synthesise it, differently per engine, so pin 400. Long-form surfaces that
-   opt into Epilogue re-enable real weights locally — see the episode page. */
+/* Headings sit at 400 by design — the face has a real 700 now, but the display
+   cut carries enough presence at heading sizes without it, and pinning the
+   value keeps h1/h2's default bold from pulling in a second font file on pages
+   that do not need one. Long-form surfaces opt into Epilogue locally instead —
+   see the episode page. */
 h1,
 h2,
 h3,
@@ -347,11 +360,10 @@ button.join {
   position: relative;
   isolation: isolate;
   font: inherit;
-  /* Size, not weight, carries the primary action. The brand face ships one cut,
-     so 700 here would be a synthetic bold and engines fake it differently —
-     the site's only call to action would render at a different weight per
-     browser. Scale gives the emphasis and looks the same everywhere. */
-  font-weight: 400;
+  /* The one place that gets real weight. Pyre Display now ships an actual 700
+     (see the second @font-face), so this is a drawn bold, not the engine's
+     guess at one. */
+  font-weight: 700;
   font-size: 1.2rem;
   border: none;
   cursor: pointer;
