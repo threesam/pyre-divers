@@ -25,19 +25,15 @@ body {
   overflow-x: hidden;
   background: #10120a;
   color: #e7e2da;
-  /* Epilogue reads; Pyre Display shows. The split is the point: Epilogue has
-     real 400/500/700 so body copy can emphasise, and it is drawn for running
-     text — a transcript is thousands of words in a 42rem column. */
-  font-family: 'Epilogue', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Pyre Display', ui-rounded, system-ui, sans-serif;
 }
-/* Headings carry the brand face. It ships ONE weight, so 400 is forced here —
-   h1/h2 default to bold and the browser would synthesise it, differently per
-   engine. Body text is Epilogue and keeps its real weights. */
+/* The face ships ONE weight. h1/h2 default to bold and the browser would
+   synthesise it, differently per engine, so pin 400. Long-form surfaces that
+   opt into Epilogue re-enable real weights locally — see the episode page. */
 h1,
 h2,
 h3,
 h4 {
-  font-family: 'Pyre Display', ui-rounded, system-ui, sans-serif;
   font-weight: 400;
 }
 section {
