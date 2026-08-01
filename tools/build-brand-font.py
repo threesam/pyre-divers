@@ -48,6 +48,15 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "tools" / "src-font" / "lachata.ttf"
 OUT_TTF = ROOT / "tools" / "pyre-display.ttf"
 OUT_WOFF2 = ROOT / "static" / "fonts" / "pyre-display.woff2"
+OUT_TTF_BOLD = ROOT / "tools" / "pyre-display-700.ttf"
+OUT_WOFF2_BOLD = ROOT / "static" / "fonts" / "pyre-display-700.woff2"
+
+# How far to grow every outline for the bold, in font units of TOTAL stroke —
+# half lands outside the contour, half inside, so the 82-unit stem becomes 118.
+# 1.44x is the usual regular-to-bold step, and it is a step this face can take
+# because it is monoline: growing every contour by a constant keeps it monoline,
+# which a face with stroke contrast could not survive.
+BOLD_GROWTH = 36.0
 
 FAMILY = "Pyre Display"
 VERSION = "1.000"
@@ -234,12 +243,69 @@ def clip_y_tail(font):
     set_outline(font, "y", pen.glyph())
 
 
-def rename(font):
+def embolden(font):
+    """Grow every outline into a real bold, in place.
+
+    La Chata has no bold, and the browser's synthetic one differs per engine —
+    the same heading thickens differently on Firefox than on Chrome. This makes
+    an actual second face instead.
+
+    Each contour is stroked with a pen BOLD_GROWTH wide and unioned back onto
+    the fill. The stroke straddles the boundary, so the shape gains half outside
+    and loses half inside: stems thicken, counters tighten, and the join stays
+    round because the pen is round. That only works on a monoline face — grow a
+    face with stroke contrast this way and its thin strokes fatten as much as
+    its thick ones, flattening the modulation that made it that face.
+
+    Composites are decomposed on the way through: a glyphSet draws them as their
+    components, so the bold ends up all-simple. Slightly bigger, and correct —
+    emboldening a composite that still points at a regular component would leave
+    accents thin.
+
+    Advances are left alone so bold and regular set to the same measure; the
+    extra mass eats into the side bearings, which run 60-90 units here.
+    """
+    glyph_set = font.getGlyphSet()
+    glyf = font["glyf"]
+
+    for name in font.getGlyphOrder():
+        fill = pathops.Path()
+        glyph_set[name].draw(fill.getPen())
+        if not fill.bounds:
+            continue  # space and friends: nothing to grow
+
+        edge = pathops.Path()
+        glyph_set[name].draw(edge.getPen())
+        edge.stroke(
+            BOLD_GROWTH, pathops.LineCap.ROUND_CAP, pathops.LineJoin.ROUND_JOIN, 4
+        )
+        # stroking emits conics (rational quadratics); the boolean ops cannot
+        # read those, and TrueType has no conic verb either, so flatten first
+        edge.convertConicsToQuads(0.1)
+        grown = pathops.op(fill, edge, pathops.PathOp.UNION)
+
+        pen = TTGlyphPen(None)  # None: composites are already flattened above
+        grown.draw(Cu2QuPen(pen, max_err=0.5))
+        set_outline(font, name, pen.glyph())
+
+    font["OS/2"].usWeightClass = 700
+    # fsSelection: clear REGULAR (bit 6), set BOLD (bit 5)
+    font["OS/2"].fsSelection = (font["OS/2"].fsSelection & ~0x40) | 0x20
+    font["head"].macStyle |= 0x01  # bold
+    _ = glyf
+
+
+def rename(font, style="Regular"):
     name = font["name"]
+    redrawn = (
+        'The "p" and "d" have been redrawn; no other glyph is altered.'
+        if style == "Regular"
+        else "Redrawn from the Regular, then emboldened by growing every "
+        "outline uniformly; the source face has no bold of its own."
+    )
     notice = (
         f"{FAMILY} is a derivative of La Chata by deFharo (deFharo.com), "
-        "used and redistributed under the SIL Open Font License 1.1. "
-        'The "p" and "d" have been redrawn; no other glyph is altered.'
+        f"used and redistributed under the SIL Open Font License 1.1. {redrawn}"
     )
     ofl = (
         "This Font Software is licensed under the SIL Open Font License, "
@@ -249,17 +315,17 @@ def rename(font):
     for nid, value in {
         0: notice,
         1: FAMILY,
-        2: "Regular",
-        3: f"{FAMILY}:{VERSION}",
-        4: FAMILY,
+        2: style,
+        3: f"{FAMILY} {style}:{VERSION}",
+        4: FAMILY if style == "Regular" else f"{FAMILY} {style}",
         5: f"Version {VERSION}",
-        6: FAMILY.replace(" ", ""),
+        6: FAMILY.replace(" ", "") + ("" if style == "Regular" else f"-{style}"),
         7: "La Chata is a trademark of deFharo.com.",
         9: "deFharo",
         13: ofl,
         14: "http://scripts.sil.org/OFL",
         16: FAMILY,
-        17: "Regular",
+        17: style,
     }.items():
         name.setName(value, nid, 3, 1, 0x409)
     # drop the Macintosh records rather than leave them saying "La chata"
@@ -294,17 +360,41 @@ def verify():
     print(f"verified: only {', '.join(sorted(changed))} redrawn, advances intact")
 
 
-def main():
-    font = TTFont(SRC)
-    rebuild(font)
-    clip_y_tail(font)
-    rename(font)
+def verify_bold():
+    """The bold must be heavier everywhere, and must not have moved.
 
-    OUT_TTF.parent.mkdir(parents=True, exist_ok=True)
-    font.save(OUT_TTF)
-    verify()
+    Stem width is measured off "l" — a single bar, so a horizontal slice of it
+    IS the stem. Advances are checked against the regular because the two faces
+    have to set to the same measure; if bold ran wider, swapping weights would
+    reflow the line.
+    """
+    regular, bold = TTFont(OUT_TTF), TTFont(OUT_TTF_BOLD)
 
-    # headers need Latin text, not the full 376-glyph face
+    def stem(font):
+        path = pathops.Path()
+        font.getGlyphSet()["l"].draw(path.getPen())
+        slice_ = pathops.Path()
+        pen = slice_.getPen()
+        pen.moveTo((-3000, 399))
+        pen.lineTo((3000, 399))
+        pen.lineTo((3000, 401))
+        pen.lineTo((-3000, 401))
+        pen.closePath()
+        b = pathops.op(path, slice_, pathops.PathOp.INTERSECTION).bounds
+        return b[2] - b[0]
+
+    thin, thick = stem(regular), stem(bold)
+    assert thick > thin * 1.3, f"bold is not bold enough: {thin} -> {thick}"
+    for name in regular.getGlyphOrder():
+        assert (
+            regular["hmtx"][name][0] == bold["hmtx"][name][0]
+        ), f"bold advance moved: {name}"
+    assert bold["OS/2"].usWeightClass == 700
+    print(f"verified bold: stem {thin:.0f} -> {thick:.0f} ({thick / thin:.2f}x), advances intact")
+
+
+def subset_woff2(font, path):
+    """Latin only — the site is english; the full face is 376 glyphs."""
     subsetter = Subsetter()
     subsetter.populate(
         unicodes=(
@@ -315,11 +405,34 @@ def main():
     )
     subsetter.subset(font)
     font.flavor = "woff2"
-    OUT_WOFF2.parent.mkdir(parents=True, exist_ok=True)
-    font.save(OUT_WOFF2)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    font.save(path)
 
-    print(f"{OUT_TTF.relative_to(ROOT)}  {OUT_TTF.stat().st_size:,} bytes")
-    print(f"{OUT_WOFF2.relative_to(ROOT)}  {OUT_WOFF2.stat().st_size:,} bytes")
+
+def main():
+    font = TTFont(SRC)
+    rebuild(font)
+    clip_y_tail(font)
+    rename(font)
+
+    OUT_TTF.parent.mkdir(parents=True, exist_ok=True)
+    font.save(OUT_TTF)
+    verify()
+
+    # the bold is grown from the finished regular, so it inherits the clipped
+    # legs and the y — reloaded rather than deep-copied so it starts from the
+    # same bytes a rasteriser would read
+    bold = TTFont(OUT_TTF)
+    embolden(bold)
+    rename(bold, "Bold")
+    bold.save(OUT_TTF_BOLD)
+    verify_bold()
+
+    subset_woff2(TTFont(OUT_TTF_BOLD), OUT_WOFF2_BOLD)
+    subset_woff2(font, OUT_WOFF2)
+
+    for path in (OUT_TTF, OUT_WOFF2, OUT_TTF_BOLD, OUT_WOFF2_BOLD):
+        print(f"{path.relative_to(ROOT)}  {path.stat().st_size:,} bytes")
 
 
 if __name__ == "__main__":
