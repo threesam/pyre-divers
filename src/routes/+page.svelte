@@ -131,7 +131,7 @@
     />
   </filter>
 </svg>
-<Splash look="inverse" />
+<Splash />
 <!-- dive arrival veil: shown only when the document arrived with ?dive
      (threesam.com hand-off — the `diving` class is set pre-paint in
      app.html). At handoff the garden shows only the little guy — no words —

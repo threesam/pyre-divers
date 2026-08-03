@@ -1,10 +1,10 @@
 // the list (listmonk) — contract pinned by test/subscribe.test.mjs
-export interface ListmonkConfig {
+interface ListmonkConfig {
   url: string;
   list: string;
 }
-export type SubscribeState = 'invalid' | 'early' | 'joined' | 'failed';
-export interface SubscribeResult {
+type SubscribeState = 'invalid' | 'early' | 'joined' | 'failed';
+interface SubscribeResult {
   state: SubscribeState;
   message: string;
 }

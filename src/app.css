@@ -56,20 +56,13 @@ section {
   box-sizing: border-box;
   overflow: hidden;
 }
+/* The gradient is placed for the wordmark: the ink word has to sit on the light
+   side, or it lands on the darkest corner and goes muddy. */
 #splash {
   background-color: #e25822;
-}
-/* The gradient mirrors with the wordmark: whichever word is ink has to sit on
-   the light side, or it lands on the darkest corner and goes muddy. */
-#splash[data-look='inverse'] {
   background-image:
     radial-gradient(circle at 84% 84%, #b91c1c 0%, rgba(185, 28, 28, 0) 72%),
     radial-gradient(circle at 22% 16%, #f5b942 0%, rgba(245, 185, 66, 0) 66%);
-}
-#splash[data-look='ember'] {
-  background-image:
-    radial-gradient(circle at 16% 84%, #b91c1c 0%, rgba(185, 28, 28, 0) 72%),
-    radial-gradient(circle at 78% 16%, #f5b942 0%, rgba(245, 185, 66, 0) 66%);
 }
 #sea {
   position: absolute;
@@ -84,8 +77,8 @@ section {
    as one image. Fading each body's own alpha instead makes every figure
    see-through and overlapping limbs show through one another; the crowd stops
    reading as a crowd and starts reading as stacked glass.
-   It inherits the background rather than restating it, so it matches whichever
-   look is active and there is one place to change the gradient. */
+   It inherits the background rather than restating it, so the gradient has one
+   definition and the veil can never drift out of step with it. */
 #splash::after {
   content: '';
   position: absolute;
@@ -148,22 +141,14 @@ section {
      put the bowl off-centre. */
   transform: translate(-0.018em, -0.126em);
 }
-/* "inverse": white divers over the ink-filled core. A dark divers there puts
-   the d's bowl on solid ink and the word reads "livers" — which is why the
-   core treatment and these colours ship as one look, not two toggles. */
-#splash[data-look='inverse'] .wordmark .w {
+/* White divers over the ink-filled core. A dark "divers" there would put the
+   d's bowl on solid ink and the word would read "livers" — the filled core and
+   these colours are one decision, not two. */
+.wordmark .w {
   color: #212614;
 }
-#splash[data-look='inverse'] .wordmark .k {
+.wordmark .k {
   color: #ffffff;
-}
-/* "ember": the original. Works because that look fades the core to an eye,
-   leaving the d's bowl light enough to read. */
-#splash[data-look='ember'] .wordmark .w {
-  color: #ffffff;
-}
-#splash[data-look='ember'] .wordmark .k {
-  color: #212614;
 }
 /* Phones: the ink word goes white too.
    The mark is sized off the viewport, so on a narrow screen it is short — at
@@ -172,11 +157,10 @@ section {
    drawn in #212614, the very colour the ink word is set in, so the last
    letters do not lose contrast, they disappear into the figures behind them.
    Desktop is fine because the mark is wide enough to carry "pyre" out onto the
-   veiled, lighter side. Both looks lose their ink word here; the core stays
-   filled, and the "d" bowl still reads because it is white on that dark core. */
+   veiled, lighter side. The core stays filled, and the "d" bowl still reads
+   because it is white on that dark core. */
 @media (max-width: 768px) {
-  #splash[data-look='inverse'] .wordmark .w,
-  #splash[data-look='ember'] .wordmark .k {
+  .wordmark .w {
     color: #ffffff;
   }
 }

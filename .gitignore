@@ -2,3 +2,7 @@ node_modules/
 .svelte-kit/
 .vercel
 __pycache__/
+
+# build output — written and read back inside build-brand-font.py in one run.
+# the REGULAR ttf stays tracked: solve-wordmark.py reads it as a separate tool.
+tools/pyre-display-700.ttf

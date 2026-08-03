@@ -44,6 +44,3 @@ export const segments = pgTable('segments', {
   speaker: text('speaker'),
   text: text('text').notNull(),
 });
-
-export type Episode = typeof episodes.$inferSelect;
-export type Segment = typeof segments.$inferSelect;

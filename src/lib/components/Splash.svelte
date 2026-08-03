@@ -1,23 +1,16 @@
 <script lang="ts">
-  // Screen one: the whirlpool and the wordmark. `look` picks one of the two
-  // finished treatments (see $lib/looks) — it drives BOTH the css, via the
-  // data-look attribute the stylesheet keys off, and the sim, via the config
-  // handed to initPageFx. They have to move together: the colours only work
-  // against the matching core treatment.
+  // Screen one: the whirlpool and the wordmark.
   import { initPageFx } from '$lib/page-fx';
-  import { DEFAULT_LOOK, LOOKS, type Look } from '$lib/looks';
-
-  let { look = DEFAULT_LOOK }: { look?: Look } = $props();
 
   $effect(() => {
     // detach the sim kickoff from the hydration flush — separate tasks
     // keep each under the long-task line on throttled cpus
-    const t = setTimeout(() => initPageFx(LOOKS[look]), 0);
+    const t = setTimeout(() => initPageFx(), 0);
     return () => clearTimeout(t);
   });
 </script>
 
-<section id="splash" data-look={look} aria-label="pyre divers — the whirlpool">
+<section id="splash" aria-label="pyre divers — the whirlpool">
   <canvas id="sea" aria-hidden="true"></canvas>
   <h1 class="wordmark">
     <span class="line"

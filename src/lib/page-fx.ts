@@ -5,7 +5,6 @@
 // screen one, its Canvas2D fallback, and the risers on screen two. Every body
 // is "dressed" once — pose baked into cos/sin pairs — then drawn by whichever
 // renderer owns it.
-import { DEFAULT_LOOK, LOOKS, type LookConfig } from './looks';
 import { LISTMONK, subscribeFlow } from './subscribe';
 
 /** Seeded PRNG. The same souls every load. */
@@ -108,7 +107,7 @@ function must<T extends Element>(selector: string): T {
   return el;
 }
 
-export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
+export function initPageFx(): void {
   // headless audits (lighthouse) run swiftshader: every gl context they
   // create is a long task. they get the chunked static frame, gl-free.
   const headlessAudit = /HeadlessChrome/.test(navigator.userAgent);
@@ -727,7 +726,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
     uniform float uRE;
     uniform float uSwimT;   // seconds — drives the gentle limb swim
     uniform float uSwim;    // 0 (reduced motion) or 1 — swim amplitude gate
-    uniform float uFadeCore; // 0 = solid drain (inverse), 1 = faded eye (ember)
     layout(location=0) in vec3 aTpl;  // segId, end(0|1), side(-1|1)
     layout(location=1) in vec4 aA;    // core: ang0, radFrac, 0, size · field: 0,0,0,size
     layout(location=2) in vec4 aB;    // core: rotC, rotS · field: cos(jit), sin(jit) · zw: armLen, legLen
@@ -769,11 +767,10 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
       float c0 = -vdir.y, s0 = vdir.x;
       cR = c0 * aB.x - s0 * aB.y;
       sR = s0 * aB.x + c0 * aB.y;
-      // uFadeCore picks the look's core treatment. At 0 the crowd stays
-      // fully opaque and goes solid at the drain — the tonal ramp then comes
-      // from DENSITY and SIZE alone, which is the only way the middle ever
-      // actually fills. At 1 it dims toward an eye instead.
-      vFade = mix(1.0, smoothstep(uRE * 0.05, uRE * 0.5, rn), uFadeCore);
+      // The crowd stays fully opaque and goes solid at the drain. The tonal
+      // ramp comes from DENSITY and SIZE alone, which is the only way the
+      // middle ever actually fills.
+      vFade = 1.0;
       vFade *= uFieldA;                    // dive arrival: hidden until the diver lands
       // No radial falloff here on purpose. Fading each body individually makes
       // every figure see-through, so overlapping limbs show through one
@@ -1059,7 +1056,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
       'uInk',
       'uSwimT',
       'uSwim',
-      'uFadeCore',
     ]) {
       rU[n] = gl.getUniformLocation(prog, n);
     }
@@ -1121,7 +1117,6 @@ export function initPageFx(look: LookConfig = LOOKS[DEFAULT_LOOK]): void {
       gl.uniform3fv(rU.uInk, INK);
       gl.uniform1f(rU.uSwimT, performance.now() * 0.001);
       gl.uniform1f(rU.uSwim, swimOn);
-      gl.uniform1f(rU.uFadeCore, look.fadeCore ? 1 : 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.bindVertexArray(renderVaos[active]);
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, N_F);
