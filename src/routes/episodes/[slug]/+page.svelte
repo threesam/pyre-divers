@@ -78,10 +78,17 @@
       <video src={episode.videoUrl} controls preload="metadata"></video>
     </div>
   {:else if episode.youtubeUrl}
+    <!-- eslint-disable svelte/no-navigation-without-resolve -- external youtube url from the db -->
+    <!-- block form: prettier splits this tag's attributes, so a
+         disable-next-line would no longer cover the href line -->
     <p>
-      <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external youtube url from the db -->
-      <a class="watch" href={episode.youtubeUrl}>watch on youtube</a>
+      <a
+        class="watch"
+        href={episode.youtubeUrl}
+        data-umami-event="watch-youtube">watch on youtube</a
+      >
     </p>
+    <!-- eslint-enable svelte/no-navigation-without-resolve -->
   {/if}
 
   {#if segments.length}

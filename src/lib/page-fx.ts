@@ -1488,6 +1488,16 @@ export function initPageFx(): void {
       const res = await subscribeFlow(emailInput.value, LISTMONK, fetch);
       btn.textContent = res.message;
       btn.disabled = false;
+      // The site's only conversion. `joined` and `failed` get separate names
+      // because the monday digest ranks by event name, not by property — one
+      // `seat` event with a state property would report attempts and hide the
+      // split. `invalid` is a typo in the email field, not a signal.
+      //
+      // Fired last, after the button is already restored: umami is optional
+      // here, and nothing about the signup should depend on it resolving.
+      if (res.state === 'joined' || res.state === 'failed') {
+        window.umami?.track(`seat-${res.state}`);
+      }
     });
   }
 
