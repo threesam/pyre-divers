@@ -78,10 +78,20 @@
       <video src={episode.videoUrl} controls preload="metadata"></video>
     </div>
   {:else if episode.youtubeUrl}
+    <!-- eslint-disable svelte/no-navigation-without-resolve -- external youtube url from the db -->
+    <!-- Block form, not disable-next-line: adding data-umami-event pushed the
+         opening tag past prettier's 80 columns, so href moved off the line the
+         suppression covered and the build broke. Any future attribute would do
+         it again — a per-line suppression here is only as stable as prettier's
+         line-breaking. -->
     <p>
-      <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external youtube url from the db -->
-      <a class="watch" href={episode.youtubeUrl}>watch on youtube</a>
+      <a
+        class="watch"
+        href={episode.youtubeUrl}
+        data-umami-event="watch-youtube">watch on youtube</a
+      >
     </p>
+    <!-- eslint-enable svelte/no-navigation-without-resolve -->
   {/if}
 
   {#if segments.length}
