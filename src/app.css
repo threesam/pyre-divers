@@ -408,10 +408,10 @@ button.join:focus-visible {
 }
 /* ── dive arrival: threesam.com hands off on its marigold coin field.
      `html.diving` is set pre-paint (app.html) so the FIRST frame is
-     marigold — no ember flash. page-fx stages the classes:
-     dive-run (tagline words fade) → dive-go (veil lifts, swarm converging)
-     → dive-title (wordmark + chevrons arrive). A CSS keyframe backstop
-     resolves the veil even if the script never runs. */
+     marigold — the splash's orange never flashes first. page-fx stages
+     the classes: dive-run (tagline words fade) → dive-go (veil lifts,
+     swarm converging) → dive-title (wordmark + chevrons arrive). A CSS
+     keyframe backstop resolves the veil even if the script never runs. */
 #veil {
   position: fixed;
   inset: 0;
