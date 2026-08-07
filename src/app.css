@@ -474,8 +474,17 @@ html.diving.dive-title .down {
      Both homes measured live on threesam.com:
        phones  19.6px (1.4em of its 14px tagline) at right 24 / bottom 31.8,
                where he centres on the "threesam" wordmark's midline;
-       desktop 22.4px (1.4em of 16px) at right 144.2 / bottom 32, standing
-               between "certainly" and "uncertain".
+       desktop 22.4px (1.4em of 16px) at right 32 / bottom 32.
+     Nothing but him is in that tagline any more, at either width, so both
+     right offsets are simply the garden tagline's own corner inset —
+     `right-6` / `md:right-8` on .tagline in BrandSignoff.svelte. Desktop
+     read 144.2 until 2026-08-06: that was measured when he stood between
+     the words "certainly" and "uncertain", and when the garden dropped
+     them to a diver-only tagline he slid 112px out to the corner while
+     this file kept aiming at his old spot. Neither repo can see the other,
+     so if those two Tailwind insets ever change, change these by hand —
+     re-measure, don't compute, the mobile bottom is a wordmark-midline
+     calc that no constant here would predict.
      The switch below is 768px, NOT the 769px this file uses everywhere else
      — deliberately. His homes are the garden's, so his breakpoint has to be
      the garden's too: Tailwind's `md:`, which starts AT 768. Leave it; at
@@ -494,7 +503,7 @@ html.diving.dive-title .down {
 }
 @media (min-width: 768px) {
   .veil-diver {
-    right: 144.2px;
+    right: 32px;
     bottom: 32px;
     width: 22.4px;
     height: 22.4px;
