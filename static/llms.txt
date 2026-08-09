@@ -2,7 +2,7 @@
 
 > a podcast: two builders, live and unedited, in conversation with the ones
 > who jumped before they were ready. hosted by Salvatore D'Angelo (threesam)
-> and Steve Tullius. first episode: august 6, 2026.
+> and Steve Tullius. first episode: august 27, 2026.
 
 the site is a single-page signup: a canvas whirlpool of hand-drawn stick
 figures ("divers") and an email list. the rss feed is live at
