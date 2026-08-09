@@ -21,8 +21,12 @@ Beyond the page:
 - **/episodes/[slug]** — per-episode pages (404 until episodes exist).
 - **AEO/SEO** — PodcastSeries + WebSite JSON-LD on the page; `static/llms.txt`,
   `static/robots.txt`, `static/sitemap.xml`, OG art in `static/`.
-- **Social kit** — every launch asset (podcast cover 3000×3000, StreamYard overlay,
-  banners for YT/FB/IG/X/LinkedIn) in `static/assets/social/`.
+- **Social kit** — launch assets (StreamYard overlay, banners for YT/FB/IG/X/
+  LinkedIn) in `assets/social/` — deliberately NOT under `static/`, since nothing
+  serves them and `static/` is uploaded to the CDN on every deploy. Grab them
+  from the repo when setting a channel up. The served art (`og.jpg`,
+  `og-square.jpg`, `podcast-cover-3000.jpg`) lives in `static/` and is captured
+  from the live splash; see the header comment in `src/routes/feed.xml`.
 
 ## Commands
 
