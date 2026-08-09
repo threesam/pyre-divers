@@ -20,7 +20,7 @@
       "@id": "https://pyredivers.com/#podcast",
       "name": "pyre divers",
       "url": "https://pyredivers.com/",
-      "image": "https://pyredivers.com/og.png",
+      "image": "https://pyredivers.com/og.jpg",
       "description": "live, unpolished conversations with the ones who jumped before they were ready. two builders, one fire.",
       "startDate": "2026-08-06",
       "inLanguage": "en",
@@ -50,7 +50,7 @@
     content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 6, 2026."
   />
   <meta property="og:url" content="https://pyredivers.com/" />
-  <meta property="og:image" content="https://pyredivers.com/og.png" />
+  <meta property="og:image" content="https://pyredivers.com/og.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta
@@ -64,7 +64,7 @@
     name="twitter:description"
     content="two builders, live and unedited. first dive: august 6, 2026."
   />
-  <meta name="twitter:image" content="https://pyredivers.com/og.png" />
+  <meta name="twitter:image" content="https://pyredivers.com/og.jpg" />
   <link
     rel="alternate"
     type="application/rss+xml"

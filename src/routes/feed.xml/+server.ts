@@ -8,9 +8,18 @@ import { listPublishedEpisodes } from '$lib/server/queries';
 export const prerender = true;
 
 const SITE = 'https://pyredivers.com';
-// apple wants 1400–3000px square; this is the 3000 export. og-square is 1200
-// and would be rejected outright.
-const COVER = `${SITE}/assets/social/podcast-cover-3000x3000.png`;
+// apple wants 1400–3000px square, rgb, jpeg or png; og-square is 1200 and
+// would be rejected outright. Captured from the live splash at a 1:1 viewport
+// — see tools/README for the exact flags, two of which are load-bearing:
+//   · 1700px, not 3000. The wordmark is clamp(…, 17rem) but the sim scales
+//     off 0.7·hypot(W,H), so past ~1700 the type caps while the vortex keeps
+//     growing and the mark shrinks into it. 1700 is inside apple's range.
+//   · device-scale-factor 1. The sim caps dpr at 1.75 and gives a body a head
+//     at HEAD_PX device px, so supersampling draws MORE heads, thickens the
+//     core, and swallows the "e" of "pyre" into the eye.
+// jpeg over png: a smooth gradient over thousands of tiny figures is ~6.7MB
+// as png and ~1MB as jpeg, at PSNR 40.6dB — no ringing even on the wordmark.
+const COVER = `${SITE}/podcast-cover.jpg`;
 
 export const GET: RequestHandler = async () => {
   const published = await listPublishedEpisodes();
@@ -23,7 +32,7 @@ export const GET: RequestHandler = async () => {
     link: SITE,
     language: 'en-us',
     image: COVER,
-    favicon: `${SITE}/og-square.png`,
+    favicon: `${SITE}/og-square.jpg`,
     copyright: `pyre divers, ${new Date().getFullYear()}`,
     podcast: true,
     category: 'Technology',
