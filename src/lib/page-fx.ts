@@ -136,6 +136,8 @@ export function initPageFx(): void {
   const OMEGA = TAU / 64; // fallback rotation: one rev per 64 s
   const TILT = PI + Math.atan(K); // rail heading: tangent + pitch
   const HEAD_PX = 9; // bodies at least this tall get a head
+  // how far the vortex eases back at a perfectly square frame — see measure()
+  const SQUARE_EASE = 0.272;
 
   // ── pose library. Constrained by construction so the crowd never reads
   // as anatomically wrong, and with headroom for the ±swim (see uSwim):
@@ -607,7 +609,22 @@ export function initPageFx(): void {
     ch = document.documentElement.clientHeight;
     W = Math.round(cw * dpr);
     H = Math.round(ch * dpr);
-    S = Math.round(0.7 * Math.hypot(W, H)); // diagonal-based: corners covered at any aspect
+    // Diagonal-based so the spiral reaches the corners at any aspect (it starts
+    // at R_START, and 0.72 * 0.7 ~= half a diagonal). Eased back down as the
+    // frame approaches 1:1, because the diagonal outruns the frame there —
+    // 1.41x the side at square against only 1.15x the width at 16:9 — which
+    // scaled the whole vortex up and let the drain's knot spread a dark haze
+    // across the middle instead of holding a tight eye.
+    // Driven by aspect, NOT by a cap against the long edge: any long-edge
+    // coefficient tight enough to help at square (<0.803) also engages at 16:9
+    // and shrinks the vortex on the view everyone actually sees.
+    // The ramp starts at 0.62, below every real landscape aspect and every
+    // phone portrait, so those are untouched to the pixel. What it gives up
+    // near square is literal corner coverage, which the edge veil is already
+    // ~92% opaque over — see #splash::after.
+    const aspect = Math.min(W, H) / Math.max(W, H); // 1 at square
+    const towardSquare = Math.max(0, (aspect - 0.62) / 0.38);
+    S = Math.round(0.7 * Math.hypot(W, H) * (1 - towardSquare * SQUARE_EASE));
     Scss = S / dpr;
     canvas.width = W;
     canvas.height = H;
