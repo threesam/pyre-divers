@@ -56,7 +56,7 @@
   <meta property="og:title" content={episode.title} />
   <meta property="og:description" content={episode.description} />
   <meta property="og:url" content={canonicalUrl} />
-  <meta property="og:image" content="https://pyredivers.com/og.png" />
+  <meta property="og:image" content="https://pyredivers.com/og.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={episode.title} />
   <meta name="twitter:description" content={episode.description} />
