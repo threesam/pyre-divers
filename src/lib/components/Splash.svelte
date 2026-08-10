@@ -17,7 +17,18 @@
       ><span class="w">pyre</span> <span class="k">divers</span></span
     >
   </h1>
-  <a class="down" href="#join" aria-label="scroll down — join the list">
+  <!-- The only deliberate action on screen one, and until now the only one
+       untracked: the two events tagged in #75 sit on a join submit nobody has
+       made yet and an episode page that 404s, so 30d of traffic produced
+       exactly zero events. `data-umami-event` rather than a handler — umami's
+       own delegated listener already does this, and the anchor still works
+       with no JS. -->
+  <a
+    class="down"
+    href="#join"
+    aria-label="scroll down — join the list"
+    data-umami-event="chevron-down"
+  >
     <svg
       width="34"
       height="42"

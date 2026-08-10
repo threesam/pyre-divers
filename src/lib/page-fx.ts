@@ -107,13 +107,34 @@ function must<T extends Element>(selector: string): T {
   return el;
 }
 
+/** A third of the width; the flame burns here and the stones ring its mouth. */
+export const FLAME_X = 1 / 3;
+/** Normalized y (from top) of the flame's mouth. */
+export const FLAME_BASE = 0.82;
+
+/**
+ * The three stones, in PAINT order — the last one is drawn on top, so this
+ * is [left, right, centre], not left-to-right.
+ *
+ * Exported because the social links are DOM elements laid over these, and
+ * they need the same numbers. Written twice, they drift silently: the links
+ * would keep pointing at where the stones used to be, and nothing would
+ * fail. `cx` is a fraction of viewport WIDTH; `cy`, `rx` and `ry` are all
+ * fractions of viewport HEIGHT, because the canvas scales point offsets by
+ * rh on both axes.
+ */
+export const ROCKS = [
+  { cx: FLAME_X - 0.045, cy: FLAME_BASE + 0.02, rx: 0.052, ry: 0.028 },
+  { cx: FLAME_X + 0.062, cy: FLAME_BASE + 0.018, rx: 0.042, ry: 0.024 },
+  { cx: FLAME_X + 0.008, cy: FLAME_BASE + 0.028, rx: 0.062, ry: 0.033 },
+] as const;
+
 /**
  * Which stone is lit, or null. The stones are canvas and the social links
  * over them are DOM, so hover has to cross that line by hand — the anchors
  * call this, the draw loop reads it on the next frame.
  *
- * Index is into `rocks`, which is ordered [left, right, centre] because the
- * centre one is drawn last to sit in front. Not left-to-right.
+ * Index is into ROCKS above.
  */
 let litRock: number | null = null;
 
@@ -1551,8 +1572,6 @@ export function initPageFx(): void {
   // ── screen two: the pyre. A GLSL flame burns at a third of the width;
   // white divers and glowing flecks rise out of it (desktop) or drift up
   // from the deep (mobile).
-  const FLAME_X = 1 / 3;
-  const FLAME_BASE = 0.82; // normalized y (from top) of the flame's mouth
   const deskQ = matchMedia('(min-width: 769px)');
 
   // screen-two modules land in their own tasks — keeps hydration's
@@ -1809,11 +1828,7 @@ export function initPageFx(): void {
       return { cx, cy, pts };
     };
     // three rocks at the flame's mouth, mildly overlapping; center drawn last (front)
-    const rocks = [
-      mkRock(FLAME_X - 0.045, FLAME_BASE + 0.02, 0.052, 0.028),
-      mkRock(FLAME_X + 0.062, FLAME_BASE + 0.018, 0.042, 0.024),
-      mkRock(FLAME_X + 0.008, FLAME_BASE + 0.028, 0.062, 0.033),
-    ];
+    const rocks = ROCKS.map((r) => mkRock(r.cx, r.cy, r.rx, r.ry));
 
     const flecks: Fleck[] = [];
     for (let i = 0; i < 90; i++) {

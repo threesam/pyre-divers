@@ -687,12 +687,15 @@ html.dive-go #veil::before {
     position: absolute;
     left: calc(var(--x) * 100%);
     top: calc(var(--y) * 100%);
-    /* the target is the WHOLE stone, not the icon: rx/ry are the rock's own
-       half-extents and both scale with viewport height in the canvas, so
-       both are vh here — rx is not a vw. border-radius makes the hit area
-       elliptical, which is near enough to a wobbled stone. */
-    width: max(24px, calc(var(--rx) * 2vh));
-    height: max(24px, calc(var(--ry) * 2vh));
+    /* The target is the WHOLE stone, not the icon. --rx/--ry are the rock's
+       half-extents as FRACTIONS of viewport height (the canvas scales point
+       offsets by rh on both axes, so rx is not a vw). Full width is
+       2 * rx * H, and since 1vh = H/100 that is `rx * 200vh` — not
+       `rx * 2vh`, which is the same number 100x too small and lands under
+       the 24px floor. border-radius makes the target elliptical, near
+       enough to a wobbled stone. */
+    width: max(24px, calc(var(--rx) * 200vh));
+    height: max(24px, calc(var(--ry) * 200vh));
     transform: translate(-50%, -50%);
     /* the stones overlap, and the centre one is drawn last so it sits in
        front. without this the DOM order would decide which stone catches

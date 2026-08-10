@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { setRockLit } from '$lib/page-fx';
+  import { ROCKS, setRockLit } from '$lib/page-fx';
 
   // The three social links, stamped on the three stones at the flame's mouth.
   //
@@ -28,45 +28,27 @@
   interface Social {
     name: string;
     href: string;
-    /** index into page-fx `rocks`, which is ordered [left, right, centre] */
+    /** which stone, as an index into ROCKS — the single source of geometry */
     rock: number;
-    /** rock centre, normalized — width for x, height for y */
-    x: number;
-    y: number;
-    /**
-     * The stone's own half-extents, straight off mkRock. Both are scaled by
-     * viewport HEIGHT in the canvas (point offsets multiply rh on both axes),
-     * so both become vh here — rx is NOT a vw. The hit area is the whole
-     * stone, so hovering anywhere on the rock lights it.
-     */
-    rx: number;
-    ry: number;
-    /** paint order: rocks[2] is drawn last and sits in front of the others */
-    z: number;
-    /** icon box height in vh, ~62% of the stone it sits on */
-    size: number;
     /**
      * The stone's own colour, sampled from the ember run the rocks are
      * outlined in — #f5b942 → #e25822 → #b91c1c spanning FLAME_X ± 0.12.
      * So the left stone wears the warm end and the right one the deep end,
-     * exactly as their outlines already do.
+     * exactly as their outlines already do. Cosmetic: if a stone moved,
+     * this would be a shade off, not wrong.
      */
     ink: string;
-    icon: 'instagram' | 'youtube' | 'bird';
+    icon: 'instagram' | 'youtube' | 'x';
   }
 
-  // Handles assumed to be `pyredivers` on all three — correct here if not.
+  // Position, size and stacking are all DERIVED from ROCKS below — nothing
+  // about the stones is written down twice. Handles assumed to be
+  // `pyredivers` on all three; correct here if not.
   const SOCIALS: Social[] = [
     {
       name: 'instagram',
       href: 'https://instagram.com/pyredivers',
       rock: 0,
-      x: 1 / 3 - 0.045,
-      y: 0.84,
-      rx: 0.052,
-      ry: 0.028,
-      z: 1,
-      size: 3.4,
       ink: '#e97c2e',
       icon: 'instagram',
     },
@@ -74,12 +56,6 @@
       name: 'youtube',
       href: 'https://youtube.com/@pyredivers',
       rock: 2,
-      x: 1 / 3 + 0.008,
-      y: 0.848,
-      rx: 0.062,
-      ry: 0.033,
-      z: 3,
-      size: 4.1,
       ink: '#df5422',
       icon: 'youtube',
     },
@@ -87,27 +63,55 @@
       name: 'x',
       href: 'https://x.com/pyredivers',
       rock: 1,
-      x: 1 / 3 + 0.062,
-      y: 0.838,
-      rx: 0.042,
-      ry: 0.024,
-      z: 2,
-      size: 3,
       ink: '#cd391f',
-      icon: 'bird',
+      icon: 'x',
     },
   ];
+
+  /**
+   * Everything positional, computed from the one source.
+   *
+   * `z` is the ROCKS index + 1: that array is in paint order, so the stone
+   * drawn last is the one in front, and the target that should win the
+   * pointer where they overlap. Derived, so it cannot disagree.
+   *
+   * `size` is the icon box in vh at ~62% of the stone's height. ry is a
+   * fraction of viewport height, so the stone is `ry * 200` vh tall and
+   * 62% of that is `ry * 124`.
+   */
+  const placed = SOCIALS.map((s) => {
+    const r = ROCKS[s.rock];
+    return {
+      ...s,
+      x: r.cx,
+      y: r.cy,
+      rx: r.rx,
+      ry: r.ry,
+      z: s.rock + 1,
+      size: r.ry * 124,
+    };
+  });
 
   // Only light a stone when the icons are actually ON the stones. Below the
   // breakpoint they sit in a row and lighting a rock nobody is pointing at
   // would be a lie.
+  //
+  // DO NOT hoist this to a top-level `matchMedia(...)`. This page is
+  // prerendered, component top level runs on the server, and matchMedia is
+  // not defined there — the build dies with a 500 on /. Called from a
+  // pointer handler it only ever runs in a browser.
   const onStones = () => matchMedia('(min-width: 960px)').matches;
   const light = (i: number) => onStones() && setRockLit(i);
   const douse = () => setRockLit(null);
+
+  // litRock lives at module scope in page-fx, so it outlives this component.
+  // Navigating to an episode page mid-hover would otherwise leave a stone
+  // burning with nothing pointing at it.
+  $effect(() => douse);
 </script>
 
 <ul class="socials">
-  {#each SOCIALS as s (s.name)}
+  {#each placed as s (s.name)}
     <li>
       <!-- eslint-disable svelte/no-navigation-without-resolve -- external absolute urls from SOCIALS; resolve() is for app routes -->
       <!-- block form: prettier splits this tag's attributes, so a
