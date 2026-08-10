@@ -89,8 +89,25 @@
   // never lights, or lighting a stone that is not under the pointer.
   const onStones = (el: Element) =>
     getComputedStyle(el).position === 'absolute';
-  const light = (i: number, el: Element) => onStones(el) && setRockLit(i);
-  const douse = () => setRockLit(null);
+
+  // ONE signal, not two. The stone is lit by these handlers and the icon has
+  // to go dark at the same instant, so both read `lit`. Driving the icon
+  // from CSS :hover/:focus-visible instead looks identical until the two
+  // conditions disagree, and they do: clicking a link with a mouse fires
+  // focus but not :focus-visible, and a touch screen past 960 fires
+  // pointerenter with no :hover at all. Either way the stone lights, the
+  // icon stays ember on an ember fill, and it vanishes.
+  let lit = $state<number | null>(null);
+
+  const light = (i: number, el: Element) => {
+    if (!onStones(el)) return;
+    lit = i;
+    setRockLit(i);
+  };
+  const douse = () => {
+    lit = null;
+    setRockLit(null);
+  };
 
   // litRock lives at module scope in page-fx, so it outlives this component
   // and the layout it was lit in. Three ways to strand a burning stone with
@@ -117,6 +134,7 @@
         href={s.href}
         rel="me"
         aria-label="pyre divers on {s.name}"
+        class:lit={lit === s.rock}
         style="--x:{s.x};--y:{s.y};--rx:{s.rx};--ry:{s.ry};--z:{s.z};--size:{s.size};--ink:{s.ink}"
         onpointerenter={(e) => light(s.rock, e.currentTarget)}
         onpointerleave={douse}

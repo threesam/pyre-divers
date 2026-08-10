@@ -661,12 +661,17 @@ html.dive-go #veil::before {
    stone's own dark so it reads as burned into a lit coal rather than
    painted on a cold one.
 
+   Keyed off `.lit`, which the component sets on the same event that lights
+   the rock — NOT off :hover/:focus-visible. Those look equivalent and
+   aren't: a mouse click fires focus without :focus-visible, and a touch
+   screen fires pointerenter without :hover. Both light the stone, and an
+   ember icon on an ember fill is an icon that disappeared.
+
    Gated on no-preference because with reduced motion page-fx draws exactly
-   one static frame and returns — the rock would never light, and a black
-   icon on an unlit stone is just an icon that disappeared. */
-@media (min-width: 960px) and (prefers-reduced-motion: no-preference) {
-  .socials a:hover,
-  .socials a:focus-visible {
+   one static frame and returns — the rock never lights, so the icon must
+   not go dark either. */
+@media (prefers-reduced-motion: no-preference) {
+  .socials a.lit {
     color: #10120a;
   }
 }
