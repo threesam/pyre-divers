@@ -107,6 +107,20 @@ function must<T extends Element>(selector: string): T {
   return el;
 }
 
+/**
+ * Which stone is lit, or null. The stones are canvas and the social links
+ * over them are DOM, so hover has to cross that line by hand — the anchors
+ * call this, the draw loop reads it on the next frame.
+ *
+ * Index is into `rocks`, which is ordered [left, right, centre] because the
+ * centre one is drawn last to sit in front. Not left-to-right.
+ */
+let litRock: number | null = null;
+
+export function setRockLit(i: number | null): void {
+  litRock = i;
+}
+
 export function initPageFx(): void {
   // headless audits (lighthouse) run swiftshader: every gl context they
   // create is a long task. they get the chunked static frame, gl-free.
@@ -1821,7 +1835,10 @@ export function initPageFx(): void {
     addEventListener('resize', sizeRain);
     let rockGlow = 1;
     let rockBlur = 0;
-    const drawRock = (r: Rock) => {
+    // the ember run the stones are outlined in, rebuilt per frame with the
+    // canvas size. A lit stone fills with it instead of only wearing it.
+    let rockInk: CanvasGradient | string = '#10120a';
+    const drawRock = (r: Rock, lit: boolean) => {
       const n = r.pts.length;
       ctx2.beginPath();
       for (let i = 0; i <= n; i++) {
@@ -1840,10 +1857,13 @@ export function initPageFx(): void {
       ctx2.closePath();
       ctx2.globalAlpha = 1;
       ctx2.shadowBlur = 0;
+      // lit: the stone fills with the ember it normally only wears, and the
+      // breath stops — a stone someone is pointing at holds still and burns.
+      ctx2.fillStyle = lit ? rockInk : '#10120a';
       ctx2.fill();
-      ctx2.globalAlpha = rockGlow;
+      ctx2.globalAlpha = lit ? 1 : rockGlow;
       ctx2.shadowColor = 'rgba(226, 88, 34, 0.85)';
-      ctx2.shadowBlur = rockBlur;
+      ctx2.shadowBlur = lit ? Math.max(rockBlur, 26 * dpr) : rockBlur;
       ctx2.stroke();
       ctx2.shadowBlur = 0;
       ctx2.globalAlpha = 1;
@@ -1926,12 +1946,13 @@ export function initPageFx(): void {
         rockGrad.addColorStop(0.5, '#e25822');
         rockGrad.addColorStop(1, '#b91c1c');
         ctx2.strokeStyle = rockGrad;
+        rockInk = rockGrad;
         ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.1);
         const pulse = 0.5 + 0.5 * Math.sin(t * 0.85); // ~7s breath
         rockGlow = 0.45 + 0.55 * pulse;
         rockBlur = (5 + 20 * pulse) * dpr;
-        for (const r of rocks) {
-          drawRock(r);
+        for (let i = 0; i < rocks.length; i++) {
+          drawRock(rocks[i], i === litRock);
         }
       }
     };

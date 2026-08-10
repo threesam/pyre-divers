@@ -599,7 +599,9 @@ html.dive-go #veil::before {
      clears 44 at every viewport so a thumb has somewhere to land */
   min-width: 44px;
   min-height: 44px;
-  color: #f5b942;
+  /* --ink is this stone's own colour, sampled from the ember run its
+     outline is already stroked with — warm on the left, deep on the right */
+  color: var(--ink, #e25822);
   border-radius: 50%;
 }
 .socials svg {
@@ -617,13 +619,30 @@ html.dive-go #veil::before {
   fill: currentColor;
   stroke: none;
 }
-.socials a:hover,
-.socials a:focus-visible {
-  color: #f0e8dd;
-}
 .socials a:focus-visible {
   outline: 2px solid #f5b942;
   outline-offset: 3px;
+}
+/* off the stones there is nothing to light, so hover just brightens */
+@media (max-width: 959px) {
+  .socials a:hover,
+  .socials a:focus-visible {
+    color: #f0e8dd;
+  }
+}
+/* On the stones the inversion is the whole gesture: page-fx fills the rock
+   with the ember run it normally only wears, and the icon drops to the
+   stone's own dark so it reads as burned into a lit coal rather than
+   painted on a cold one.
+
+   Gated on no-preference because with reduced motion page-fx draws exactly
+   one static frame and returns — the rock would never light, and a black
+   icon on an unlit stone is just an icon that disappeared. */
+@media (min-width: 960px) and (prefers-reduced-motion: no-preference) {
+  .socials a:hover,
+  .socials a:focus-visible {
+    color: #10120a;
+  }
 }
 
 /* 960, not the 769 the stones themselves appear at. The card is pinned
