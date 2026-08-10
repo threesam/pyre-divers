@@ -130,6 +130,44 @@ export const ROCKS = [
 ] as const;
 
 /**
+ * The ember run the stones are outlined in: three stops across a band
+ * centred on the flame, in fractions of viewport width. Each stone sits at
+ * a different point along it, which is why the left one wears the warm end
+ * and the right one the deep end.
+ */
+const EMBER_HALF_SPAN = 0.12;
+const EMBER_STOPS: readonly [number, string][] = [
+  [0, '#f5b942'],
+  [0.5, '#e25822'],
+  [1, '#b91c1c'],
+];
+
+/**
+ * The run's colour where a stone sits, so the icon on that stone can wear
+ * the same shade its outline already does — derived rather than sampled by
+ * hand, so moving a stone cannot leave its icon a shade wrong.
+ */
+export function emberAt(cx: number): string {
+  const t = Math.min(
+    1,
+    Math.max(0, (cx - (FLAME_X - EMBER_HALF_SPAN)) / (EMBER_HALF_SPAN * 2)),
+  );
+  let i = 1;
+  while (i < EMBER_STOPS.length - 1 && t > EMBER_STOPS[i][0]) {
+    i++;
+  }
+  const [t0, c0] = EMBER_STOPS[i - 1];
+  const [t1, c1] = EMBER_STOPS[i];
+  const k = (t - t0) / (t1 - t0);
+  const ch = (c: string, at: number) => parseInt(c.slice(at, at + 2), 16);
+  const mix = (at: number) =>
+    Math.round(ch(c0, at) + (ch(c1, at) - ch(c0, at)) * k)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${mix(1)}${mix(3)}${mix(5)}`;
+}
+
+/**
  * Which stone is lit, or null. The stones are canvas and the social links
  * over them are DOM, so hover has to cross that line by hand — the anchors
  * call this, the draw loop reads it on the next frame.
@@ -377,6 +415,14 @@ export function initPageFx(): void {
     if (!diving) {
       return;
     }
+    // The far end of the garden's hand-off. threesam fires `dive-to-pyre` on
+    // the click; this is the arrival, and the pair is the only way to know
+    // whether anyone uses the door at all — or how many drop out during the
+    // 1s send-off. Fired before the param is stripped below, since that is
+    // what proves we got here by diving rather than by URL.
+    // Optional chaining, not a guard: umami is a third-party script and the
+    // ?test eject leaves it undefined on purpose.
+    window.umami?.track('dive-arrival');
     // strip only our flag — UTM/referral params ride along untouched
     const q = new URLSearchParams(location.search);
     q.delete('dive');
@@ -1909,12 +1955,22 @@ export function initPageFx(): void {
         ctx2.globalAlpha = 1;
       }
       // and the breath fades out as it lights — a stone someone is pointing
-      // at holds still and burns.
+      // at holds still and burns. This stroke carries the glow.
+      ctx2.strokeStyle = rockInk;
       ctx2.globalAlpha = rockGlow + (1 - rockGlow) * lit;
       ctx2.shadowColor = 'rgba(226, 88, 34, 0.85)';
       ctx2.shadowBlur = rockBlur + Math.max(0, 26 * dpr - rockBlur) * lit;
       ctx2.stroke();
       ctx2.shadowBlur = 0;
+      // Then the rim darkens over it, on the same eased value. Everything on
+      // a lit stone goes to silhouette — rim and icon both — so the ember
+      // reads as coming from inside it. Shadow is off for this pass: the
+      // glow belongs to the stroke above, and doubling it blows out.
+      if (lit > 0) {
+        ctx2.strokeStyle = '#10120a';
+        ctx2.globalAlpha = lit;
+        ctx2.stroke();
+      }
       ctx2.globalAlpha = 1;
     };
     let joinVisible = false;
@@ -1986,14 +2042,14 @@ export function initPageFx(): void {
         ctx2.globalAlpha = 1;
         ctx2.fillStyle = '#10120a';
         const rockGrad = ctx2.createLinearGradient(
-          (FLAME_X - 0.12) * rw,
+          (FLAME_X - EMBER_HALF_SPAN) * rw,
           0,
-          (FLAME_X + 0.12) * rw,
+          (FLAME_X + EMBER_HALF_SPAN) * rw,
           0,
         );
-        rockGrad.addColorStop(0, '#f5b942');
-        rockGrad.addColorStop(0.5, '#e25822');
-        rockGrad.addColorStop(1, '#b91c1c');
+        for (const [at, col] of EMBER_STOPS) {
+          rockGrad.addColorStop(at, col);
+        }
         ctx2.strokeStyle = rockGrad;
         rockInk = rockGrad;
         ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.1);

@@ -612,9 +612,11 @@ html.dive-go #veil::before {
   stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
-  /* matched to LIT_MS in page-fx: the icon and the stone under it have to
-     cross over together or one arrives before the other */
-  transition: color 400ms ease;
+  /* matched to LIT_MS in page-fx, and LINEAR to match its curve too —
+     advanceLit steps by a fixed amount per frame, so an eased colour here
+     would drift ahead of the stone under it and arrive early despite both
+     lasting 400ms */
+  transition: color 400ms linear;
   /* the same device the card frame, the input ring and the button slab use
      — turbulence displacement, not curves that pretend to bow. wobble-i is
      the icon-scale tuning; a/b/c would tear a 27px stroke apart. */

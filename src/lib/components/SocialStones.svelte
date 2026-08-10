@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ROCKS, setRockLit } from '$lib/page-fx';
+  import { ROCKS, emberAt, setRockLit } from '$lib/page-fx';
 
   // The three social links, stamped on the three stones at the flame's mouth.
   //
@@ -9,63 +9,45 @@
   // stones rather than hit-testing on the canvas. Screen readers and
   // keyboards get ordinary links; the painting stays decorative.
   //
-  // COORDINATES ARE THE CANVAS'S OWN. Each rock's centre in page-fx is
-  // (FLAME_X + dx, FLAME_BASE + dy) with FLAME_X = 1/3 and FLAME_BASE =
-  // 0.82, normalized to viewport width and height. `section` is
-  // position:relative and exactly 100dvh (app.css:52), and #fire is inset:0
-  // inside it, so a percentage of #join is the same coordinate the canvas
-  // draws in. If those constants ever move, these move with them — that is
-  // the coupling, and it is written down here because nothing enforces it.
+  // COORDINATES COME FROM THE CANVAS, not from a copy of them. ROCKS is the
+  // one place the stones are described; page-fx feeds it to mkRock and this
+  // feeds it to CSS, so a stone cannot move out from under its own link.
+  // `section` is position:relative and exactly 100dvh (app.css:52) and #fire
+  // is inset:0 inside it, so a percentage of #join is the same coordinate
+  // the canvas paints in.
   //
   // Below 960px the card's frame reaches across the rightmost stone, so the
   // same three anchors reflow into a plain row and the stones go back to
   // being unstamped. See the app.css breakpoint note for the arithmetic.
   //
-  // Icons are drawn in the site's hand: quadratic curves so the edges bow,
-  // round caps, ~2.4 stroke on a 32 viewBox — the same language as the
-  // stones (drawRock uses quadraticCurveTo for exactly this reason).
+  // Icons are drawn in the site's hand — uneven paths through the wobble-i
+  // turbulence filter, the same device the card frame and button slab use.
 
   interface Social {
     name: string;
     href: string;
     /** which stone, as an index into ROCKS — the single source of geometry */
     rock: number;
-    /**
-     * The stone's own colour, sampled from the ember run the rocks are
-     * outlined in — #f5b942 → #e25822 → #b91c1c spanning FLAME_X ± 0.12.
-     * So the left stone wears the warm end and the right one the deep end,
-     * exactly as their outlines already do. Cosmetic: if a stone moved,
-     * this would be a shade off, not wrong.
-     */
-    ink: string;
     icon: 'instagram' | 'youtube' | 'x';
   }
 
-  // Position, size and stacking are all DERIVED from ROCKS below — nothing
-  // about the stones is written down twice. Handles assumed to be
-  // `pyredivers` on all three; correct here if not.
+  // Everything else is DERIVED from ROCKS below — nothing about the stones
+  // is written down twice. Handles assumed to be `pyredivers` on all three;
+  // correct here if not.
   const SOCIALS: Social[] = [
     {
       name: 'instagram',
       href: 'https://instagram.com/pyredivers',
       rock: 0,
-      ink: '#e97c2e',
       icon: 'instagram',
     },
     {
       name: 'youtube',
       href: 'https://youtube.com/@pyredivers',
       rock: 2,
-      ink: '#df5422',
       icon: 'youtube',
     },
-    {
-      name: 'x',
-      href: 'https://x.com/pyredivers',
-      rock: 1,
-      ink: '#cd391f',
-      icon: 'x',
-    },
+    { name: 'x', href: 'https://x.com/pyredivers', rock: 1, icon: 'x' },
   ];
 
   /**
@@ -78,6 +60,9 @@
    * `size` is the icon box in vh at ~62% of the stone's height. ry is a
    * fraction of viewport height, so the stone is `ry * 200` vh tall and
    * 62% of that is `ry * 124`.
+   *
+   * `ink` is the ember run sampled where this stone sits, so each icon
+   * wears the shade its own outline already does.
    */
   const placed = SOCIALS.map((s) => {
     const r = ROCKS[s.rock];
@@ -89,6 +74,7 @@
       ry: r.ry,
       z: s.rock + 1,
       size: r.ry * 124,
+      ink: emberAt(r.cx),
     };
   });
 
@@ -104,10 +90,21 @@
   const light = (i: number) => onStones() && setRockLit(i);
   const douse = () => setRockLit(null);
 
-  // litRock lives at module scope in page-fx, so it outlives this component.
-  // Navigating to an episode page mid-hover would otherwise leave a stone
-  // burning with nothing pointing at it.
-  $effect(() => douse);
+  // litRock lives at module scope in page-fx, so it outlives this component
+  // and the layout it was lit in. Two ways to strand a burning stone with
+  // nothing pointing at it:
+  //   - navigating to an episode page mid-hover (teardown)
+  //   - dragging the window under 960 mid-hover, where the icons reflow off
+  //     the stones and no pointerleave ever fires
+  $effect(() => {
+    const mq = matchMedia('(min-width: 960px)');
+    const off = () => !mq.matches && douse();
+    mq.addEventListener('change', off);
+    return () => {
+      mq.removeEventListener('change', off);
+      douse();
+    };
+  });
 </script>
 
 <ul class="socials">
@@ -148,20 +145,6 @@
               d="M13.6 12.6 Q17.2 14.2 20.7 16.1 Q17 17.9 13.8 19.5 Q13.5 16 13.6 12.6 Z"
             />
           {:else}
-            <!-- THREE strokes, not two. The mark is one continuous bar
-                 top-left to bottom-right, with the counter-diagonal BROKEN
-                 where that bar crosses in front of it — an upper-right
-                 stub and a lower-left stub. Draw it as two full crossing
-                 strokes and you have a multiplication sign; the break is
-                 the whole tell, and it survives being drawn by hand.
-
-                 Flat caps for the same reason: round ends are the
-                 universal close button, cut ends are the mark.
-
-                 The bird was tried and dropped — a filled silhouette gives
-                 the turbulence no line to disturb, so it stayed crisp
-                 beside two icons that had visibly been drawn. Strokes take
-                 the hand; fills don't. -->
             <!-- the letterform, not two strokes: bars with HORIZONTAL
                  terminal cuts, narrow and tall, and the counter-diagonal
                  broken where the main bar crosses in front. Perpendicular
