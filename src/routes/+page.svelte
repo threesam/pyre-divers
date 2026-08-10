@@ -22,7 +22,7 @@
       "url": "https://pyredivers.com/",
       "image": "https://pyredivers.com/og.jpg",
       "description": "live, unpolished conversations with the ones who jumped before they were ready. two builders, one fire.",
-      "startDate": "2026-08-06",
+      "startDate": "2026-08-27",
       "inLanguage": "en",
       "genre": ["technology", "entrepreneurship", "philosophy"],
       "author": [
@@ -39,7 +39,7 @@
   <title>pyre divers</title>
   <meta
     name="description"
-    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 6, 2026."
+    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 27, 2026."
   />
   <link rel="canonical" href="https://pyredivers.com/" />
   <meta property="og:type" content="website" />
@@ -47,7 +47,7 @@
   <meta property="og:title" content="pyre divers" />
   <meta
     property="og:description"
-    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 6, 2026."
+    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 27, 2026."
   />
   <meta property="og:url" content="https://pyredivers.com/" />
   <meta property="og:image" content="https://pyredivers.com/og.jpg" />
@@ -62,7 +62,7 @@
   <meta name="twitter:title" content="pyre divers" />
   <meta
     name="twitter:description"
-    content="two builders, live and unedited. first dive: august 6, 2026."
+    content="two builders, live and unedited. first dive: august 27, 2026."
   />
   <meta name="twitter:image" content="https://pyredivers.com/og.jpg" />
   <link
@@ -186,7 +186,7 @@
       two builders, live. no script. no polish. no edits. conversations with the
       ones who jumped before they were ready.
     </p>
-    <p class="patch">first dive: august 6.</p>
+    <p class="patch">first dive: august 27.</p>
     <form id="join-form" novalidate>
       <div class="fieldwrap">
         <input

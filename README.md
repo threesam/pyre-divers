@@ -2,7 +2,7 @@
 
 Landing page for the Pyre Divers podcast — live, unpolished conversations with
 the trailblazers making asymmetric bets. Two builders, one fire. First dive:
-August 6, 2026, live on StreamYard.
+August 27, 2026, live on StreamYard.
 
 SvelteKit (adapter-vercel), no runtime dependencies. The page is a canvas
 whirlpool of thousands of tiny hand-drawn stick figures riding a log-spiral
