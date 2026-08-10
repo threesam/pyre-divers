@@ -125,16 +125,28 @@
               d="M13.6 12.6 Q17.2 14.2 20.7 16.1 Q17 17.9 13.8 19.5 Q13.5 16 13.6 12.6 Z"
             />
           {:else}
-            <!-- FLAT CAPS, and that is the whole difference. Round-capped
-                 crossing strokes read as a close button; cut ends read as
-                 the mark. Narrower than a symmetric ✕ for the same reason.
-                 The bird was tried and dropped: it is a filled silhouette,
-                 and a fill gives the turbulence no line to disturb, so it
-                 stayed crisp next to two icons that had visibly been drawn.
-                 Strokes take the hand; fills don't. -->
+            <!-- THREE strokes, not two. The mark is one continuous bar
+                 top-left to bottom-right, with the counter-diagonal BROKEN
+                 where that bar crosses in front of it — an upper-right
+                 stub and a lower-left stub. Draw it as two full crossing
+                 strokes and you have a multiplication sign; the break is
+                 the whole tell, and it survives being drawn by hand.
+
+                 Flat caps for the same reason: round ends are the
+                 universal close button, cut ends are the mark.
+
+                 The bird was tried and dropped — a filled silhouette gives
+                 the turbulence no line to disturb, so it stayed crisp
+                 beside two icons that had visibly been drawn. Strokes take
+                 the hand; fills don't. -->
+            <!-- the gap only has to clear the bar it passes behind: half a
+                 2.7 stroke, near-perpendicular, so ~1.9 units either side
+                 of the crossing. Wider than that and the stubs read as two
+                 detached ticks beside a slash. -->
             <g class="cut">
-              <path d="M9.4 6.2 Q16.2 15.4 22.9 25.7" />
-              <path d="M22.5 6.4 Q15.3 16.5 9.1 25.6" />
+              <path d="M9.6 6.2 Q16.4 15.8 23.2 25.7" />
+              <path d="M22.9 6.3 Q20 10.3 17.1 14.4" />
+              <path d="M14.9 17.6 Q12.1 21.7 9.2 25.6" />
             </g>
           {/if}
         </svg>
