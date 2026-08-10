@@ -1794,6 +1794,18 @@ export function initPageFx(): void {
         const j = 0.82 + rand() * 0.36; // hand wobble
         pts.push([Math.cos(ang) * rx * j, Math.sin(ang) * ry * j]);
       }
+      // Re-centre. Every point carries its own random radius, so the wobble
+      // leaves the outline's middle up to ~18% of a radius away from (cx,cy)
+      // — about 10px on the front stone at a 900px viewport. Nothing noticed
+      // while these were only decoration; the social links sit on their
+      // centres now, so the centre has to be where it claims to be.
+      // Shape is untouched: same rand() calls in the same order, just moved.
+      const mx = pts.reduce((s, p) => s + p[0], 0) / n;
+      const my = pts.reduce((s, p) => s + p[1], 0) / n;
+      for (const p of pts) {
+        p[0] -= mx;
+        p[1] -= my;
+      }
       return { cx, cy, pts };
     };
     // three rocks at the flame's mouth, mildly overlapping; center drawn last (front)
