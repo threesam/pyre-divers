@@ -33,6 +33,16 @@
     /** rock centre, normalized — width for x, height for y */
     x: number;
     y: number;
+    /**
+     * The stone's own half-extents, straight off mkRock. Both are scaled by
+     * viewport HEIGHT in the canvas (point offsets multiply rh on both axes),
+     * so both become vh here — rx is NOT a vw. The hit area is the whole
+     * stone, so hovering anywhere on the rock lights it.
+     */
+    rx: number;
+    ry: number;
+    /** paint order: rocks[2] is drawn last and sits in front of the others */
+    z: number;
     /** icon box height in vh, ~62% of the stone it sits on */
     size: number;
     /**
@@ -53,6 +63,9 @@
       rock: 0,
       x: 1 / 3 - 0.045,
       y: 0.84,
+      rx: 0.052,
+      ry: 0.028,
+      z: 1,
       size: 3.4,
       ink: '#e97c2e',
       icon: 'instagram',
@@ -63,6 +76,9 @@
       rock: 2,
       x: 1 / 3 + 0.008,
       y: 0.848,
+      rx: 0.062,
+      ry: 0.033,
+      z: 3,
       size: 4.1,
       ink: '#df5422',
       icon: 'youtube',
@@ -73,6 +89,9 @@
       rock: 1,
       x: 1 / 3 + 0.062,
       y: 0.838,
+      rx: 0.042,
+      ry: 0.024,
+      z: 2,
       size: 3,
       ink: '#cd391f',
       icon: 'bird',
@@ -97,7 +116,7 @@
         href={s.href}
         rel="me"
         aria-label="pyre divers on {s.name}"
-        style="--x:{s.x};--y:{s.y};--size:{s.size};--ink:{s.ink}"
+        style="--x:{s.x};--y:{s.y};--rx:{s.rx};--ry:{s.ry};--z:{s.z};--size:{s.size};--ink:{s.ink}"
         onpointerenter={() => light(s.rock)}
         onpointerleave={douse}
         onfocus={() => light(s.rock)}

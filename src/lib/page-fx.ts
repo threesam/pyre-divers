@@ -1850,7 +1850,20 @@ export function initPageFx(): void {
     // the ember run the stones are outlined in, rebuilt per frame with the
     // canvas size. A lit stone fills with it instead of only wearing it.
     let rockInk: CanvasGradient | string = '#10120a';
-    const drawRock = (r: Rock, lit: boolean) => {
+    // per-stone 0..1, eased toward litRock over LIT_MS. Canvas has no
+    // transitions, so the crossfade is a value advanced by dt each frame.
+    const LIT_MS = 400;
+    const litAmt = rocks.map(() => 0);
+    const advanceLit = (dt: number) => {
+      const step = (dt * 1000) / LIT_MS;
+      for (let i = 0; i < litAmt.length; i++) {
+        const target = i === litRock ? 1 : 0;
+        const d = target - litAmt[i];
+        litAmt[i] =
+          Math.abs(d) <= step ? target : litAmt[i] + Math.sign(d) * step;
+      }
+    };
+    const drawRock = (r: Rock, lit: number) => {
       const n = r.pts.length;
       ctx2.beginPath();
       for (let i = 0; i <= n; i++) {
@@ -1869,13 +1882,22 @@ export function initPageFx(): void {
       ctx2.closePath();
       ctx2.globalAlpha = 1;
       ctx2.shadowBlur = 0;
-      // lit: the stone fills with the ember it normally only wears, and the
-      // breath stops — a stone someone is pointing at holds still and burns.
-      ctx2.fillStyle = lit ? rockInk : '#10120a';
+      // The crossfade: the cold fill always goes down, then the ember run is
+      // laid over it at the eased amount. Canvas cannot interpolate a solid
+      // to a gradient, but it can dissolve one into the other.
+      ctx2.fillStyle = '#10120a';
       ctx2.fill();
-      ctx2.globalAlpha = lit ? 1 : rockGlow;
+      if (lit > 0) {
+        ctx2.globalAlpha = lit;
+        ctx2.fillStyle = rockInk;
+        ctx2.fill();
+        ctx2.globalAlpha = 1;
+      }
+      // and the breath fades out as it lights — a stone someone is pointing
+      // at holds still and burns.
+      ctx2.globalAlpha = rockGlow + (1 - rockGlow) * lit;
       ctx2.shadowColor = 'rgba(226, 88, 34, 0.85)';
-      ctx2.shadowBlur = lit ? Math.max(rockBlur, 26 * dpr) : rockBlur;
+      ctx2.shadowBlur = rockBlur + Math.max(0, 26 * dpr - rockBlur) * lit;
       ctx2.stroke();
       ctx2.shadowBlur = 0;
       ctx2.globalAlpha = 1;
@@ -1964,7 +1986,7 @@ export function initPageFx(): void {
         rockGlow = 0.45 + 0.55 * pulse;
         rockBlur = (5 + 20 * pulse) * dpr;
         for (let i = 0; i < rocks.length; i++) {
-          drawRock(rocks[i], i === litRock);
+          drawRock(rocks[i], litAmt[i]);
         }
       }
     };
@@ -1990,6 +2012,7 @@ export function initPageFx(): void {
       }
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
+      advanceLit(dt);
       const nowS = now / 1000;
       for (const b of drops) {
         if (b.waiting) {

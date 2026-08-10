@@ -612,7 +612,9 @@ html.dive-go #veil::before {
   stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: color 220ms ease;
+  /* matched to LIT_MS in page-fx: the icon and the stone under it have to
+     cross over together or one arrives before the other */
+  transition: color 400ms ease;
   /* the same device the card frame, the input ring and the button slab use
      — turbulence displacement, not curves that pretend to bow. wobble-i is
      the icon-scale tuning; a/b/c would tear a 27px stroke apart. */
@@ -685,11 +687,17 @@ html.dive-go #veil::before {
     position: absolute;
     left: calc(var(--x) * 100%);
     top: calc(var(--y) * 100%);
-    /* --size is the icon box in vh, ~62% of the stone's height */
-    width: max(44px, calc(var(--size) * 1vh));
-    height: max(44px, calc(var(--size) * 1vh));
+    /* the target is the WHOLE stone, not the icon: rx/ry are the rock's own
+       half-extents and both scale with viewport height in the canvas, so
+       both are vh here — rx is not a vw. border-radius makes the hit area
+       elliptical, which is near enough to a wobbled stone. */
+    width: max(24px, calc(var(--rx) * 2vh));
+    height: max(24px, calc(var(--ry) * 2vh));
     transform: translate(-50%, -50%);
-    z-index: 1;
+    /* the stones overlap, and the centre one is drawn last so it sits in
+       front. without this the DOM order would decide which stone catches
+       the pointer, and it disagrees with what you can see. */
+    z-index: var(--z, 1);
   }
   .socials svg {
     width: calc(var(--size) * 1vh);
