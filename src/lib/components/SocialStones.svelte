@@ -139,14 +139,20 @@
                  the turbulence no line to disturb, so it stayed crisp
                  beside two icons that had visibly been drawn. Strokes take
                  the hand; fills don't. -->
-            <!-- the gap only has to clear the bar it passes behind: half a
-                 2.7 stroke, near-perpendicular, so ~1.9 units either side
-                 of the crossing. Wider than that and the stubs read as two
-                 detached ticks beside a slash. -->
-            <g class="cut">
-              <path d="M9.6 6.2 Q16.4 15.8 23.2 25.7" />
-              <path d="M22.9 6.3 Q20 10.3 17.1 14.4" />
-              <path d="M14.9 17.6 Q12.1 21.7 9.2 25.6" />
+            <!-- the letterform, not two strokes: bars with HORIZONTAL
+                 terminal cuts, narrow and tall, and the counter-diagonal
+                 broken where the main bar crosses in front. Perpendicular
+                 caps and equal-length arms give you a multiplication sign;
+                 these three things are what make it the mark.
+
+                 Filled, and that is fine here even though the bird wasn't:
+                 the bird was already organic, so displacing it read as
+                 noise. This shape is all straight edges, and straight
+                 edges that wobble read as drawn by hand. -->
+            <g class="solid">
+              <path d="M8 5 L11.2 5 L24 27 L20.8 27 Z" />
+              <path d="M20.8 5 L24 5 L18.88 13.8 L15.68 13.8 Z" />
+              <path d="M16.32 18.2 L11.2 27 L8 27 L13.12 18.2 Z" />
             </g>
           {/if}
         </svg>

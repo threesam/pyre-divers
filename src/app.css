@@ -634,12 +634,12 @@ html.dive-go #veil::before {
   fill: currentColor;
   stroke: none;
 }
-/* the x mark: cut terminals, not round ones. round caps on two crossing
-   strokes is the universal close button; flat ends are what make it read
-   as the letter. slightly heavier so the shorter strokes hold their weight. */
-.socials .cut {
-  stroke-linecap: butt;
-  stroke-width: 2.7;
+/* the x mark is a letterform, not a line drawing — filled bars with
+   horizontal terminal cuts. it is the one icon here that encloses nothing,
+   so it carries as a solid the way the other two carry as outlines. */
+.socials .solid {
+  fill: currentColor;
+  stroke: none;
 }
 .socials a:focus-visible {
   outline: 2px solid #f5b942;
