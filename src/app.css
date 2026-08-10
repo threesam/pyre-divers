@@ -570,3 +570,88 @@ html.dive-go #veil::before {
     animation: none;
   }
 }
+
+/* ── social stones ──────────────────────────────────────────────────────
+   Three links, one per stone at the flame's mouth. The stones are painted
+   on #fire (aria-hidden, decorative); these are the real anchors laid over
+   them, so keyboard and screen-reader users get ordinary links.
+
+   --x / --y come from the component and are the canvas's own normalized
+   rock centres. #join is position:relative and exactly 100dvh, and #fire is
+   inset:0 within it, so a percentage here lands where the canvas paints.
+
+   Desktop only. Below 769px #fire is display:none — no stones to stamp —
+   and the same list reflows into a row under the card. */
+.socials {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: 1.4rem;
+  position: relative;
+  z-index: 1;
+}
+.socials a {
+  display: grid;
+  place-items: center;
+  /* the icon is small; the target is not. WCAG 2.5.8 wants 24px, this
+     clears 44 at every viewport so a thumb has somewhere to land */
+  min-width: 44px;
+  min-height: 44px;
+  color: #f5b942;
+  border-radius: 50%;
+}
+.socials svg {
+  width: 2rem;
+  height: 2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: color 220ms ease;
+}
+/* solid bits — the instagram lens dot, the youtube play */
+.socials .ink {
+  fill: currentColor;
+  stroke: none;
+}
+.socials a:hover,
+.socials a:focus-visible {
+  color: #f0e8dd;
+}
+.socials a:focus-visible {
+  outline: 2px solid #f5b942;
+  outline-offset: 3px;
+}
+
+/* 960, not the 769 the stones themselves appear at. The card is pinned
+   bottom-right at max-width 26rem inside 3.5rem padding, and its wobble
+   frame reaches another 1.5rem left, so its left edge sits at W - 496.
+   The rightmost stone's centre is 0.395W, and those two cross at about
+   857px — measured, not guessed. Below the breakpoint the stones simply
+   go back to being unstamped decoration, which is what they were. */
+@media (min-width: 960px) {
+  /* on the stones: each anchor leaves the row and sits on its own rock.
+     both the ul and the li dissolve — an li left in flow would still
+     generate an empty box and hand #join an extra grid row */
+  .socials,
+  .socials li {
+    display: contents;
+  }
+  .socials a {
+    position: absolute;
+    left: calc(var(--x) * 100%);
+    top: calc(var(--y) * 100%);
+    /* --size is the icon box in vh, ~62% of the stone's height */
+    width: max(44px, calc(var(--size) * 1vh));
+    height: max(44px, calc(var(--size) * 1vh));
+    transform: translate(-50%, -50%);
+    z-index: 1;
+  }
+  .socials svg {
+    width: calc(var(--size) * 1vh);
+    height: calc(var(--size) * 1vh);
+  }
+}

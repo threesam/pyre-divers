@@ -1,5 +1,6 @@
 <script lang="ts">
   import Splash from '$lib/components/Splash.svelte';
+  import SocialStones from '$lib/components/SocialStones.svelte';
 
   const jsonLdTag = 'script';
   const jsonLd =
@@ -203,4 +204,5 @@
     </form>
     <p class="tiny patch">no spam. one email when the fire’s lit.</p>
   </div>
+  <SocialStones />
 </section>
