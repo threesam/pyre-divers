@@ -79,29 +79,29 @@
   });
 
   // Only light a stone when the icons are actually ON the stones. Below the
-  // breakpoint they sit in a row and lighting a rock nobody is pointing at
+  // breakpoint they sit in a row, and lighting a rock nobody is pointing at
   // would be a lie.
   //
-  // DO NOT hoist this to a top-level `matchMedia(...)`. This page is
-  // prerendered, component top level runs on the server, and matchMedia is
-  // not defined there — the build dies with a 500 on /. Called from a
-  // pointer handler it only ever runs in a browser.
-  const onStones = () => matchMedia('(min-width: 960px)').matches;
-  const light = (i: number) => onStones() && setRockLit(i);
+  // ASK THE LAYOUT, don't re-decide it. The anchors are position:absolute
+  // only in the stone layout, so this reads the answer CSS already gave.
+  // Repeating the 960 here in a matchMedia would be the breakpoint written
+  // twice, and the two would drift apart in silence — hovering a stone that
+  // never lights, or lighting a stone that is not under the pointer.
+  const onStones = (el: Element) =>
+    getComputedStyle(el).position === 'absolute';
+  const light = (i: number, el: Element) => onStones(el) && setRockLit(i);
   const douse = () => setRockLit(null);
 
   // litRock lives at module scope in page-fx, so it outlives this component
-  // and the layout it was lit in. Two ways to strand a burning stone with
-  // nothing pointing at it:
-  //   - navigating to an episode page mid-hover (teardown)
-  //   - dragging the window under 960 mid-hover, where the icons reflow off
-  //     the stones and no pointerleave ever fires
+  // and the layout it was lit in. Three ways to strand a burning stone with
+  // nothing pointing at it: navigating away mid-hover, and narrowing or
+  // shortening the window mid-hover so the icons reflow off the stones and
+  // no pointerleave ever fires. resize covers the last two without naming a
+  // breakpoint — the next hover re-asks the layout anyway.
   $effect(() => {
-    const mq = matchMedia('(min-width: 960px)');
-    const off = () => !mq.matches && douse();
-    mq.addEventListener('change', off);
+    addEventListener('resize', douse);
     return () => {
-      mq.removeEventListener('change', off);
+      removeEventListener('resize', douse);
       douse();
     };
   });
@@ -118,9 +118,9 @@
         rel="me"
         aria-label="pyre divers on {s.name}"
         style="--x:{s.x};--y:{s.y};--rx:{s.rx};--ry:{s.ry};--z:{s.z};--size:{s.size};--ink:{s.ink}"
-        onpointerenter={() => light(s.rock)}
+        onpointerenter={(e) => light(s.rock, e.currentTarget)}
         onpointerleave={douse}
-        onfocus={() => light(s.rock)}
+        onfocus={(e) => light(s.rock, e.currentTarget)}
         onblur={douse}
       >
         <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
