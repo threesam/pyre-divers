@@ -342,6 +342,14 @@ export function initPageFx(): void {
     if (!diving) {
       return;
     }
+    // The far end of the garden's hand-off. threesam fires `dive-to-pyre` on
+    // the click; this is the arrival, and the pair is the only way to know
+    // whether anyone uses the door at all — or how many drop out across the
+    // 1s send-off. Fired before the param is stripped below, since arriving
+    // with ?dive is exactly what separates a dive from a plain visit.
+    // Optional chaining, not a guard: umami is a third-party script and the
+    // ?test eject leaves it undefined on purpose.
+    window.umami?.track('dive-arrival');
     // strip only our flag — UTM/referral params ride along untouched
     const q = new URLSearchParams(location.search);
     q.delete('dive');
