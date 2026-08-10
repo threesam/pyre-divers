@@ -107,6 +107,79 @@ function must<T extends Element>(selector: string): T {
   return el;
 }
 
+/** A third of the width; the flame burns here and the stones ring its mouth. */
+export const FLAME_X = 1 / 3;
+/** Normalized y (from top) of the flame's mouth. */
+export const FLAME_BASE = 0.82;
+
+/**
+ * The three stones, in PAINT order — the last one is drawn on top, so this
+ * is [left, right, centre], not left-to-right.
+ *
+ * Exported because the social links are DOM elements laid over these, and
+ * they need the same numbers. Written twice, they drift silently: the links
+ * would keep pointing at where the stones used to be, and nothing would
+ * fail. `cx` is a fraction of viewport WIDTH; `cy`, `rx` and `ry` are all
+ * fractions of viewport HEIGHT, because the canvas scales point offsets by
+ * rh on both axes.
+ */
+export const ROCKS = [
+  { cx: FLAME_X - 0.045, cy: FLAME_BASE + 0.02, rx: 0.052, ry: 0.028 },
+  { cx: FLAME_X + 0.062, cy: FLAME_BASE + 0.018, rx: 0.042, ry: 0.024 },
+  { cx: FLAME_X + 0.008, cy: FLAME_BASE + 0.028, rx: 0.062, ry: 0.033 },
+] as const;
+
+/**
+ * The ember run the stones are outlined in: three stops across a band
+ * centred on the flame, in fractions of viewport width. Each stone sits at
+ * a different point along it, which is why the left one wears the warm end
+ * and the right one the deep end.
+ */
+const EMBER_HALF_SPAN = 0.12;
+const EMBER_STOPS: readonly [number, string][] = [
+  [0, '#f5b942'],
+  [0.5, '#e25822'],
+  [1, '#b91c1c'],
+];
+
+/**
+ * The run's colour where a stone sits, so the icon on that stone can wear
+ * the same shade its outline already does — derived rather than sampled by
+ * hand, so moving a stone cannot leave its icon a shade wrong.
+ */
+export function emberAt(cx: number): string {
+  const t = Math.min(
+    1,
+    Math.max(0, (cx - (FLAME_X - EMBER_HALF_SPAN)) / (EMBER_HALF_SPAN * 2)),
+  );
+  let i = 1;
+  while (i < EMBER_STOPS.length - 1 && t > EMBER_STOPS[i][0]) {
+    i++;
+  }
+  const [t0, c0] = EMBER_STOPS[i - 1];
+  const [t1, c1] = EMBER_STOPS[i];
+  const k = (t - t0) / (t1 - t0);
+  const ch = (c: string, at: number) => parseInt(c.slice(at, at + 2), 16);
+  const mix = (at: number) =>
+    Math.round(ch(c0, at) + (ch(c1, at) - ch(c0, at)) * k)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${mix(1)}${mix(3)}${mix(5)}`;
+}
+
+/**
+ * Which stone is lit, or null. The stones are canvas and the social links
+ * over them are DOM, so hover has to cross that line by hand — the anchors
+ * call this, the draw loop reads it on the next frame.
+ *
+ * Index is into ROCKS above.
+ */
+let litRock: number | null = null;
+
+export function setRockLit(i: number | null): void {
+  litRock = i;
+}
+
 export function initPageFx(): void {
   // headless audits (lighthouse) run swiftshader: every gl context they
   // create is a long task. they get the chunked static frame, gl-free.
@@ -342,6 +415,14 @@ export function initPageFx(): void {
     if (!diving) {
       return;
     }
+    // The far end of the garden's hand-off. threesam fires `dive-to-pyre` on
+    // the click; this is the arrival, and the pair is the only way to know
+    // whether anyone uses the door at all — or how many drop out during the
+    // 1s send-off. Fired before the param is stripped below, since that is
+    // what proves we got here by diving rather than by URL.
+    // Optional chaining, not a guard: umami is a third-party script and the
+    // ?test eject leaves it undefined on purpose.
+    window.umami?.track('dive-arrival');
     // strip only our flag — UTM/referral params ride along untouched
     const q = new URLSearchParams(location.search);
     q.delete('dive');
@@ -1537,8 +1618,6 @@ export function initPageFx(): void {
   // ── screen two: the pyre. A GLSL flame burns at a third of the width;
   // white divers and glowing flecks rise out of it (desktop) or drift up
   // from the deep (mobile).
-  const FLAME_X = 1 / 3;
-  const FLAME_BASE = 0.82; // normalized y (from top) of the flame's mouth
   const deskQ = matchMedia('(min-width: 769px)');
 
   // screen-two modules land in their own tasks — keeps hydration's
@@ -1780,14 +1859,22 @@ export function initPageFx(): void {
         const j = 0.82 + rand() * 0.36; // hand wobble
         pts.push([Math.cos(ang) * rx * j, Math.sin(ang) * ry * j]);
       }
+      // Re-centre. Every point carries its own random radius, so the wobble
+      // leaves the outline's middle up to ~18% of a radius away from (cx,cy)
+      // — about 10px on the front stone at a 900px viewport. Nothing noticed
+      // while these were only decoration; the social links sit on their
+      // centres now, so the centre has to be where it claims to be.
+      // Shape is untouched: same rand() calls in the same order, just moved.
+      const mx = pts.reduce((s, p) => s + p[0], 0) / n;
+      const my = pts.reduce((s, p) => s + p[1], 0) / n;
+      for (const p of pts) {
+        p[0] -= mx;
+        p[1] -= my;
+      }
       return { cx, cy, pts };
     };
     // three rocks at the flame's mouth, mildly overlapping; center drawn last (front)
-    const rocks = [
-      mkRock(FLAME_X - 0.045, FLAME_BASE + 0.02, 0.052, 0.028),
-      mkRock(FLAME_X + 0.062, FLAME_BASE + 0.018, 0.042, 0.024),
-      mkRock(FLAME_X + 0.008, FLAME_BASE + 0.028, 0.062, 0.033),
-    ];
+    const rocks = ROCKS.map((r) => mkRock(r.cx, r.cy, r.rx, r.ry));
 
     const flecks: Fleck[] = [];
     for (let i = 0; i < 90; i++) {
@@ -1821,7 +1908,23 @@ export function initPageFx(): void {
     addEventListener('resize', sizeRain);
     let rockGlow = 1;
     let rockBlur = 0;
-    const drawRock = (r: Rock) => {
+    // the ember run the stones are outlined in, rebuilt per frame with the
+    // canvas size. A lit stone fills with it instead of only wearing it.
+    let rockInk: CanvasGradient | string = '#10120a';
+    // per-stone 0..1, eased toward litRock over LIT_MS. Canvas has no
+    // transitions, so the crossfade is a value advanced by dt each frame.
+    const LIT_MS = 400;
+    const litAmt = rocks.map(() => 0);
+    const advanceLit = (dt: number) => {
+      const step = (dt * 1000) / LIT_MS;
+      for (let i = 0; i < litAmt.length; i++) {
+        const target = i === litRock ? 1 : 0;
+        const d = target - litAmt[i];
+        litAmt[i] =
+          Math.abs(d) <= step ? target : litAmt[i] + Math.sign(d) * step;
+      }
+    };
+    const drawRock = (r: Rock, lit: number) => {
       const n = r.pts.length;
       ctx2.beginPath();
       for (let i = 0; i <= n; i++) {
@@ -1840,12 +1943,34 @@ export function initPageFx(): void {
       ctx2.closePath();
       ctx2.globalAlpha = 1;
       ctx2.shadowBlur = 0;
+      // The crossfade: the cold fill always goes down, then the ember run is
+      // laid over it at the eased amount. Canvas cannot interpolate a solid
+      // to a gradient, but it can dissolve one into the other.
+      ctx2.fillStyle = '#10120a';
       ctx2.fill();
-      ctx2.globalAlpha = rockGlow;
+      if (lit > 0) {
+        ctx2.globalAlpha = lit;
+        ctx2.fillStyle = rockInk;
+        ctx2.fill();
+        ctx2.globalAlpha = 1;
+      }
+      // and the breath fades out as it lights — a stone someone is pointing
+      // at holds still and burns. This stroke carries the glow.
+      ctx2.strokeStyle = rockInk;
+      ctx2.globalAlpha = rockGlow + (1 - rockGlow) * lit;
       ctx2.shadowColor = 'rgba(226, 88, 34, 0.85)';
-      ctx2.shadowBlur = rockBlur;
+      ctx2.shadowBlur = rockBlur + Math.max(0, 26 * dpr - rockBlur) * lit;
       ctx2.stroke();
       ctx2.shadowBlur = 0;
+      // Then the rim darkens over it, on the same eased value. Everything on
+      // a lit stone goes to silhouette — rim and icon both — so the ember
+      // reads as coming from inside it. Shadow is off for this pass: the
+      // glow belongs to the stroke above, and doubling it blows out.
+      if (lit > 0) {
+        ctx2.strokeStyle = '#10120a';
+        ctx2.globalAlpha = lit;
+        ctx2.stroke();
+      }
       ctx2.globalAlpha = 1;
     };
     let joinVisible = false;
@@ -1917,21 +2042,22 @@ export function initPageFx(): void {
         ctx2.globalAlpha = 1;
         ctx2.fillStyle = '#10120a';
         const rockGrad = ctx2.createLinearGradient(
-          (FLAME_X - 0.12) * rw,
+          (FLAME_X - EMBER_HALF_SPAN) * rw,
           0,
-          (FLAME_X + 0.12) * rw,
+          (FLAME_X + EMBER_HALF_SPAN) * rw,
           0,
         );
-        rockGrad.addColorStop(0, '#f5b942');
-        rockGrad.addColorStop(0.5, '#e25822');
-        rockGrad.addColorStop(1, '#b91c1c');
+        for (const [at, col] of EMBER_STOPS) {
+          rockGrad.addColorStop(at, col);
+        }
         ctx2.strokeStyle = rockGrad;
+        rockInk = rockGrad;
         ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.1);
         const pulse = 0.5 + 0.5 * Math.sin(t * 0.85); // ~7s breath
         rockGlow = 0.45 + 0.55 * pulse;
         rockBlur = (5 + 20 * pulse) * dpr;
-        for (const r of rocks) {
-          drawRock(r);
+        for (let i = 0; i < rocks.length; i++) {
+          drawRock(rocks[i], litAmt[i]);
         }
       }
     };
@@ -1957,6 +2083,7 @@ export function initPageFx(): void {
       }
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
+      advanceLit(dt);
       const nowS = now / 1000;
       for (const b of drops) {
         if (b.waiting) {
