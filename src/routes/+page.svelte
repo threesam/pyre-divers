@@ -115,6 +115,26 @@
       yChannelSelector="G"
     />
   </filter>
+  <!-- the icon-scale wobble. a/b/c are tuned for the card frame and the
+       button slab, hundreds of px wide; at 27px their scale of 5-7 would
+       tear a stroke apart. these icons are 32 user units, so the noise has
+       to be ~3 waves across that and the displacement under one unit. -->
+  <filter id="wobble-i" x="-14%" y="-14%" width="128%" height="128%">
+    <feTurbulence
+      type="fractalNoise"
+      baseFrequency="0.09 0.07"
+      numOctaves="2"
+      seed="7"
+      result="n"
+    />
+    <feDisplacementMap
+      in="SourceGraphic"
+      in2="n"
+      scale="0.9"
+      xChannelSelector="R"
+      yChannelSelector="G"
+    />
+  </filter>
   <filter id="wobble-c" x="-6%" y="-6%" width="112%" height="112%">
     <feTurbulence
       type="fractalNoise"

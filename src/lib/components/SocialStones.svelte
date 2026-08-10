@@ -105,25 +105,37 @@
       >
         <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
           {#if s.icon === 'instagram'}
+            <!-- no two corners the same radius, no edge dead straight, and
+                 the lens is four uneven arcs rather than a <circle> — a
+                 perfect circle is the single thing that gives a drawn icon
+                 away as generated -->
             <path
-              d="M11 5.6 Q5.6 5.9 5.5 11.4 L5.5 20.8 Q5.7 26.3 11.2 26.5 L21 26.4 Q26.4 26.2 26.5 20.7 L26.4 11 Q26.2 5.7 20.8 5.5 Z"
+              d="M11.4 5.2 Q5.9 5.5 5.4 11 L5.6 20.6 Q5.4 26.2 11.4 26.6 L20.6 26.3 Q26.6 26 26.4 20.4 L26.6 11.2 Q26.2 5.6 20.9 5.4 Z"
             />
-            <circle cx="16" cy="16" r="5.4" />
-            <circle class="ink" cx="21.5" cy="10.4" r="1.2" />
+            <path
+              d="M16.2 10.6 Q21.6 10.9 21.5 16.1 Q21.7 21.4 16 21.3 Q10.5 21.5 10.6 15.9 Q10.4 10.7 16.2 10.6 Z"
+            />
+            <circle class="ink" cx="21.6" cy="10.3" r="1.15" />
           {:else if s.icon === 'youtube'}
             <path
-              d="M8.2 9 Q4.5 9.3 4.4 13 L4.4 19.1 Q4.6 22.8 8.1 23 L23.8 22.9 Q27.5 22.7 27.6 19 L27.5 12.8 Q27.3 9.2 23.7 9 Z"
+              d="M8.4 8.8 Q4.6 9.2 4.3 12.9 L4.5 19.3 Q4.4 22.9 8.3 23.2 L23.6 22.8 Q27.7 22.6 27.4 18.8 L27.6 12.9 Q27.2 9.1 23.5 8.9 Z"
             />
-            <path class="ink" d="M13.7 12.7 L20.6 16.05 L13.7 19.4 Z" />
-          {:else}
-            <!-- the bird, not the letter: two crossed strokes at this size
-                 read as a close button, and the filled X mark reads as a
-                 serif letter. the silhouette is the only version legible on
-                 a 27px stone. -->
             <path
               class="ink"
-              d="M3.6 22.4 Q9.6 24 14.6 20.8 Q8.2 20.2 6.6 15.2 Q8.4 15.9 10.2 15.5 Q4.4 13.7 4.7 8.4 Q6.1 9.3 7.7 9.4 Q3.2 6 5.7 1.9 Q11 8.6 18.6 9.2 Q17.6 5.2 20.4 3.2 Q24 1 27 3.6 Q28.5 3.2 30 2.4 Q29.4 4 28 5 Q29.4 4.8 30.6 4.3 Q29.7 5.8 28.2 6.9 Q28.5 16.2 21.4 21.2 Q14 26 3.6 22.4 Z"
+              d="M13.6 12.6 Q17.2 14.2 20.7 16.1 Q17 17.9 13.8 19.5 Q13.5 16 13.6 12.6 Z"
             />
+          {:else}
+            <!-- FLAT CAPS, and that is the whole difference. Round-capped
+                 crossing strokes read as a close button; cut ends read as
+                 the mark. Narrower than a symmetric ✕ for the same reason.
+                 The bird was tried and dropped: it is a filled silhouette,
+                 and a fill gives the turbulence no line to disturb, so it
+                 stayed crisp next to two icons that had visibly been drawn.
+                 Strokes take the hand; fills don't. -->
+            <g class="cut">
+              <path d="M9.4 6.2 Q16.2 15.4 22.9 25.7" />
+              <path d="M22.5 6.4 Q15.3 16.5 9.1 25.6" />
+            </g>
           {/if}
         </svg>
       </a>

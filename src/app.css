@@ -613,11 +613,33 @@ html.dive-go #veil::before {
   stroke-linecap: round;
   stroke-linejoin: round;
   transition: color 220ms ease;
+  /* the same device the card frame, the input ring and the button slab use
+     — turbulence displacement, not curves that pretend to bow. wobble-i is
+     the icon-scale tuning; a/b/c would tear a 27px stroke apart. */
+  filter: url(#wobble-i);
+}
+/* and none of the three sits perfectly square, the way the button already
+   doesn't (transform: rotate(-0.3deg) on .join::before) */
+.socials li:nth-child(1) svg {
+  transform: rotate(-1.4deg);
+}
+.socials li:nth-child(2) svg {
+  transform: rotate(0.9deg);
+}
+.socials li:nth-child(3) svg {
+  transform: rotate(-0.6deg);
 }
 /* solid bits — the instagram lens dot, the youtube play */
 .socials .ink {
   fill: currentColor;
   stroke: none;
+}
+/* the x mark: cut terminals, not round ones. round caps on two crossing
+   strokes is the universal close button; flat ends are what make it read
+   as the letter. slightly heavier so the shorter strokes hold their weight. */
+.socials .cut {
+  stroke-linecap: butt;
+  stroke-width: 2.7;
 }
 .socials a:focus-visible {
   outline: 2px solid #f5b942;
