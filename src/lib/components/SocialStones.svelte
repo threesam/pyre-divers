@@ -1,7 +1,8 @@
 <script lang="ts">
   import { ROCKS, emberAt, setRockLit } from '$lib/page-fx';
 
-  // The three social links, stamped on the three stones at the flame's mouth.
+  // The social and listening links, stamped on the five stones ringing the
+  // flame's mouth: the places to listen in the middle, the socials outside.
   //
   // The stones themselves are canvas (page-fx `rocks`), and #fire is
   // aria-hidden — correctly, it is decoration. Canvas cannot be focused,
@@ -16,24 +17,25 @@
   // is inset:0 inside it, so a percentage of #join is the same coordinate
   // the canvas paints in.
   //
-  // Below 960px the card's frame reaches across the rightmost stone, so the
-  // same three anchors reflow into a plain row and the stones go back to
-  // being unstamped. See the app.css breakpoint note for the arithmetic.
+  // Below 1024px the card's frame reaches across the rightmost stone, so the
+  // same anchors reflow into a plain row and the stones go back to being
+  // unstamped. See the app.css breakpoint note for the arithmetic.
   //
   // Icons are drawn in the site's hand — uneven paths through the wobble-i
   // turbulence filter, the same device the card frame and button slab use.
 
   interface Social {
     name: string;
-    href: string;
+    /** null until the listing exists; the stone stays plain until then */
+    href: string | null;
     /** which stone, as an index into ROCKS — the single source of geometry */
     rock: number;
-    icon: 'instagram' | 'youtube' | 'x';
+    icon: 'instagram' | 'spotify' | 'youtube' | 'apple' | 'x';
   }
 
   // Everything else is DERIVED from ROCKS below — nothing about the stones
-  // is written down twice. Handles assumed to be `pyredivers` on all three;
-  // correct here if not.
+  // is written down twice. Listed left to right as they sit on the ring, so
+  // the DOM order (tab order, and the row below 1024px) matches what you see.
   const SOCIALS: Social[] = [
     {
       name: 'instagram',
@@ -42,11 +44,19 @@
       icon: 'instagram',
     },
     {
+      name: 'spotify',
+      href: 'https://open.spotify.com/show/0x25C9ki9Squ3L7HGFQ6qG',
+      rock: 2,
+      icon: 'spotify',
+    },
+    {
       name: 'youtube',
       href: 'https://youtube.com/@pyredivers',
-      rock: 2,
+      rock: 4,
       icon: 'youtube',
     },
+    // apple podcasts review was submitted 2026-09-21; the show url goes here
+    { name: 'apple podcasts', href: null, rock: 3, icon: 'apple' },
     { name: 'x', href: 'https://x.com/pyredivers', rock: 1, icon: 'x' },
   ];
 
@@ -64,10 +74,14 @@
    * `ink` is the ember run sampled where this stone sits, so each icon
    * wears the shade its own outline already does.
    */
-  const placed = SOCIALS.map((s) => {
+  const placed = SOCIALS.flatMap(({ href, ...s }) => {
+    if (!href) {
+      return [];
+    }
     const r = ROCKS[s.rock];
     return {
       ...s,
+      href,
       x: r.cx,
       y: r.cy,
       rx: r.rx,
@@ -154,6 +168,35 @@
               d="M16.2 10.6 Q21.6 10.9 21.5 16.1 Q21.7 21.4 16 21.3 Q10.5 21.5 10.6 15.9 Q10.4 10.7 16.2 10.6 Z"
             />
             <circle class="ink" cx="21.6" cy="10.3" r="1.15" />
+          {:else if s.icon === 'spotify'}
+            <!-- the badge is a filled disc with three dark arcs; drawn, it
+                 inverts — an uneven ring and three ember strokes, each
+                 shorter and flatter than the one above, the way sound
+                 falls off -->
+            <path
+              d="M16.3 4.1 Q27.9 4.4 27.8 15.8 Q28.1 27.6 15.9 27.9 Q4.3 27.7 4.1 16.2 Q4.2 4.6 16.3 4.1 Z"
+            />
+            <path d="M8.9 12.9 Q16.2 9.7 23.2 13.5" />
+            <path d="M10.2 17.1 Q16.1 14.8 21.8 17.8" />
+            <path d="M11.5 21.2 Q16 19.6 20.2 21.9" />
+          {:else if s.icon === 'apple'}
+            <!-- the podcasts glyph: a head on a tapering stem, inside two
+                 broadcast rings open at the bottom. the rings are arcs, not
+                 circles, for the same reason the instagram lens is -->
+            <path
+              d="M8.7 22.7 Q3.6 17 6.4 10.6 Q9.8 4.3 16.2 4.4 Q22.7 4.2 25.9 10.9 Q28.5 17.2 23.5 22.9"
+            />
+            <path
+              d="M11.9 19.5 Q9.4 16.2 11 12.6 Q13.1 9.3 16.1 9.4 Q19.6 9.2 21.1 12.9 Q22.6 16.4 20.2 19.6"
+            />
+            <path
+              class="ink"
+              d="M16.1 12.4 Q18.4 12.5 18.3 14.7 Q18.2 16.9 16 16.8 Q13.8 17 13.9 14.6 Q14 12.3 16.1 12.4 Z"
+            />
+            <path
+              class="ink"
+              d="M14.6 18.9 Q16 18.2 17.5 18.9 L16.8 27.2 Q16 27.8 15.3 27.2 Z"
+            />
           {:else if s.icon === 'youtube'}
             <path
               d="M8.4 8.8 Q4.6 9.2 4.3 12.9 L4.5 19.3 Q4.4 22.9 8.3 23.2 L23.6 22.8 Q27.7 22.6 27.4 18.8 L27.6 12.9 Q27.2 9.1 23.5 8.9 Z"

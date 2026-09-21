@@ -113,8 +113,10 @@ export const FLAME_X = 1 / 3;
 export const FLAME_BASE = 0.82;
 
 /**
- * The three stones, in PAINT order — the last one is drawn on top, so this
- * is [left, right, centre], not left-to-right.
+ * The five stones, in PAINT order — the last one is drawn on top, so this
+ * is [outer left, outer right, left, right, centre], not left-to-right. The
+ * outer pair is smaller, a touch higher and painted first: the back of the
+ * ring, sitting at the edges of the flame's base.
  *
  * Exported because the social links are DOM elements laid over these, and
  * they need the same numbers. Written twice, they drift silently: the links
@@ -124,6 +126,8 @@ export const FLAME_BASE = 0.82;
  * rh on both axes.
  */
 export const ROCKS = [
+  { cx: FLAME_X - 0.105, cy: FLAME_BASE + 0.012, rx: 0.036, ry: 0.022 },
+  { cx: FLAME_X + 0.118, cy: FLAME_BASE + 0.01, rx: 0.034, ry: 0.021 },
   { cx: FLAME_X - 0.045, cy: FLAME_BASE + 0.02, rx: 0.052, ry: 0.028 },
   { cx: FLAME_X + 0.062, cy: FLAME_BASE + 0.018, rx: 0.042, ry: 0.024 },
   { cx: FLAME_X + 0.008, cy: FLAME_BASE + 0.028, rx: 0.062, ry: 0.033 },
@@ -133,9 +137,11 @@ export const ROCKS = [
  * The ember run the stones are outlined in: three stops across a band
  * centred on the flame, in fractions of viewport width. Each stone sits at
  * a different point along it, which is why the left one wears the warm end
- * and the right one the deep end.
+ * and the right one the deep end. 0.14, not 0.12, since the ring grew to
+ * five: at 0.12 the outer right stone sat at the very end of the run, and
+ * its icon, #b91c1c on the dark, fell under 3:1 contrast.
  */
-const EMBER_HALF_SPAN = 0.12;
+const EMBER_HALF_SPAN = 0.14;
 const EMBER_STOPS: readonly [number, string][] = [
   [0, '#f5b942'],
   [0.5, '#e25822'],
@@ -1672,7 +1678,9 @@ export function initPageFx(): void {
       float t = (uv.y - yb) / 0.58;
       float sway = (fbm(vec2(px * 3.0, uv.y * 3.0 - uT * 0.8)) - 0.5) * 0.24 * max(t, 0.0);
       float xx = abs(px - sway);
-      float w = mix(0.155, 0.02, clamp(t, 0.0, 1.0));
+      // base half-width in viewport heights: 0.18, up from 0.155, so the
+      // ring of five stones (ROCKS) sits around the base rather than under it
+      float w = mix(0.18, 0.02, clamp(t, 0.0, 1.0));
       float body = smoothstep(w, w * 0.15, xx);
       body *= smoothstep(-0.12, 0.06, t) * (1.0 - smoothstep(0.68, 1.05, t));
       float lick = fbm(vec2(px * 6.0, uv.y * 5.0 - uT * 2.4));
@@ -1873,7 +1881,7 @@ export function initPageFx(): void {
       }
       return { cx, cy, pts };
     };
-    // three rocks at the flame's mouth, mildly overlapping; center drawn last (front)
+    // five rocks ringing the flame's mouth, mildly overlapping; centre drawn last (front)
     const rocks = ROCKS.map((r) => mkRock(r.cx, r.cy, r.rx, r.ry));
 
     const flecks: Fleck[] = [];
