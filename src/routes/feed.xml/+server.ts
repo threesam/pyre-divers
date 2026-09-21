@@ -21,6 +21,19 @@ const SITE = 'https://pyredivers.com';
 // as png and ~1MB as jpeg, at PSNR 40.6dB — no ringing even on the wordmark.
 const COVER = `${SITE}/podcast-cover.jpg`;
 
+// apple and spotify want the enclosure's exact byte length. the media host is
+// the authority on that, so ask it at build rather than store a copy that can
+// drift. a failed HEAD fails the build — vercel then keeps serving the last
+// good feed instead of publishing an episode whose audio doesn't answer.
+async function byteLength(url: string) {
+  const res = await fetch(url, { method: 'HEAD' });
+  const length = Number(res.headers.get('content-length'));
+  if (!res.ok || !length) {
+    throw new Error(`enclosure ${url}: HEAD ${res.status}, length ${length}`);
+  }
+  return length;
+}
+
 export const GET: RequestHandler = async () => {
   const published = await listPublishedEpisodes();
 
@@ -54,9 +67,13 @@ export const GET: RequestHandler = async () => {
       link: `${SITE}/episodes/${episode.slug}`,
       description: episode.description,
       date: episode.publishedAt,
-      enclosure: {
+      // `audio`, not `enclosure`: the package only writes <itunes:duration>
+      // for audio, and would print a plain enclosure with length="0" and a
+      // stray duration attribute. the duration must be whole seconds.
+      audio: {
         url: episode.audioUrl,
         type: 'audio/mpeg',
+        length: await byteLength(episode.audioUrl),
         duration: episode.durationSeconds ?? undefined,
       },
     });
@@ -67,17 +84,17 @@ export const GET: RequestHandler = async () => {
   // <itunes:type> — all three are required or expected by apple and spotify,
   // so inject them rather than fight the extension api. Without itunes:image
   // apple rejects the feed at submission.
-  const rss = feed
-    .rss2()
-    .replace(
+  const rss = feed.rss2().replace(
+    '</channel>',
+    [
+      `  <itunes:image href="${COVER}"/>`,
+      // the show is unfiltered by design (ep 1 has a swear in it) —
+      // flagged at the channel so no episode can ship mislabeled
+      '  <itunes:explicit>true</itunes:explicit>',
+      '  <itunes:type>episodic</itunes:type>',
       '</channel>',
-      [
-        `  <itunes:image href="${COVER}"/>`,
-        '  <itunes:explicit>false</itunes:explicit>',
-        '  <itunes:type>episodic</itunes:type>',
-        '</channel>',
-      ].join('\n'),
-    );
+    ].join('\n'),
+  );
 
   return new Response(rss, {
     headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' },

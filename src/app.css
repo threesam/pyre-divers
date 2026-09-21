@@ -310,6 +310,10 @@ section {
   font-size: 0.95rem;
   line-height: 1.55;
 }
+/* the latest-dive link — same ember as the episode page's links */
+.card a {
+  color: #f5b942;
+}
 .card form {
   display: grid;
   gap: 0.8rem;

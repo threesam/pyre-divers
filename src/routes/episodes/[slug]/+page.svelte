@@ -77,16 +77,32 @@
       <!-- svelte-ignore a11y_media_has_caption -->
       <video src={episode.videoUrl} controls preload="metadata"></video>
     </div>
-  {:else if episode.youtubeUrl}
-    <!-- eslint-disable svelte/no-navigation-without-resolve -- external youtube url from the db -->
-    <!-- block form: prettier splits this tag's attributes, so a
-         disable-next-line would no longer cover the href line -->
-    <p>
-      <a
-        class="watch"
-        href={episode.youtubeUrl}
-        data-umami-event="watch-youtube">watch on youtube</a
-      >
+  {:else if episode.audioUrl}
+    <!-- preload none: the file is ~40MB, and most visitors come to read -->
+    <audio class="listen" src={episode.audioUrl} controls preload="none"
+    ></audio>
+  {/if}
+
+  {#if episode.youtubeUrl || episode.spotifyUrl || episode.applePodcastsUrl}
+    <!-- eslint-disable svelte/no-navigation-without-resolve -- external urls from the db -->
+    <!-- block form: prettier splits these tags' attributes, so a
+         disable-next-line would no longer cover the href lines -->
+    <p class="elsewhere">
+      {#if episode.youtubeUrl}<a
+          class="watch"
+          href={episode.youtubeUrl}
+          data-umami-event="watch-youtube">watch on youtube</a
+        >{/if}
+      {#if episode.spotifyUrl}<a
+          class="watch"
+          href={episode.spotifyUrl}
+          data-umami-event="listen-spotify">spotify</a
+        >{/if}
+      {#if episode.applePodcastsUrl}<a
+          class="watch"
+          href={episode.applePodcastsUrl}
+          data-umami-event="listen-apple">apple podcasts</a
+        >{/if}
     </p>
     <!-- eslint-enable svelte/no-navigation-without-resolve -->
   {/if}
@@ -163,6 +179,19 @@
   .player video {
     width: 100%;
     height: 100%;
+  }
+  .listen {
+    display: block;
+    width: 100%;
+    margin-top: 2rem;
+    /* native controls in the page's dark palette, not a white slab */
+    color-scheme: dark;
+  }
+  .elsewhere {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin: 1.2rem 0 0;
   }
   .watch {
     color: #f5b942;
