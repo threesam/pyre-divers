@@ -35,7 +35,7 @@ runs to gigabytes. Below: `EP=assets/epN`, `RAW` = the StreamYard export,
 
 ## 1. record
 
-StreamYard, recorded, not live. Export the finished recording: 1920×1080, two
+Recorded live on StreamYard: one take, not broadcast. Export the finished recording: 1920×1080, two
 panels, **steve on the left, sam on the right**. The name tags and the
 renderer's crops assume that layout.
 
