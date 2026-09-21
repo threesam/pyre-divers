@@ -24,6 +24,29 @@
     return `${m}:${s.toString().padStart(2, '0')}`;
   }
 
+  // listening, not just loading: one `play` per visit, then `listened` as
+  // it crosses each quarter. 95, not 100 — the tail is outro music, and a
+  // finished episode shouldn't hinge on its last seconds.
+  const MARKS = [25, 50, 75, 95];
+  let played = false;
+  let nextMark = 0;
+  function onplay() {
+    if (!played) {
+      played = true;
+      window.umami?.track('play', { episode: episode.slug });
+    }
+  }
+  function ontimeupdate(e: Event & { currentTarget: HTMLAudioElement }) {
+    const pct = (e.currentTarget.currentTime / e.currentTarget.duration) * 100;
+    while (nextMark < MARKS.length && pct >= MARKS[nextMark]) {
+      window.umami?.track('listened', {
+        episode: episode.slug,
+        pct: MARKS[nextMark],
+      });
+      nextMark++;
+    }
+  }
+
   // escape `<` so stray episode text can't close the json-ld script element —
   // json never legitimately contains a raw `<`. (solve-for-x pattern.)
   function jsonLdScript(value: object) {
@@ -79,7 +102,13 @@
     </div>
   {:else if episode.audioUrl}
     <!-- preload none: the file is ~40MB, and most visitors come to read -->
-    <audio class="listen" src={episode.audioUrl} controls preload="none"
+    <audio
+      class="listen"
+      src={episode.audioUrl}
+      controls
+      preload="none"
+      {onplay}
+      {ontimeupdate}
     ></audio>
   {/if}
 
@@ -91,17 +120,20 @@
       {#if episode.youtubeUrl}<a
           class="watch"
           href={episode.youtubeUrl}
-          data-umami-event="watch-youtube">watch on youtube</a
+          data-umami-event="watch-youtube"
+          data-umami-event-from="episode">watch on youtube</a
         >{/if}
       {#if episode.spotifyUrl}<a
           class="watch"
           href={episode.spotifyUrl}
-          data-umami-event="listen-spotify">spotify</a
+          data-umami-event="listen-spotify"
+          data-umami-event-from="episode">spotify</a
         >{/if}
       {#if episode.applePodcastsUrl}<a
           class="watch"
           href={episode.applePodcastsUrl}
-          data-umami-event="listen-apple">apple podcasts</a
+          data-umami-event="listen-apple"
+          data-umami-event-from="episode">apple podcasts</a
         >{/if}
     </p>
     <!-- eslint-enable svelte/no-navigation-without-resolve -->
