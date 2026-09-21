@@ -3,6 +3,11 @@
 Generators. Nothing here runs at build time — each is a one-shot you run by
 hand and commit the result of.
 
+- `episode/` — everything that turns a StreamYard recording into a published
+  episode: cut list, ASCII head/tail, assembly, mix, the outro sequence, the
+  final check, and the publish kit (podcast mp3, diarized transcript, db row).
+  The order and the per-episode inputs are in `docs/episode-runbook.md`.
+
 - `build-brand-font.py` — forks La Chata into Pyre Display (clips the p/d/b/q
   legs round, emits the 700 weight). Writes `pyre-display.ttf`.
 - `solve-wordmark.py` — reads that ttf and prints the three wordmark CSS
