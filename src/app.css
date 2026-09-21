@@ -576,7 +576,8 @@ html.dive-go #veil::before {
 }
 
 /* ── social stones ──────────────────────────────────────────────────────
-   Three links, one per stone at the flame's mouth. The stones are painted
+   One link per stone in the ring at the flame's mouth (five stones; a
+   stone whose listing doesn't exist yet stays plain). The stones are painted
    on #fire (aria-hidden, decorative); these are the real anchors laid over
    them, so keyboard and screen-reader users get ordinary links.
 
@@ -637,6 +638,12 @@ html.dive-go #veil::before {
 .socials li:nth-child(3) svg {
   transform: rotate(-0.6deg);
 }
+.socials li:nth-child(4) svg {
+  transform: rotate(1.2deg);
+}
+.socials li:nth-child(5) svg {
+  transform: rotate(-1deg);
+}
 /* solid bits — the instagram lens dot, the youtube play */
 .socials .ink {
   fill: currentColor;
@@ -654,7 +661,7 @@ html.dive-go #veil::before {
   outline-offset: 3px;
 }
 /* off the stones there is nothing to light, so hover just brightens */
-@media (max-width: 959px) {
+@media (max-width: 1023px) {
   .socials a:hover,
   .socials a:focus-visible {
     color: #f0e8dd;
@@ -680,13 +687,15 @@ html.dive-go #veil::before {
   }
 }
 
-/* 960, not the 769 the stones themselves appear at. The card is pinned
+/* 1024, not the 769 the stones themselves appear at. The card is pinned
    bottom-right at max-width 26rem inside 3.5rem padding, and its wobble
    frame reaches another 1.5rem left, so its left edge sits at W - 496.
-   The rightmost stone's centre is 0.395W, and those two cross at about
-   857px — measured, not guessed. Below the breakpoint the stones simply
-   go back to being unstamped decoration, which is what they were. */
-@media (min-width: 960px) {
+   The rightmost stone (the outer right of five) is centred at 0.451W and
+   reaches about 36px past that at a 900px-tall window, so the two meet at
+   roughly 970px; 1024 leaves a margin. It was 960 when the ring was three
+   stones and the rightmost sat at 0.395W. Below the breakpoint the stones
+   go back to being unstamped decoration. */
+@media (min-width: 1024px) {
   /* on the stones: each anchor leaves the row and sits on its own rock.
      both the ul and the li dissolve — an li left in flow would still
      generate an empty box and hand #join an extra grid row */
