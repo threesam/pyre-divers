@@ -52,7 +52,9 @@ export const GET: RequestHandler = async () => {
     podcast: true,
     category: 'Technology',
     author: {
-      name: "Salvatore D'Angelo",
+      // the creator name apple and spotify show under the title — threesam,
+      // the same name sam uses on every platform
+      name: 'threesam',
       // apple mails this address to verify feed ownership at submission, so it
       // has to be one that reads — and one tied to the show, not to sam.
       email: 'sam@pyredivers.com',
