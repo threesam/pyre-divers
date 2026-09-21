@@ -86,17 +86,25 @@ export const GET: RequestHandler = async () => {
   // <itunes:type> — all three are required or expected by apple and spotify,
   // so inject them rather than fight the extension api. Without itunes:image
   // apple rejects the feed at submission.
-  const rss = feed.rss2().replace(
-    '</channel>',
-    [
-      `  <itunes:image href="${COVER}"/>`,
-      // the show is unfiltered by design (ep 1 has a swear in it) —
-      // flagged at the channel so no episode can ship mislabeled
-      '  <itunes:explicit>true</itunes:explicit>',
-      '  <itunes:type>episodic</itunes:type>',
+  const rss = feed
+    .rss2()
+    // apple reads the category from a `text` attribute; the package writes it
+    // as element text, which validators report as a missing category
+    .replace(
+      /<itunes:category>([^<]+)<\/itunes:category>/,
+      '<itunes:category text="$1"/>',
+    )
+    .replace(
       '</channel>',
-    ].join('\n'),
-  );
+      [
+        `  <itunes:image href="${COVER}"/>`,
+        // the show is unfiltered by design (ep 1 has a swear in it) —
+        // flagged at the channel so no episode can ship mislabeled
+        '  <itunes:explicit>true</itunes:explicit>',
+        '  <itunes:type>episodic</itunes:type>',
+        '</channel>',
+      ].join('\n'),
+    );
 
   return new Response(rss, {
     headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' },
