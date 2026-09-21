@@ -35,7 +35,7 @@ runs to gigabytes. Below: `EP=assets/epN`, `RAW` = the StreamYard export,
 
 ## 1. record
 
-Recorded live on StreamYard: one take, not broadcast. Export the finished recording: 1920×1080, two
+Recorded live on StreamYard, in one take. Ep 1 wasn't broadcast; from ep 2 the show streams live. Either way, export the finished recording: 1920×1080, two
 panels, **steve on the left, sam on the right**. The name tags and the
 renderer's crops assume that layout.
 
@@ -174,7 +174,10 @@ for the item and `https://pyredivers.com/episodes/<slug>`.
   in about 1–5 days, Spotify in minutes. After that, both pick up new episodes
   from the feed on their own. Put the show links in `SocialStones`, and each
   episode's `spotifyUrl` and `applePodcastsUrl` in its manifest.
-- **YouTube**:
+- **YouTube**: once the show streams, the live stream is already a video on
+  the channel, unedited. Decide per episode whether the finished cut replaces
+  it, sits beside it, or the stream stays the YouTube version. The podcast
+  feed gets the finished audio either way. For an upload:
   1. Upload `ep$N-final.mp4` in Studio.
   2. Add the title, and a description with chapters (from `transcript.md`).
   3. Upload `publish/captions.srt` as the captions.
