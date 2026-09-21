@@ -18,7 +18,9 @@ const SITE = 'https://pyredivers.com';
 //     at HEAD_PX device px, so supersampling draws MORE heads, thickens the
 //     core, and swallows the "e" of "pyre" into the eye.
 // jpeg over png: a smooth gradient over thousands of tiny figures is ~6.7MB
-// as png and ~1MB as jpeg, at PSNR 40.6dB — no ringing even on the wordmark.
+// as png and ~1MB as jpeg. Then down to 1400px (apple's floor) at q80 4:4:4:
+// 440KB, under the 512KB apple caps show art at. Keep 4:4:4 — chroma
+// subsampling smears the orange around every dark figure.
 const COVER = `${SITE}/podcast-cover.jpg`;
 
 // apple and spotify want the enclosure's exact byte length. the media host is

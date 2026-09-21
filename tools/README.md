@@ -24,7 +24,8 @@ CHROME="$HOME/Library/Caches/ms-playwright/chromium-*/chrome-mac-x64/Google Chro
   --hide-scrollbars --force-device-scale-factor=1 \
   --window-size=1200,630 --virtual-time-budget=12000 \
   --screenshot=og.png http://localhost:5173/?test
-# square (cover + og-square) is the same call at --window-size=1700,1700
+# square (cover + og-square) is the same call at --window-size=1700,1700;
+# the podcast cover then goes to 1400px q80 4:4:4 — apple caps show art at 512KB
 magick og.png -strip -quality 92 -sampling-factor 4:4:4 -colorspace sRGB static/og.jpg
 ```
 
