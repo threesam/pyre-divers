@@ -74,6 +74,17 @@
    * `ink` is the ember run sampled where this stone sits, so each icon
    * wears the shade its own outline already does.
    */
+  // one event name per destination, shared with the episode page's links,
+  // so a spotify click counts as `listen-spotify` wherever it happened and
+  // `from` says which surface sent it
+  const EVENT: Record<Social['icon'], string> = {
+    instagram: 'follow-instagram',
+    spotify: 'listen-spotify',
+    youtube: 'watch-youtube',
+    apple: 'listen-apple',
+    x: 'follow-x',
+  };
+
   const placed = SOCIALS.flatMap(({ href, ...s }) => {
     if (!href) {
       return [];
@@ -148,6 +159,8 @@
         href={s.href}
         rel="me"
         aria-label="pyre divers on {s.name}"
+        data-umami-event={EVENT[s.icon]}
+        data-umami-event-from="home"
         class:lit={lit === s.rock}
         style="--x:{s.x};--y:{s.y};--rx:{s.rx};--ry:{s.ry};--z:{s.z};--size:{s.size};--ink:{s.ink}"
         onpointerenter={(e) => light(s.rock, e.currentTarget)}
