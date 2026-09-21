@@ -1,11 +1,18 @@
 <script lang="ts">
   import Splash from '$lib/components/Splash.svelte';
   import SocialStones from '$lib/components/SocialStones.svelte';
+  import { resolve } from '$app/paths';
+  import type { PageProps } from './$types';
+
+  let { data }: PageProps = $props();
+
+  // the planned first dive, shown only until an episode is published
+  const LAUNCH = { iso: '2026-09-23', text: 'september 23' };
 
   const jsonLdTag = 'script';
-  const jsonLd =
+  const jsonLd = $derived(
     `<${jsonLdTag} type="application/ld+json">` +
-    `{
+      `{
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -23,7 +30,7 @@
       "url": "https://pyredivers.com/",
       "image": "https://pyredivers.com/og.jpg",
       "description": "live, unpolished conversations with the ones who jumped before they were ready. two builders, one fire.",
-      "startDate": "2026-08-27",
+      "startDate": "${data.startDate ?? LAUNCH.iso}",
       "inLanguage": "en",
       "genre": ["technology", "entrepreneurship", "philosophy"],
       "author": [
@@ -33,14 +40,15 @@
     }
   ]
 }` +
-    `</${jsonLdTag}>`;
+      `</${jsonLdTag}>`,
+  );
 </script>
 
 <svelte:head>
   <title>pyre divers</title>
   <meta
     name="description"
-    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 27, 2026."
+    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. new dives every wednesday."
   />
   <link rel="canonical" href="https://pyredivers.com/" />
   <meta property="og:type" content="website" />
@@ -48,7 +56,7 @@
   <meta property="og:title" content="pyre divers" />
   <meta
     property="og:description"
-    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. first dive: august 27, 2026."
+    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. new dives every wednesday."
   />
   <meta property="og:url" content="https://pyredivers.com/" />
   <meta property="og:image" content="https://pyredivers.com/og.jpg" />
@@ -63,7 +71,7 @@
   <meta name="twitter:title" content="pyre divers" />
   <meta
     name="twitter:description"
-    content="two builders, live and unedited. first dive: august 27, 2026."
+    content="two builders, live and unedited. new dives every wednesday."
   />
   <meta name="twitter:image" content="https://pyredivers.com/og.jpg" />
   <link
@@ -72,7 +80,7 @@
     title="pyre divers"
     href="https://pyredivers.com/feed.xml"
   />
-  <!-- eslint-disable-next-line svelte/no-at-html-tags -- build-time constant json-ld, no user input -->
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -- build-time json-ld; the one interpolation is an iso date -->
   {@html jsonLd}
 </svelte:head>
 
@@ -207,7 +215,18 @@
       two builders, live. no script. no polish. no edits. conversations with the
       ones who jumped before they were ready.
     </p>
-    <p class="patch">first dive: august 27.</p>
+    {#if data.latest}
+      <p class="patch">
+        latest dive:
+        <a
+          class="dive"
+          href={resolve('/episodes/[slug]', { slug: data.latest.slug })}
+          data-umami-event="latest-dive">{data.latest.title}.</a
+        >
+      </p>
+    {:else}
+      <p class="patch">first dive: {LAUNCH.text}.</p>
+    {/if}
     <form id="join-form" novalidate>
       <div class="fieldwrap">
         <input

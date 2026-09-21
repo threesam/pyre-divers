@@ -1,6 +1,6 @@
-// build-time reads of the podcast db. no DATABASE_URL (today) = the site
-// prerenders with zero episodes and a valid empty feed; when the worker's
-// deploy hook fires a rebuild with the env set, episodes appear.
+// build-time reads of the podcast db. no DATABASE_URL = the site prerenders
+// with zero episodes and a valid empty feed; publishing an episode flips its
+// row and fires the deploy hook, and the rebuild picks it up.
 import { asc, desc, eq } from 'drizzle-orm';
 import { episodes, segments } from './schema';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -18,6 +18,11 @@ function getDb() {
   return client;
 }
 
+// PREVIEW_DRAFTS=1 builds unpublished rows too, so an episode page and its
+// feed item can be read locally before the row flips. never set on vercel —
+// there, only published rows exist as far as the site is concerned.
+const preview = () => env.PREVIEW_DRAFTS === '1';
+
 export function listPublishedEpisodes() {
   const db = getDb();
   if (!db) {
@@ -26,7 +31,7 @@ export function listPublishedEpisodes() {
   return db
     .select()
     .from(episodes)
-    .where(eq(episodes.published, true))
+    .where(preview() ? undefined : eq(episodes.published, true))
     .orderBy(desc(episodes.publishedAt));
 }
 
@@ -40,7 +45,7 @@ export async function getEpisodeBySlug(slug: string) {
     .from(episodes)
     .where(eq(episodes.slug, slug))
     .limit(1);
-  if (!episode || !episode.published) {
+  if (!episode || (!episode.published && !preview())) {
     return null;
   }
   const episodeSegments = await db

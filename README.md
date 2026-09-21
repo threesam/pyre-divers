@@ -1,8 +1,8 @@
 # pyre divers
 
 Landing page for the Pyre Divers podcast — live, unpolished conversations with
-the trailblazers making asymmetric bets. Two builders, one fire. First dive:
-August 27, 2026, live on StreamYard.
+the trailblazers making asymmetric bets. Two builders, one fire. Recorded on
+StreamYard; new dives every Wednesday.
 
 SvelteKit (adapter-vercel), no runtime dependencies. The page is a canvas
 whirlpool of thousands of tiny hand-drawn stick figures riding a log-spiral
@@ -18,7 +18,9 @@ Beyond the page:
   contract pinned by `test/subscribe.test.mjs`). Per-brand list; never cross-mailed.
 - **/feed.xml** — RSS with iTunes/Google Play namespaces (`src/routes/feed.xml/+server.ts`),
   episodes from Postgres via drizzle (`src/lib/server/`).
-- **/episodes/[slug]** — per-episode pages (404 until episodes exist).
+- **/episodes/[slug]** — per-episode pages: audio player, listen links, and the
+  full diarized transcript. Built from the db at prerender, like the feed and
+  `/sitemap.xml`; `PREVIEW_DRAFTS=1` includes unpublished rows in a local build.
 - **AEO/SEO** — PodcastSeries + WebSite JSON-LD on the page; `static/llms.txt`,
   `static/robots.txt`, `static/sitemap.xml`, OG art in `static/`.
 - **Social kit** — launch assets (StreamYard overlay, banners for YT/FB/IG/X/
