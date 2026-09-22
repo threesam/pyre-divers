@@ -500,6 +500,13 @@ button.join:focus-visible {
   .card > p {
     display: none;
   }
+  /* full width here — the info block and the links now fill both ends
+     (fit-content, desktop's call, left the box lopsided again once one
+     side is just two short links) */
+  .dive {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 /* ── dive arrival: threesam.com hands off on its marigold coin field.
      `html.diving` is set pre-paint (app.html) so the FIRST frame is
