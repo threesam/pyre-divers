@@ -144,11 +144,12 @@ export const ROCKS = [
 
 /**
  * The two logs, one each side of the fire, outside the stone ring — the
- * seats. Same units as ROCKS (heights, dx from FLAME_X). Each is drawn as a
- * long, tilted stone, so it wears the ring's ink and glow; `tilt` is radians,
- * and the outer end of each log carries a small end-grain ring. Exported for
- * the same reason ROCKS is: the sitters' heads are DOM buttons placed over
- * the bodies the canvas draws, and both read the seat from here.
+ * seats. Same units as ROCKS (heights, dx from FLAME_X): rx is half the
+ * length, ry half the thickness, `tilt` radians. Drawn as a log, not a
+ * stone: a capsule with the end grain showing on the outer end and bark
+ * lines along the body, in the ring's ink. Exported for the same reason
+ * ROCKS is: the sitters' heads are DOM buttons placed over the bodies the
+ * canvas draws, and both read the seat from here.
  */
 export const LOGS = [
   { dx: -0.31, cy: FLAME_BASE + 0.05, rx: 0.075, ry: 0.017, tilt: -0.07 },
@@ -1889,19 +1890,12 @@ export function initPageFx(): void {
       b.swimPh = rand() * TAU;
       drops.push(b);
     }
-    const mkRock = (
-      dx: number,
-      cy: number,
-      rx: number,
-      ry: number,
-      tilt = 0,
-      rng: Rand = rand,
-    ): Rock => {
+    const mkRock = (dx: number, cy: number, rx: number, ry: number): Rock => {
       const pts: [number, number][] = [];
       const n = 9;
       for (let i = 0; i < n; i++) {
         const ang = (i / n) * TAU;
-        const j = 0.82 + rng() * 0.36; // hand wobble
+        const j = 0.82 + rand() * 0.36; // hand wobble
         pts.push([Math.cos(ang) * rx * j, Math.sin(ang) * ry * j]);
       }
       // Re-centre. Every point carries its own random radius, so the wobble
@@ -1916,37 +1910,25 @@ export function initPageFx(): void {
         p[0] -= mx;
         p[1] -= my;
       }
-      // the logs lie at a slight angle; the stones never pass a tilt
-      if (tilt) {
-        const ct = Math.cos(tilt),
-          st = Math.sin(tilt);
-        for (const p of pts) {
-          [p[0], p[1]] = [p[0] * ct - p[1] * st, p[0] * st + p[1] * ct];
-        }
-      }
       return { dx, cy, pts };
     };
     // five rocks ringing the flame's mouth, mildly overlapping; centre drawn last (front)
     const rocks = ROCKS.map((r) => mkRock(r.dx, r.cy, r.rx, r.ry));
     // the logs, on their own rng: `rand` seeds the stones, then the flecks
     // and drops, and a rand() call added between them would reshuffle every
-    // spark on the page. The end-grain ring is a small round stone at the
-    // outer end of each log, drawn after it.
+    // spark on the page. Each log keeps its own wobble — the outline's
+    // radial jitter, the bark lines' bows — so the two are not one log twice.
     const logRand = mulberry32(1206);
-    const logs = LOGS.flatMap((l) => {
-      const out = Math.sign(l.dx);
-      return [
-        mkRock(l.dx, l.cy, l.rx, l.ry, l.tilt, logRand),
-        mkRock(
-          l.dx + out * l.rx * 0.88 * Math.cos(l.tilt),
-          l.cy + out * l.rx * 0.88 * Math.sin(l.tilt),
-          l.ry * 0.55,
-          l.ry * 0.8,
-          0,
-          logRand,
-        ),
-      ];
-    });
+    const logs = LOGS.map((l) => ({
+      ...l,
+      wob: Array.from({ length: 16 }, () => 0.9 + logRand() * 0.2),
+      bark: [-0.5, 0.05, 0.5].map((y) => ({
+        y: y + (logRand() - 0.5) * 0.12,
+        x0: -0.82 + logRand() * 0.12,
+        x1: 0.62 + logRand() * 0.14,
+        bow: (logRand() - 0.5) * 0.5,
+      })),
+    }));
 
     const flecks: Fleck[] = [];
     for (let i = 0; i < 90; i++) {
@@ -2063,6 +2045,106 @@ export function initPageFx(): void {
     } else {
       joinVisible = true;
     }
+    type Log = (typeof logs)[number];
+    // The log: in its own frame (origin at the centre, x along the length),
+    // the body is a capsule — two half-ellipses joined by the top and bottom
+    // edges — sampled at 16 points, each pushed in or out by its wobble and
+    // smoothed through midpoints like the stones. Then the end grain, a full
+    // ellipse at the outer end with two rings inside, and the bark: three
+    // bowed lines along the body, fainter. All in the ring's ink; the fill
+    // and glow are the stones' so the seats belong to the same fire.
+    const drawLog = (l: Log) => {
+      const out = Math.sign(l.dx);
+      const Lg = l.rx * rh,
+        T = l.ry * rh,
+        E = T * 0.42; // the end cap's half-width: a cylinder seen a little from the side
+      ctx2.save();
+      ctx2.translate(FLAME_X * rw + l.dx * rh, l.cy * rh);
+      ctx2.rotate(l.tilt);
+      const pts: [number, number][] = [];
+      const n = l.wob.length;
+      for (let i = 0; i < n; i++) {
+        // walk the capsule: right cap (−90°..90°), top edge, left cap, bottom
+        const u = i / n;
+        let x: number, y: number;
+        if (u < 0.25) {
+          const a = -Math.PI / 2 + (u / 0.25) * Math.PI;
+          x = Lg - E + Math.cos(a) * E;
+          y = Math.sin(a) * T;
+        } else if (u < 0.5) {
+          x = Lg - E - ((u - 0.25) / 0.25) * 2 * (Lg - E);
+          y = T;
+        } else if (u < 0.75) {
+          const a = Math.PI / 2 + ((u - 0.5) / 0.25) * Math.PI;
+          x = -(Lg - E) + Math.cos(a) * E;
+          y = Math.sin(a) * T;
+        } else {
+          x = -(Lg - E) + ((u - 0.75) / 0.25) * 2 * (Lg - E);
+          y = -T;
+        }
+        pts.push([x * (0.98 + (l.wob[i] - 1) * 0.3), y * l.wob[i]]);
+      }
+      ctx2.beginPath();
+      for (let i = 0; i <= n; i++) {
+        const p = pts[i % n],
+          q = pts[(i + 1) % n];
+        if (i === 0) {
+          ctx2.moveTo((p[0] + q[0]) / 2, (p[1] + q[1]) / 2);
+        } else {
+          ctx2.quadraticCurveTo(
+            p[0],
+            p[1],
+            (p[0] + q[0]) / 2,
+            (p[1] + q[1]) / 2,
+          );
+        }
+      }
+      ctx2.closePath();
+      ctx2.globalAlpha = 1;
+      ctx2.shadowBlur = 0;
+      ctx2.fillStyle = '#10120a';
+      ctx2.fill();
+      ctx2.strokeStyle = rockInk;
+      ctx2.globalAlpha = rockGlow;
+      ctx2.shadowColor = 'rgba(226, 88, 34, 0.85)';
+      ctx2.shadowBlur = rockBlur;
+      ctx2.stroke();
+      ctx2.shadowBlur = 0;
+      // end grain: the cut face, rings inside it
+      for (const k of [1, 0.62, 0.28]) {
+        ctx2.beginPath();
+        ctx2.ellipse(
+          out * (Lg - E),
+          0,
+          E * k,
+          T * k * (k === 1 ? 1 : 0.92),
+          0,
+          0,
+          TAU,
+        );
+        if (k === 1) {
+          ctx2.fill();
+        }
+        ctx2.globalAlpha = k === 1 ? rockGlow : rockGlow * 0.6;
+        ctx2.stroke();
+      }
+      // bark: along the body, stopping short of the cut face
+      ctx2.globalAlpha = rockGlow * 0.55;
+      for (const b of l.bark) {
+        ctx2.beginPath();
+        ctx2.moveTo(b.x0 * Lg, b.y * T);
+        ctx2.quadraticCurveTo(
+          ((b.x0 + b.x1) / 2) * Lg,
+          (b.y + b.bow) * T,
+          b.x1 * Lg * (out > 0 ? 1 : 1.1),
+          b.y * T,
+        );
+        ctx2.stroke();
+      }
+      ctx2.globalAlpha = 1;
+      ctx2.restore();
+    };
+
     // a body sitting on a log, facing the fire: hip on the log's top edge,
     // torso leaning in, knees up and forward, hands on the knees. The head is
     // not drawn — it's the DOM cutout the component stamps on the shoulder
@@ -2182,10 +2264,8 @@ export function initPageFx(): void {
           drawRock(rocks[i], litAmt[i]);
         }
         if (logsOn) {
-          for (const log of logs) {
-            drawRock(log, 0);
-          }
-          for (const l of LOGS) {
+          for (const l of logs) {
+            drawLog(l);
             drawSitter(l);
           }
         }
