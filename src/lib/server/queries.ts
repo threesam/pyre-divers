@@ -23,29 +23,25 @@ function getDb() {
 // there, only published rows exist as far as the site is concerned.
 const preview = () => env.PREVIEW_DRAFTS === '1';
 
-export function listPublishedEpisodes() {
+// newest first. `number` counts from the oldest — the feed's <itunes:episode>
+// and the page's json-ld episodeNumber both read it here, so they agree.
+export async function listPublishedEpisodes() {
   const db = getDb();
   if (!db) {
-    return Promise.resolve([]);
+    return [];
   }
-  return db
+  const rows = await db
     .select()
     .from(episodes)
     .where(preview() ? undefined : eq(episodes.published, true))
     .orderBy(desc(episodes.publishedAt));
+  return rows.map((row, i) => ({ ...row, number: rows.length - i }));
 }
 
 export async function getEpisodeBySlug(slug: string) {
   const db = getDb();
-  if (!db) {
-    return null;
-  }
-  const [episode] = await db
-    .select()
-    .from(episodes)
-    .where(eq(episodes.slug, slug))
-    .limit(1);
-  if (!episode || (!episode.published && !preview())) {
+  const episode = (await listPublishedEpisodes()).find((e) => e.slug === slug);
+  if (!db || !episode) {
     return null;
   }
   const episodeSegments = await db
