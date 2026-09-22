@@ -264,6 +264,11 @@
     /* native controls in the page's dark palette, not a white slab */
     color-scheme: dark;
   }
+  /* the native controls' own focus ring is faint on the dark scheme */
+  .listen:focus-visible {
+    outline: 2px solid #f5b942;
+    outline-offset: 3px;
+  }
   .elsewhere {
     display: flex;
     flex-wrap: wrap;
