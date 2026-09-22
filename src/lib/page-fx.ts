@@ -135,10 +135,10 @@ export const FLAME_BASE = 0.82;
  * sit on the flame the same way everywhere.
  */
 export const ROCKS = [
-  { dx: -0.105, cy: FLAME_BASE + 0.012, rx: 0.036, ry: 0.022 },
-  { dx: 0.118, cy: FLAME_BASE + 0.01, rx: 0.034, ry: 0.021 },
-  { dx: -0.045, cy: FLAME_BASE + 0.02, rx: 0.052, ry: 0.028 },
-  { dx: 0.062, cy: FLAME_BASE + 0.018, rx: 0.042, ry: 0.024 },
+  { dx: -0.12, cy: FLAME_BASE + 0.012, rx: 0.043, ry: 0.026 },
+  { dx: 0.126, cy: FLAME_BASE + 0.01, rx: 0.041, ry: 0.025 },
+  { dx: -0.063, cy: FLAME_BASE + 0.02, rx: 0.06, ry: 0.032 },
+  { dx: 0.066, cy: FLAME_BASE + 0.018, rx: 0.05, ry: 0.029 },
   { dx: 0.008, cy: FLAME_BASE + 0.028, rx: 0.062, ry: 0.033 },
 ] as const;
 
