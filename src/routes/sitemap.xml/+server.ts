@@ -1,11 +1,10 @@
 // prerendered from the db like feed.xml, so each episode page — the one with
 // the crawlable transcript — is listed by the same build that publishes it.
 import type { RequestHandler } from './$types';
+import { SITE } from '$lib/links';
 import { listPublishedEpisodes } from '$lib/server/queries';
 
 export const prerender = true;
-
-const SITE = 'https://pyredivers.com';
 
 const day = (date: Date | null) =>
   date ? `<lastmod>${date.toISOString().slice(0, 10)}</lastmod>` : '';

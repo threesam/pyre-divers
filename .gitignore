@@ -17,3 +17,4 @@ tools/pyre-display-700.ttf
 assets/ep*/
 # speaker reference clips for diarization — voices stay out of a public repo
 assets/speakers/
+.env*.local

@@ -1,13 +1,13 @@
 // the podcast feed, prerendered at build. ported from solve-for-x
 // podcast.xml — episodes without audioUrl are skipped (enclosures are
 // mandatory), so the feed stays valid-but-empty until real audio exists.
+import { FEED, SITE } from '$lib/links';
 import { Feed } from 'feed';
 import type { RequestHandler } from './$types';
 import { listPublishedEpisodes } from '$lib/server/queries';
 
 export const prerender = true;
 
-const SITE = 'https://pyredivers.com';
 // apple wants 1400–3000px square, rgb, jpeg or png; og-square is 1200 and
 // would be rejected outright. Captured from the live splash at a 1:1 viewport
 // — see tools/README for the exact flags, two of which are load-bearing:
@@ -45,6 +45,9 @@ export const GET: RequestHandler = async () => {
       'two builders, live and unedited. conversations with the ones who jumped before they were ready.',
     id: SITE,
     link: SITE,
+    // the feed's own address: <atom:link rel="self">, which validators and
+    // podcast directories expect
+    feed: FEED,
     language: 'en-us',
     image: COVER,
     favicon: `${SITE}/og-square.jpg`,
@@ -65,10 +68,11 @@ export const GET: RequestHandler = async () => {
     if (!episode.audioUrl || !episode.publishedAt) {
       continue;
     }
+    const link = `${SITE}/episodes/${episode.slug}`;
     feed.addItem({
       title: episode.title,
-      id: `${SITE}/episodes/${episode.slug}`,
-      link: `${SITE}/episodes/${episode.slug}`,
+      id: link,
+      link,
       description: episode.description,
       date: episode.publishedAt,
       // `audio`, not `enclosure`: the package only writes <itunes:duration>
@@ -80,6 +84,20 @@ export const GET: RequestHandler = async () => {
         length: await byteLength(episode.audioUrl),
         duration: episode.durationSeconds ?? undefined,
       },
+      // the package has no typed option for these; `extensions` renders any
+      // element by name (xml-js shape: _text / _attributes)
+      extensions: [
+        { name: 'itunes:episode', objects: { _text: String(episode.number) } },
+        { name: 'itunes:episodeType', objects: { _text: 'full' } },
+        // the transcript the apps show in sync (podcasting 2.0 namespace,
+        // read by apple, pocket casts, overcast, fountain…)
+        {
+          name: 'podcast:transcript',
+          objects: {
+            _attributes: { url: `${link}/transcript.vtt`, type: 'text/vtt' },
+          },
+        },
+      ],
     });
   }
 
@@ -90,6 +108,17 @@ export const GET: RequestHandler = async () => {
   // apple rejects the feed at submission.
   const rss = feed
     .rss2()
+    // the namespace for <podcast:transcript> above
+    .replace(
+      '<rss version="2.0"',
+      '<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0"',
+    )
+    // apple wants an owner name next to the email; the package writes only
+    // the email
+    .replace(
+      '<itunes:owner>',
+      '<itunes:owner>\n            <itunes:name>threesam</itunes:name>',
+    )
     // apple reads the category from a `text` attribute; the package writes it
     // as element text, which validators report as a missing category
     .replace(

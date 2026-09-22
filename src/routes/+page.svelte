@@ -2,6 +2,7 @@
   import Splash from '$lib/components/Splash.svelte';
   import SocialStones from '$lib/components/SocialStones.svelte';
   import { resolve } from '$app/paths';
+  import { FEED, HOSTS, SAME_AS } from '$lib/links';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -28,15 +29,14 @@
       "@id": "https://pyredivers.com/#podcast",
       "name": "pyre divers",
       "url": "https://pyredivers.com/",
-      "image": "https://pyredivers.com/og.jpg",
+      "image": ["https://pyredivers.com/podcast-cover.jpg", "https://pyredivers.com/og.jpg"],
       "description": "live, unpolished conversations with the ones who jumped before they were ready. two builders, one fire.",
       "startDate": "${data.startDate ?? LAUNCH.iso}",
       "inLanguage": "en",
       "genre": ["technology", "entrepreneurship", "philosophy"],
-      "author": [
-        { "@type": "Person", "name": "Salvatore D'Angelo", "url": "https://threesam.com" },
-        { "@type": "Person", "name": "Steve Tullius" }
-      ]
+      "webFeed": "${FEED}",
+      "sameAs": ${JSON.stringify(SAME_AS)},
+      "author": ${JSON.stringify(HOSTS)}
     }
   ]
 }` +

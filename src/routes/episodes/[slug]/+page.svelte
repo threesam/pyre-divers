@@ -8,15 +8,17 @@
   import '@fontsource/epilogue/700.css';
   import '@fontsource/epilogue/700-italic.css';
   import { resolve } from '$app/paths';
+  import { FEED, HOSTS, SITE } from '$lib/links';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
 
   const episode = $derived(data.episode);
   const segments = $derived(data.segments);
-  const canonicalUrl = $derived(
-    `https://pyredivers.com/episodes/${episode.slug}`,
-  );
+  const canonicalUrl = $derived(`${SITE}/episodes/${episode.slug}`);
+  const OG_IMAGE = `${SITE}/og.jpg`;
+  // iso 8601 duration for json-ld: 2285 s -> PT38M5S
+  const isoDuration = (s: number) => `PT${Math.floor(s / 60)}M${s % 60}S`;
 
   function formatTimestamp(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -56,17 +58,34 @@
   const episodeJsonLd = $derived({
     '@context': 'https://schema.org',
     '@type': 'PodcastEpisode',
+    '@id': canonicalUrl,
     name: episode.title,
     description: episode.description,
-    datePublished: episode.publishedAt,
     url: canonicalUrl,
+    datePublished: episode.publishedAt,
+    episodeNumber: data.number,
+    duration: episode.durationSeconds
+      ? isoDuration(episode.durationSeconds)
+      : undefined,
+    inLanguage: 'en',
+    image: OG_IMAGE,
+    author: HOSTS,
     associatedMedia: episode.audioUrl
-      ? { '@type': 'MediaObject', contentUrl: episode.audioUrl }
+      ? {
+          '@type': 'AudioObject',
+          contentUrl: episode.audioUrl,
+          encodingFormat: 'audio/mpeg',
+          duration: episode.durationSeconds
+            ? isoDuration(episode.durationSeconds)
+            : undefined,
+        }
       : undefined,
     partOfSeries: {
       '@type': 'PodcastSeries',
-      '@id': 'https://pyredivers.com/#podcast',
+      '@id': `${SITE}/#podcast`,
       name: 'pyre divers',
+      url: `${SITE}/`,
+      webFeed: FEED,
     },
   });
 </script>
@@ -75,14 +94,39 @@
   <title>{episode.title} — pyre divers</title>
   <meta name="description" content={episode.description} />
   <link rel="canonical" href={canonicalUrl} />
-  <meta property="og:type" content="video.episode" />
+  <!-- article, not video.episode: this is an audio episode with its transcript -->
+  <meta property="og:type" content="article" />
+  {#if episode.publishedAt}
+    <meta
+      property="article:published_time"
+      content={episode.publishedAt.toISOString()}
+    />
+  {/if}
+  <meta property="og:site_name" content="pyre divers" />
   <meta property="og:title" content={episode.title} />
   <meta property="og:description" content={episode.description} />
   <meta property="og:url" content={canonicalUrl} />
-  <meta property="og:image" content="https://pyredivers.com/og.jpg" />
+  <meta property="og:image" content={OG_IMAGE} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta
+    property="og:image:alt"
+    content="a whirlpool of tiny hand-drawn stick figures on an ember gradient, with the wordmark: pyre divers"
+  />
+  {#if episode.audioUrl}
+    <meta property="og:audio" content={episode.audioUrl} />
+    <meta property="og:audio:type" content="audio/mpeg" />
+  {/if}
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={episode.title} />
   <meta name="twitter:description" content={episode.description} />
+  <meta name="twitter:image" content={OG_IMAGE} />
+  <link
+    rel="alternate"
+    type="application/rss+xml"
+    title="pyre divers"
+    href={FEED}
+  />
   <!-- eslint-disable-next-line svelte/no-at-html-tags -- json-stringified + `<`-escaped, not raw html -->
   {@html `<script type="application/ld+json">${jsonLdScript(episodeJsonLd)}<` +
     `/script>`}
