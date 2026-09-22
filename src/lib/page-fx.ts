@@ -1716,12 +1716,15 @@ export function initPageFx(): void {
       body *= smoothstep(-0.12, 0.06, t) * (1.0 - smoothstep(0.68, 1.05, t));
       float lick = fbm(vec2(px * 6.0, uv.y * 5.0 - uT * 2.4));
       float i = body * (0.5 + 0.9 * lick);
-      float glow = smoothstep(0.42, 0.0, length(vec2(px, (uv.y - yb) * 1.5))) * 0.5;
+      // the ground glow: wide enough (0.8 heights) to reach past the logs,
+      // so the sitters read as silhouettes against it
+      float glow = smoothstep(0.8, 0.0, length(vec2(px, (uv.y - yb) * 1.5))) * 0.6;
       vec3 col = mix(vec3(0.45, 0.05, 0.03), vec3(0.73, 0.11, 0.11), smoothstep(0.04, 0.22, i));
+      col = mix(col, vec3(0.73, 0.11, 0.11), glow);
       col = mix(col, vec3(0.89, 0.35, 0.13), smoothstep(0.22, 0.48, i));
       col = mix(col, vec3(0.96, 0.73, 0.26), smoothstep(0.48, 0.74, i));
       col = mix(col, vec3(1.0, 0.96, 0.82), smoothstep(0.82, 1.0, i));
-      float a = clamp(smoothstep(0.05, 0.3, i) + glow * 0.45, 0.0, 1.0);
+      float a = clamp(smoothstep(0.05, 0.3, i) + glow * 0.8, 0.0, 1.0);
       frag = vec4(col * a, a);
     }`;
     const mk = (ty: number, src: string) => {
