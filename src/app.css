@@ -340,8 +340,12 @@ section {
   max-width: 22rem;
 }
 .dive {
+  /* the text on the left, listen/read stacked on the right — two panes,
+     not one anchor: .dive-info and .dive-links each go their own way */
   display: grid;
-  gap: 0.1rem;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 0 1.5rem;
   /* hugs the text — .dives can be wider than the title (mobile drops its
      22rem cap), and a box that fills it anyway reads lopsided */
   width: fit-content;
@@ -351,12 +355,38 @@ section {
   border: 1.5px solid #e25822;
   border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
   background: rgba(16, 18, 10, 0.95);
-  text-decoration: none;
   transition: border-color 0.2s;
 }
-.dive:hover,
-.dive:focus-visible {
+/* :has(), not :hover/:focus-visible ON .dive — .dive isn't interactive
+   itself any more, its two children are (same call as .sitters li) */
+.dive:has(a:hover),
+.dive:has(a:focus-visible) {
   border-color: #f5b942;
+}
+.dive-info {
+  display: grid;
+  gap: 0.1rem;
+  color: inherit;
+  text-decoration: none;
+}
+.dive-links {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: end;
+}
+.dive-links a {
+  color: #f5b942;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.dive-links a:hover {
+  color: #f5b942;
+  text-decoration: underline;
+}
+.dive-links a:focus-visible {
+  outline: 2px solid #f5b942;
+  outline-offset: 3px;
 }
 .dive-kicker,
 .dive-meta {
