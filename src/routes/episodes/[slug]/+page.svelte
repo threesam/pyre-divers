@@ -139,7 +139,7 @@
   <p class="desc">{episode.description}</p>
 
   {#if episode.videoUrl}
-    <div class="player">
+    <div class="player" id="listen">
       <!-- the full transcript is right below the player -->
       <!-- svelte-ignore a11y_media_has_caption -->
       <video src={episode.videoUrl} controls preload="metadata"></video>
@@ -147,6 +147,7 @@
   {:else if episode.audioUrl}
     <!-- preload none: the file is ~40MB, and most visitors come to read -->
     <audio
+      id="listen"
       class="listen"
       src={episode.audioUrl}
       controls
@@ -184,7 +185,7 @@
   {/if}
 
   {#if segments.length}
-    <section class="transcript" aria-label="transcript">
+    <section class="transcript" id="transcript" aria-label="transcript">
       <h2>transcript.</h2>
       {#each segments as segment (segment.id)}
         <p class="segment">

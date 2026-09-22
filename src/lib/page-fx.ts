@@ -124,13 +124,15 @@ export const SCENE_W = 0.8;
 /**
  * A layout number read back off #join, so the canvas and the DOM can never
  * disagree: `--b`, where the flame's mouth sits as a fraction of the height
- * (FLAME_BASE is the desktop value), and `--flame`, the flame's size against
- * the scene (1 on desktop; smaller on a phone, where the scene is already
- * short and a full flame swallows it). app.css sets both per breakpoint.
+ * (FLAME_BASE is the desktop value); `--flame`, the flame's size against the
+ * scene (1 on desktop; smaller on a phone, where the scene is already short
+ * and a full flame swallows it); and `--seat`, how far out the logs sit (1
+ * on desktop; pulled in on a phone, to the text's own margin). app.css sets
+ * all three per breakpoint.
  */
 function layout(
   join: HTMLElement,
-  name: '--b' | '--flame',
+  name: '--b' | '--flame' | '--seat',
   fallback: number,
 ): number {
   const v = parseFloat(getComputedStyle(join).getPropertyValue(name));
@@ -1856,6 +1858,9 @@ export function initPageFx(): void {
     // re-reads it): risers and flecks rise out of it, so they use it, not
     // the desktop constant — read now, the first seeding is below
     let yb = layout(joinEl, '--b', FLAME_BASE);
+    // pulls the logs (and the sitters riding them) in from the edge to the
+    // text's own margin on a phone — .sitters li reads the same var
+    let seat = layout(joinEl, '--seat', 1);
     // the flame's height as a fraction of the canvas's — the shader's
     // 0.58 * uS. The risers and flecks measure their rise in it, so they
     // emerge from the flame that is drawn, not from a desktop-sized one
@@ -2005,6 +2010,7 @@ export function initPageFx(): void {
     const sceneY = (cy: number) => yb * rh + (cy - FLAME_BASE) * ru;
     const sizeRain = () => {
       yb = layout(joinEl, '--b', FLAME_BASE);
+      seat = layout(joinEl, '--seat', 1);
       flameH = flameHeight();
       // the section's box, same as the flame (see sizeFire)
       rw = Math.round(joinEl.clientWidth * dpr);
@@ -2112,7 +2118,7 @@ export function initPageFx(): void {
         T = l.ry * ru,
         E = T * 0.42; // the end cap's half-width: a cylinder seen a little from the side
       ctx2.save();
-      ctx2.translate(sceneX(l.dx), sceneY(l.cy));
+      ctx2.translate(sceneX(l.dx * seat), sceneY(l.cy));
       ctx2.rotate(l.tilt);
       const pts: [number, number][] = [];
       const n = l.wob.length;
@@ -2215,7 +2221,7 @@ export function initPageFx(): void {
     // drops behind the log — so it's painted BEFORE the log covers it.
     const drawNearArm = (l: (typeof LOGS)[number]) => {
       const f = -Math.sign(l.dx);
-      const hx = sceneX(l.dx);
+      const hx = sceneX(l.dx * seat);
       const hy = sceneY(l.cy - l.ry);
       const u = ru;
       const sy = hy - SEAT.torso * u;
@@ -2229,7 +2235,7 @@ export function initPageFx(): void {
     };
     const drawSitter = (l: (typeof LOGS)[number]) => {
       const f = -Math.sign(l.dx); // +1 faces right, toward the flame
-      const hx = sceneX(l.dx);
+      const hx = sceneX(l.dx * seat);
       const hy = sceneY(l.cy - l.ry);
       const u = ru;
       const sy = hy - SEAT.torso * u; // shoulder

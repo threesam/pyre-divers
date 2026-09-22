@@ -12,6 +12,12 @@
   // the planned first dive, shown only until an episode is published
   const LAUNCH = { iso: '2026-09-23', text: 'september 23' };
 
+  // the latest dive's own page — three links point there (title, listen,
+  // read), so it's computed once rather than resolved three times
+  const latestHref = $derived(
+    data.latest ? resolve('/episodes/[slug]', { slug: data.latest.slug }) : '',
+  );
+
   const jsonLdTag = 'script';
   const jsonLd = $derived(
     `<${jsonLdTag} type="application/ld+json">` +
@@ -226,16 +232,35 @@
   {#if data.latest}
     <!-- the dives: the newest as the call-out, the rest listed under it -->
     <div class="dives">
-      <a
-        class="dive"
-        href={resolve('/episodes/[slug]', { slug: data.latest.slug })}
-        data-umami-event="latest-dive"
-      >
-        <span class="dive-kicker">latest dive · no. {data.latest.number}</span>
-        <span class="dive-title">{data.latest.title}.</span>
-        <span class="dive-meta">{data.latest.minutes} min · listen or read</span
+      <!-- eslint-disable svelte/no-navigation-without-resolve -- latestHref
+           IS a resolve() result (see the script); the rule wants the call
+           inline, but three of these share the one resolved base -->
+      <div class="dive">
+        <a
+          class="dive-info"
+          href={latestHref}
+          data-umami-event="latest-dive"
+          data-umami-event-to="episode"
         >
-      </a>
+          <span class="dive-kicker">latest dive · no. {data.latest.number}</span
+          >
+          <span class="dive-title">{data.latest.title}.</span>
+          <span class="dive-meta">{data.latest.minutes} min</span>
+        </a>
+        <div class="dive-links">
+          <a
+            href="{latestHref}#listen"
+            data-umami-event="latest-dive"
+            data-umami-event-to="listen">listen &rarr;</a
+          >
+          <a
+            href="{latestHref}#transcript"
+            data-umami-event="latest-dive"
+            data-umami-event-to="read">read &rarr;</a
+          >
+        </div>
+      </div>
+      <!-- eslint-enable svelte/no-navigation-without-resolve -->
       {#if data.dives.length > 1}
         <ol class="dive-list" reversed>
           {#each data.dives.slice(1) as d (d.slug)}

@@ -222,6 +222,7 @@ section {
 #join {
   --b: 0.82;
   --flame: 1;
+  --seat: 1;
   display: grid;
   align-content: start;
   justify-items: stretch;
@@ -234,6 +235,9 @@ section {
     --b: 0.56;
     /* the scene is short here; a full flame swallows it */
     --flame: 0.6;
+    /* pulls the logs in from the edge to the text's own margin (page-fx
+       reads this back for the canvas log/sitter draw) */
+    --seat: 0.93;
     grid-template-rows: auto auto 1fr;
     align-content: stretch;
   }
@@ -336,19 +340,53 @@ section {
   max-width: 22rem;
 }
 .dive {
+  /* the text on the left, listen/read stacked on the right — two panes,
+     not one anchor: .dive-info and .dive-links each go their own way */
   display: grid;
-  gap: 0.1rem;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 0 1.5rem;
+  /* hugs the text — .dives can be wider than the title (mobile drops its
+     22rem cap), and a box that fills it anyway reads lopsided */
+  width: fit-content;
+  max-width: 100%;
   box-sizing: border-box;
   padding: 0.6rem 1.1rem 0.7rem;
   border: 1.5px solid #e25822;
   border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
   background: rgba(16, 18, 10, 0.95);
-  text-decoration: none;
   transition: border-color 0.2s;
 }
-.dive:hover,
-.dive:focus-visible {
+/* :has(), not :hover/:focus-visible ON .dive — .dive isn't interactive
+   itself any more, its two children are (same call as .sitters li) */
+.dive:has(a:hover),
+.dive:has(a:focus-visible) {
   border-color: #f5b942;
+}
+.dive-info {
+  display: grid;
+  gap: 0.1rem;
+  color: inherit;
+  text-decoration: none;
+}
+.dive-links {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: end;
+}
+.dive-links a {
+  color: #f5b942;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.dive-links a:hover {
+  color: #f5b942;
+  text-decoration: underline;
+}
+.dive-links a:focus-visible {
+  outline: 2px solid #f5b942;
+  outline-offset: 3px;
 }
 .dive-kicker,
 .dive-meta {
@@ -794,7 +832,8 @@ html.dive-go #veil::before {
 }
 .sitters li {
   position: absolute;
-  left: calc(var(--x) * 100% + var(--dx) * var(--u));
+  /* --seat (page-fx.ts LOGS scale) pulls the head in with its log */
+  left: calc(var(--x) * 100% + var(--dx) * var(--seat, 1) * var(--u));
   top: calc(var(--b) * 100% + var(--y) * var(--u));
   /* bottom-centre on the shoulder: the chin sits where the neck would */
   transform: translate(-50%, -100%);
