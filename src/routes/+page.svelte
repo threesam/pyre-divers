@@ -1,6 +1,7 @@
 <script lang="ts">
   import Splash from '$lib/components/Splash.svelte';
   import SocialStones from '$lib/components/SocialStones.svelte';
+  import Sitters from '$lib/components/Sitters.svelte';
   import { resolve } from '$app/paths';
   import { FEED, HOSTS, SAME_AS } from '$lib/links';
   import type { PageProps } from './$types';
@@ -244,4 +245,5 @@
     <p class="tiny patch">no spam. one email when the fire’s lit.</p>
   </div>
   <SocialStones />
+  <Sitters latest={data.latest} />
 </section>

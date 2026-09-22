@@ -135,12 +135,33 @@ export const FLAME_BASE = 0.82;
  * sit on the flame the same way everywhere.
  */
 export const ROCKS = [
-  { dx: -0.105, cy: FLAME_BASE + 0.012, rx: 0.036, ry: 0.022 },
-  { dx: 0.118, cy: FLAME_BASE + 0.01, rx: 0.034, ry: 0.021 },
-  { dx: -0.045, cy: FLAME_BASE + 0.02, rx: 0.052, ry: 0.028 },
-  { dx: 0.062, cy: FLAME_BASE + 0.018, rx: 0.042, ry: 0.024 },
-  { dx: 0.008, cy: FLAME_BASE + 0.028, rx: 0.062, ry: 0.033 },
+  { dx: -0.105, cy: FLAME_BASE + 0.012, rx: 0.032, ry: 0.0195 },
+  { dx: 0.118, cy: FLAME_BASE + 0.01, rx: 0.03, ry: 0.0185 },
+  { dx: -0.045, cy: FLAME_BASE + 0.02, rx: 0.046, ry: 0.025 },
+  { dx: 0.062, cy: FLAME_BASE + 0.018, rx: 0.037, ry: 0.021 },
+  { dx: 0.008, cy: FLAME_BASE + 0.028, rx: 0.04, ry: 0.027 },
 ] as const;
+
+/**
+ * The two logs, one each side of the fire, outside the stone ring — the
+ * seats. Same units as ROCKS (heights, dx from FLAME_X): rx is half the
+ * length, ry half the thickness, `tilt` radians. Drawn as a log, not a
+ * stone: a capsule with the end grain showing on the outer end and bark
+ * lines along the body, in the ring's ink. Exported for the same reason
+ * ROCKS is: the sitters' heads are DOM buttons placed over the bodies the
+ * canvas draws, and both read the seat from here.
+ */
+export const LOGS = [
+  { dx: -0.31, cy: FLAME_BASE + 0.05, rx: 0.075, ry: 0.017, tilt: -0.07 },
+  { dx: 0.3, cy: FLAME_BASE + 0.046, rx: 0.075, ry: 0.017, tilt: 0.06 },
+] as const;
+/**
+ * A seated body, in heights: the hip sits on the log's top edge, the torso
+ * rises TORSO straight up, a NECK more to the chin of the head — the DOM
+ * cutout. The component places heads with these; the canvas draws the
+ * bodies with them.
+ */
+export const SEAT = { torso: 0.058, neck: 0.007 } as const;
 
 /**
  * The ember run the stones are outlined in: three stops across a band
@@ -1695,12 +1716,15 @@ export function initPageFx(): void {
       body *= smoothstep(-0.12, 0.06, t) * (1.0 - smoothstep(0.68, 1.05, t));
       float lick = fbm(vec2(px * 6.0, uv.y * 5.0 - uT * 2.4));
       float i = body * (0.5 + 0.9 * lick);
-      float glow = smoothstep(0.42, 0.0, length(vec2(px, (uv.y - yb) * 1.5))) * 0.5;
+      // the ground glow: wide enough (0.8 heights) to reach past the logs,
+      // so the sitters read as silhouettes against it
+      float glow = smoothstep(0.8, 0.0, length(vec2(px, (uv.y - yb) * 1.5))) * 0.6;
       vec3 col = mix(vec3(0.45, 0.05, 0.03), vec3(0.73, 0.11, 0.11), smoothstep(0.04, 0.22, i));
+      col = mix(col, vec3(0.73, 0.11, 0.11), glow);
       col = mix(col, vec3(0.89, 0.35, 0.13), smoothstep(0.22, 0.48, i));
       col = mix(col, vec3(0.96, 0.73, 0.26), smoothstep(0.48, 0.74, i));
       col = mix(col, vec3(1.0, 0.96, 0.82), smoothstep(0.82, 1.0, i));
-      float a = clamp(smoothstep(0.05, 0.3, i) + glow * 0.45, 0.0, 1.0);
+      float a = clamp(smoothstep(0.05, 0.3, i) + glow * 0.8, 0.0, 1.0);
       frag = vec4(col * a, a);
     }`;
     const mk = (ty: number, src: string) => {
@@ -1893,6 +1917,21 @@ export function initPageFx(): void {
     };
     // five rocks ringing the flame's mouth, mildly overlapping; centre drawn last (front)
     const rocks = ROCKS.map((r) => mkRock(r.dx, r.cy, r.rx, r.ry));
+    // the logs, on their own rng: `rand` seeds the stones, then the flecks
+    // and drops, and a rand() call added between them would reshuffle every
+    // spark on the page. Each log keeps its own wobble — the outline's
+    // radial jitter, the bark lines' bows — so the two are not one log twice.
+    const logRand = mulberry32(1206);
+    const logs = LOGS.map((l) => ({
+      ...l,
+      wob: Array.from({ length: 16 }, () => 0.9 + logRand() * 0.2),
+      bark: [-0.5, 0.05, 0.5].map((y) => ({
+        y: y + (logRand() - 0.5) * 0.12,
+        x0: -0.82 + logRand() * 0.12,
+        x1: 0.62 + logRand() * 0.14,
+        bow: (logRand() - 0.5) * 0.5,
+      })),
+    }));
 
     const flecks: Fleck[] = [];
     for (let i = 0; i < 90; i++) {
@@ -1913,7 +1952,14 @@ export function initPageFx(): void {
     flecks.forEach((f) => seedFleck(f, true));
     let rw = 0;
     let rh = 0;
+    // the logs are drawn only while the sitters' heads are stamped over them.
+    // Ask the layout, like SocialStones does: the buttons are position:
+    // absolute only in the seated layout, so this is the breakpoint read
+    // back rather than written a second time. No sitters, no logs.
+    let logsOn = false;
     const sizeRain = () => {
+      const seat = document.querySelector('.sitters button');
+      logsOn = seat !== null && getComputedStyle(seat).position === 'absolute';
       const de = document.documentElement;
       rw = Math.round(de.clientWidth * dpr);
       rh = Math.round(de.clientHeight * dpr);
@@ -2002,6 +2048,165 @@ export function initPageFx(): void {
     } else {
       joinVisible = true;
     }
+    type Log = (typeof logs)[number];
+    // The log: in its own frame (origin at the centre, x along the length),
+    // the body is a capsule — two half-ellipses joined by the top and bottom
+    // edges — sampled at 16 points, each pushed in or out by its wobble and
+    // smoothed through midpoints like the stones. Then the end grain, a full
+    // ellipse at the outer end with two rings inside, and the bark: three
+    // bowed lines along the body, fainter. All in the ring's ink; the fill
+    // and glow are the stones' so the seats belong to the same fire.
+    const drawLog = (l: Log) => {
+      const out = Math.sign(l.dx);
+      const Lg = l.rx * rh,
+        T = l.ry * rh,
+        E = T * 0.42; // the end cap's half-width: a cylinder seen a little from the side
+      ctx2.save();
+      ctx2.translate(FLAME_X * rw + l.dx * rh, l.cy * rh);
+      ctx2.rotate(l.tilt);
+      const pts: [number, number][] = [];
+      const n = l.wob.length;
+      for (let i = 0; i < n; i++) {
+        // walk the capsule: right cap (−90°..90°), top edge, left cap, bottom
+        const u = i / n;
+        let x: number, y: number;
+        if (u < 0.25) {
+          const a = -Math.PI / 2 + (u / 0.25) * Math.PI;
+          x = Lg - E + Math.cos(a) * E;
+          y = Math.sin(a) * T;
+        } else if (u < 0.5) {
+          x = Lg - E - ((u - 0.25) / 0.25) * 2 * (Lg - E);
+          y = T;
+        } else if (u < 0.75) {
+          const a = Math.PI / 2 + ((u - 0.5) / 0.25) * Math.PI;
+          x = -(Lg - E) + Math.cos(a) * E;
+          y = Math.sin(a) * T;
+        } else {
+          x = -(Lg - E) + ((u - 0.75) / 0.25) * 2 * (Lg - E);
+          y = -T;
+        }
+        pts.push([x * (0.98 + (l.wob[i] - 1) * 0.3), y * l.wob[i]]);
+      }
+      ctx2.beginPath();
+      for (let i = 0; i <= n; i++) {
+        const p = pts[i % n],
+          q = pts[(i + 1) % n];
+        if (i === 0) {
+          ctx2.moveTo((p[0] + q[0]) / 2, (p[1] + q[1]) / 2);
+        } else {
+          ctx2.quadraticCurveTo(
+            p[0],
+            p[1],
+            (p[0] + q[0]) / 2,
+            (p[1] + q[1]) / 2,
+          );
+        }
+      }
+      ctx2.closePath();
+      ctx2.globalAlpha = 1;
+      ctx2.shadowBlur = 0;
+      ctx2.fillStyle = '#10120a';
+      ctx2.fill();
+      ctx2.strokeStyle = rockInk;
+      ctx2.globalAlpha = rockGlow;
+      ctx2.shadowColor = 'rgba(226, 88, 34, 0.85)';
+      ctx2.shadowBlur = rockBlur;
+      ctx2.stroke();
+      ctx2.shadowBlur = 0;
+      // end grain: the cut face, rings inside it
+      for (const k of [1, 0.62, 0.28]) {
+        ctx2.beginPath();
+        ctx2.ellipse(
+          out * (Lg - E),
+          0,
+          E * k,
+          T * k * (k === 1 ? 1 : 0.92),
+          0,
+          0,
+          TAU,
+        );
+        if (k === 1) {
+          ctx2.fill();
+        }
+        ctx2.globalAlpha = k === 1 ? rockGlow : rockGlow * 0.6;
+        ctx2.stroke();
+      }
+      // bark: along the body, stopping short of the cut face
+      ctx2.globalAlpha = rockGlow * 0.55;
+      for (const b of l.bark) {
+        ctx2.beginPath();
+        ctx2.moveTo(b.x0 * Lg, b.y * T);
+        ctx2.quadraticCurveTo(
+          ((b.x0 + b.x1) / 2) * Lg,
+          (b.y + b.bow) * T,
+          b.x1 * Lg * (out > 0 ? 1 : 1.1),
+          b.y * T,
+        );
+        ctx2.stroke();
+      }
+      ctx2.globalAlpha = 1;
+      ctx2.restore();
+    };
+
+    // a body sitting on a log, facing us — the show's own stick figure (see
+    // the episode end-frame): one vertical torso line from the hip to the
+    // chin, arms an inverted V from the shoulder, legs bent at the knee
+    // toward the fire. The head is not drawn — it's the
+    // DOM cutout the component stamps on the neck (SEAT is the contract).
+    // Still, on purpose: the fire moves, the sitters don't, and a breathing
+    // body under a still photograph reads as a glitch.
+    const sitterInk = () => {
+      ctx2.strokeStyle = '#000'; // a silhouette against the glow
+      ctx2.globalAlpha = 1;
+      ctx2.lineWidth = Math.max(1.5 * dpr, 0.0036 * rh);
+      ctx2.shadowBlur = 0;
+    };
+    // the arm on the fire side hangs lower, nearly straight, and its hand
+    // drops behind the log — so it's painted BEFORE the log covers it.
+    const drawNearArm = (l: (typeof LOGS)[number]) => {
+      const f = -Math.sign(l.dx);
+      const hx = FLAME_X * rw + l.dx * rh;
+      const hy = (l.cy - l.ry) * rh;
+      const u = rh;
+      const sy = hy - SEAT.torso * u;
+      sitterInk();
+      ctx2.beginPath();
+      ctx2.moveTo(hx, sy);
+      ctx2.lineTo(hx + f * 0.022 * u, sy + 0.034 * u);
+      ctx2.lineTo(hx + f * 0.032 * u, hy + 0.014 * u);
+      ctx2.stroke();
+      ctx2.globalAlpha = 1;
+    };
+    const drawSitter = (l: (typeof LOGS)[number]) => {
+      const f = -Math.sign(l.dx); // +1 faces right, toward the flame
+      const hx = FLAME_X * rw + l.dx * rh;
+      const hy = (l.cy - l.ry) * rh;
+      const u = rh;
+      const sy = hy - SEAT.torso * u; // shoulder
+      sitterInk();
+      ctx2.beginPath();
+      // torso, up past the shoulder and under the chin of the photo
+      ctx2.moveTo(hx, hy);
+      ctx2.lineTo(hx, sy - (SEAT.neck + 0.006) * u);
+      // far arm: shoulder, elbow out, hand down on the log's top edge
+      // beside the hip (the near arm is drawNearArm, under the log)
+      ctx2.moveTo(hx, sy);
+      ctx2.lineTo(hx - f * 0.028 * u, sy + 0.03 * u);
+      ctx2.lineTo(hx - f * 0.022 * u, hy);
+      // legs, knees up toward the fire: thigh forward and above the log's
+      // top edge (a level thigh vanishes into that outline), shin down to
+      // the ground in front of the log. the second leg sits back a touch.
+      for (const [k, d] of [
+        [0.04, 0],
+        [0.032, 0.005],
+      ]) {
+        ctx2.moveTo(hx, hy);
+        ctx2.lineTo(hx + f * k * u, hy - (0.024 - d) * u);
+        ctx2.lineTo(hx + f * (k + 0.008) * u, hy + (0.04 + d) * u);
+      }
+      ctx2.stroke();
+      ctx2.globalAlpha = 1;
+    };
     const drawRain = (t: number) => {
       ctx2.clearRect(0, 0, rw, rh);
       ctx2.lineCap = 'round';
@@ -2076,6 +2281,13 @@ export function initPageFx(): void {
         rockBlur = (5 + 20 * pulse) * dpr;
         for (let i = 0; i < rocks.length; i++) {
           drawRock(rocks[i], litAmt[i]);
+        }
+        if (logsOn) {
+          for (const l of logs) {
+            drawNearArm(l);
+            drawLog(l);
+            drawSitter(l);
+          }
         }
       }
     };
