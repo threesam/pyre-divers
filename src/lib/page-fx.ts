@@ -143,6 +143,26 @@ export const ROCKS = [
 ] as const;
 
 /**
+ * The two logs, one each side of the fire, outside the stone ring — the
+ * seats. Same units as ROCKS (heights, dx from FLAME_X). Each is drawn as a
+ * long, tilted stone, so it wears the ring's ink and glow; `tilt` is radians,
+ * and the outer end of each log carries a small end-grain ring. Exported for
+ * the same reason ROCKS is: the sitters' heads are DOM buttons placed over
+ * the bodies the canvas draws, and both read the seat from here.
+ */
+export const LOGS = [
+  { dx: -0.31, cy: FLAME_BASE + 0.05, rx: 0.075, ry: 0.017, tilt: -0.07 },
+  { dx: 0.3, cy: FLAME_BASE + 0.046, rx: 0.075, ry: 0.017, tilt: 0.06 },
+] as const;
+/**
+ * A seated body, in heights: the hip sits on the log's top edge, the torso
+ * rises TORSO and leans LEAN toward the fire, and the head — the DOM cutout —
+ * sits on the shoulder. The component places heads with these; the canvas
+ * draws the bodies with them.
+ */
+export const SEAT = { torso: 0.058, lean: 0.014 } as const;
+
+/**
  * The ember run the stones are outlined in: three stops across a band
  * centred on the flame, in fractions of viewport HEIGHT like the stones
  * (so the run keeps its place on the ring at every aspect). Each stone sits at
@@ -1869,12 +1889,19 @@ export function initPageFx(): void {
       b.swimPh = rand() * TAU;
       drops.push(b);
     }
-    const mkRock = (dx: number, cy: number, rx: number, ry: number): Rock => {
+    const mkRock = (
+      dx: number,
+      cy: number,
+      rx: number,
+      ry: number,
+      tilt = 0,
+      rng: Rand = rand,
+    ): Rock => {
       const pts: [number, number][] = [];
       const n = 9;
       for (let i = 0; i < n; i++) {
         const ang = (i / n) * TAU;
-        const j = 0.82 + rand() * 0.36; // hand wobble
+        const j = 0.82 + rng() * 0.36; // hand wobble
         pts.push([Math.cos(ang) * rx * j, Math.sin(ang) * ry * j]);
       }
       // Re-centre. Every point carries its own random radius, so the wobble
@@ -1889,10 +1916,37 @@ export function initPageFx(): void {
         p[0] -= mx;
         p[1] -= my;
       }
+      // the logs lie at a slight angle; the stones never pass a tilt
+      if (tilt) {
+        const ct = Math.cos(tilt),
+          st = Math.sin(tilt);
+        for (const p of pts) {
+          [p[0], p[1]] = [p[0] * ct - p[1] * st, p[0] * st + p[1] * ct];
+        }
+      }
       return { dx, cy, pts };
     };
     // five rocks ringing the flame's mouth, mildly overlapping; centre drawn last (front)
     const rocks = ROCKS.map((r) => mkRock(r.dx, r.cy, r.rx, r.ry));
+    // the logs, on their own rng: `rand` seeds the stones, then the flecks
+    // and drops, and a rand() call added between them would reshuffle every
+    // spark on the page. The end-grain ring is a small round stone at the
+    // outer end of each log, drawn after it.
+    const logRand = mulberry32(1206);
+    const logs = LOGS.flatMap((l) => {
+      const out = Math.sign(l.dx);
+      return [
+        mkRock(l.dx, l.cy, l.rx, l.ry, l.tilt, logRand),
+        mkRock(
+          l.dx + out * l.rx * 0.88 * Math.cos(l.tilt),
+          l.cy + out * l.rx * 0.88 * Math.sin(l.tilt),
+          l.ry * 0.55,
+          l.ry * 0.8,
+          0,
+          logRand,
+        ),
+      ];
+    });
 
     const flecks: Fleck[] = [];
     for (let i = 0; i < 90; i++) {
@@ -1913,7 +1967,14 @@ export function initPageFx(): void {
     flecks.forEach((f) => seedFleck(f, true));
     let rw = 0;
     let rh = 0;
+    // the logs are drawn only while the sitters' heads are stamped over them.
+    // Ask the layout, like SocialStones does: the buttons are position:
+    // absolute only in the seated layout, so this is the breakpoint read
+    // back rather than written a second time. No sitters, no logs.
+    let logsOn = false;
     const sizeRain = () => {
+      const seat = document.querySelector('.sitters button');
+      logsOn = seat !== null && getComputedStyle(seat).position === 'absolute';
       const de = document.documentElement;
       rw = Math.round(de.clientWidth * dpr);
       rh = Math.round(de.clientHeight * dpr);
@@ -2002,6 +2063,49 @@ export function initPageFx(): void {
     } else {
       joinVisible = true;
     }
+    // a body sitting on a log, facing the fire: hip on the log's top edge,
+    // torso leaning in, knees up and forward, hands on the knees. The head is
+    // not drawn — it's the DOM cutout the component stamps on the shoulder
+    // (SEAT is the contract). Still, on purpose: the fire moves, the sitters
+    // don't, and a breathing body under a still photograph reads as a glitch.
+    const drawSitter = (l: (typeof LOGS)[number]) => {
+      const f = -Math.sign(l.dx); // +1 faces right, toward the flame
+      const hx = FLAME_X * rw + l.dx * rh;
+      const hy = (l.cy - l.ry) * rh;
+      const sx = hx + f * SEAT.lean * rh;
+      const sy = hy - SEAT.torso * rh;
+      const u = rh;
+      ctx2.strokeStyle = '#f5b942';
+      ctx2.globalAlpha = 0.9;
+      ctx2.lineWidth = Math.max(1.5 * dpr, 0.0036 * rh);
+      ctx2.shadowBlur = 0;
+      ctx2.beginPath();
+      // torso
+      ctx2.moveTo(hx, hy);
+      ctx2.lineTo(sx, sy);
+      // legs, knees up the way a low log makes you sit: thigh forward and a
+      // little above the hip, shin down to the ground just under the log.
+      // the second leg is offset back a touch for depth.
+      for (const [k, d] of [
+        [0.042, 0],
+        [0.034, 0.005],
+      ]) {
+        ctx2.moveTo(hx, hy);
+        ctx2.lineTo(hx + f * k * u, hy - (0.014 - d) * u);
+        ctx2.lineTo(hx + f * (k + 0.01) * u, hy + (0.038 + d) * u);
+      }
+      // arms: shoulder, elbow, a hand resting on the knee
+      for (const [k, d] of [
+        [0.042, 0],
+        [0.034, 0.005],
+      ]) {
+        ctx2.moveTo(sx, sy + 0.006 * u);
+        ctx2.lineTo(sx + f * 0.01 * u, sy + 0.034 * u);
+        ctx2.lineTo(hx + f * (k - 0.004) * u, hy - (0.012 - d) * u);
+      }
+      ctx2.stroke();
+      ctx2.globalAlpha = 1;
+    };
     const drawRain = (t: number) => {
       ctx2.clearRect(0, 0, rw, rh);
       ctx2.lineCap = 'round';
@@ -2076,6 +2180,14 @@ export function initPageFx(): void {
         rockBlur = (5 + 20 * pulse) * dpr;
         for (let i = 0; i < rocks.length; i++) {
           drawRock(rocks[i], litAmt[i]);
+        }
+        if (logsOn) {
+          for (const log of logs) {
+            drawRock(log, 0);
+          }
+          for (const l of LOGS) {
+            drawSitter(l);
+          }
         }
       }
     };

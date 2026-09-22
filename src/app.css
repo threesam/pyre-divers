@@ -733,3 +733,96 @@ html.dive-go #veil::before {
     height: calc(var(--size) * 1vh);
   }
 }
+
+/* ── the logs and who sits on them ──────────────────────────────────────
+   Two logs outside the stone ring, one each side of the fire, with a body
+   seated on each — canvas, like the stones. The heads are photo cutouts,
+   real <button>s stamped on the shoulders (see Sitters.svelte); a click
+   opens the card below. --x/--dx/--y are the canvas's own numbers, in the
+   same units the stones use.
+
+   1100, not the stones' 1024: the right log reaches W/3 + 0.375H, and at
+   16:9 that clears the card's left edge (W - 496) only past ~1070px. Below
+   that the heads are not stamped, and page-fx reads that back and leaves
+   the logs undrawn too. */
+.sitters {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+@media (min-width: 1100px) {
+  .sitters,
+  .sitters li {
+    display: contents;
+  }
+  .sitters button {
+    position: absolute;
+    left: calc(var(--x) * 100% + var(--dx) * 100vh);
+    top: calc(var(--y) * 100%);
+    /* bottom-centre on the shoulder: the chin sits where the neck would */
+    transform: translate(-50%, -96%);
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    z-index: 1;
+    border-radius: 50%;
+  }
+  .sitters button:focus-visible {
+    outline: 2px solid #f5b942;
+    outline-offset: 4px;
+  }
+  .sitters img {
+    display: block;
+    height: 6.6vh;
+    width: auto;
+    /* photographs by firelight: warmed and dimmed to sit in the scene,
+       full colour when pointed at */
+    filter: sepia(0.4) saturate(0.85) brightness(0.82);
+    transition: filter 0.25s;
+  }
+  .sitters button:hover img,
+  .sitters button:focus-visible img {
+    filter: none;
+  }
+}
+.sitter-card {
+  background: #10120a;
+  color: #e7e2da;
+  border: 1.5px solid #e25822;
+  border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
+  padding: 1.4rem 1.8rem 1.2rem;
+  max-width: 24rem;
+  font-family: 'Pyre Display', ui-rounded, system-ui, sans-serif;
+}
+.sitter-card::backdrop {
+  background: rgba(16, 18, 10, 0.72);
+}
+.sitter-card h2 {
+  margin: 0 0 0.6rem;
+  font-size: 2rem;
+  font-weight: 400;
+}
+.sitter-card p {
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+}
+.sitter-card a {
+  color: #f5b942;
+}
+.sitter-card .close {
+  margin-top: 0.6rem;
+  background: none;
+  border: 1px solid #7d745f;
+  border-radius: 40px 6px 30px 6px / 6px 30px 6px 40px;
+  color: #b7ad9d;
+  padding: 0.35rem 0.9rem;
+  font: inherit;
+  cursor: pointer;
+}
+.sitter-card .close:hover,
+.sitter-card .close:focus-visible {
+  color: #e7e2da;
+  border-color: #e7e2da;
+}
