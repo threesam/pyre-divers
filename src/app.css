@@ -320,7 +320,9 @@ section {
   letter-spacing: -0.01em;
 }
 .fire-ink {
-  background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
+  /* the red end is a touch lighter than the brand #b91c1c: glyphs past 90%
+     sit on it flat, and #b91c1c is 2.92:1 on the scene (large text needs 3) */
+  background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #c31e1e 90%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -523,7 +525,7 @@ section {
   font-size: 1rem;
 }
 .fieldwrap input::placeholder {
-  color: #6d6450;
+  color: #887d64; /* 4.6:1 — a hint is still text */
 }
 button.join {
   position: relative;

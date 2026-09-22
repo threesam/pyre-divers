@@ -221,7 +221,7 @@
     min-height: 100dvh;
   }
   .back {
-    color: #7d745f;
+    color: #877d67;
     text-decoration: none;
     font-size: 0.85rem;
   }
@@ -286,7 +286,7 @@
     line-height: 1.6;
   }
   .t {
-    color: #7d745f;
+    color: #877d67;
     font-size: 0.78rem;
     margin-right: 0.5rem;
   }
