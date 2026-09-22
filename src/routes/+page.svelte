@@ -217,14 +217,16 @@
       ones who jumped before they were ready.
     </p>
     {#if data.latest}
-      <p class="patch">
-        latest dive:
-        <a
-          class="dive"
-          href={resolve('/episodes/[slug]', { slug: data.latest.slug })}
-          data-umami-event="latest-dive">{data.latest.title}.</a
+      <a
+        class="dive"
+        href={resolve('/episodes/[slug]', { slug: data.latest.slug })}
+        data-umami-event="latest-dive"
+      >
+        <span class="dive-kicker">latest dive · no. {data.latest.number}</span>
+        <span class="dive-title">{data.latest.title}.</span>
+        <span class="dive-meta">{data.latest.minutes} min · listen or read</span
         >
-      </p>
+      </a>
     {:else}
       <p class="patch">first dive: {LAUNCH.text}.</p>
     {/if}
@@ -245,5 +247,5 @@
     <p class="tiny patch">no spam. one email when the fire’s lit.</p>
   </div>
   <SocialStones />
-  <Sitters latest={data.latest} />
+  <Sitters dives={data.dives} />
 </section>

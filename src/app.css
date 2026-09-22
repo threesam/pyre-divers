@@ -314,6 +314,35 @@ section {
 .card a {
   color: #f5b942;
 }
+/* the call-out: the newest dive as its own hand-drawn slab */
+.dive {
+  display: grid;
+  gap: 0.1rem;
+  width: fit-content;
+  padding: 0.6rem 1.1rem 0.7rem;
+  border: 1.5px solid #e25822;
+  border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
+  background: rgba(16, 18, 10, 0.95);
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+.dive:hover,
+.dive:focus-visible {
+  border-color: #f5b942;
+}
+.dive-kicker,
+.dive-meta {
+  font-size: 0.78rem;
+  color: #b7ad9d;
+}
+.dive-title {
+  font-size: 1.6rem;
+  line-height: 1.15;
+  background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 .card form {
   display: grid;
   gap: 0.8rem;
@@ -752,24 +781,26 @@ html.dive-go #veil::before {
   padding: 0;
 }
 @media (min-width: 1100px) {
-  .sitters,
-  .sitters li {
+  .sitters {
     display: contents;
   }
-  .sitters button {
+  .sitters li {
     position: absolute;
     left: calc(var(--x) * 100% + var(--dx) * 100vh);
     top: calc(var(--y) * 100%);
     /* bottom-centre on the shoulder: the chin sits where the neck would */
     transform: translate(-50%, -100%);
+    z-index: 1;
+  }
+  .sitters .head {
+    display: block;
     background: none;
     border: 0;
     padding: 0;
     cursor: pointer;
-    z-index: 1;
     border-radius: 50%;
   }
-  .sitters button:focus-visible {
+  .sitters .head:focus-visible {
     outline: 2px solid #f5b942;
     outline-offset: 4px;
   }
@@ -782,47 +813,62 @@ html.dive-go #veil::before {
     filter: sepia(0.4) saturate(0.85) brightness(0.82);
     transition: filter 0.25s;
   }
-  .sitters button:hover img,
-  .sitters button:focus-visible img {
+  .sitters li:hover img,
+  .sitters li:focus-within img,
+  .sitters li.open img {
     filter: none;
   }
-}
-.sitter-card {
-  background: #10120a;
-  color: #e7e2da;
-  border: 1.5px solid #e25822;
-  border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
-  padding: 1.4rem 1.8rem 1.2rem;
-  max-width: 24rem;
-  font-family: 'Pyre Display', ui-rounded, system-ui, sans-serif;
-}
-.sitter-card::backdrop {
-  background: rgba(16, 18, 10, 0.72);
-}
-.sitter-card h2 {
-  margin: 0 0 0.6rem;
-  font-size: 2rem;
-  font-weight: 400;
-}
-.sitter-card p {
-  margin: 0 0 0.5rem;
-  line-height: 1.5;
-}
-.sitter-card a {
-  color: #f5b942;
-}
-.sitter-card .close {
-  margin-top: 0.6rem;
-  background: none;
-  border: 1px solid #7d745f;
-  border-radius: 40px 6px 30px 6px / 6px 30px 6px 40px;
-  color: #b7ad9d;
-  padding: 0.35rem 0.9rem;
-  font: inherit;
-  cursor: pointer;
-}
-.sitter-card .close:hover,
-.sitter-card .close:focus-visible {
-  color: #e7e2da;
-  border-color: #e7e2da;
+  /* the card: above the head, hung off its fire-side edge. hover, keyboard
+     focus anywhere inside, or a tap on the head all raise it */
+  .sitters .tag {
+    position: absolute;
+    bottom: calc(100% + 0.6rem);
+    width: max-content;
+    max-width: 17rem;
+    padding: 0.7rem 1rem 0.75rem;
+    background: #10120a;
+    color: #e7e2da;
+    border: 1.5px solid #e25822;
+    border-radius: 40px 6px 30px 6px / 6px 30px 6px 40px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.2s,
+      visibility 0.2s;
+  }
+  .sitters li.left .tag {
+    left: 0;
+  }
+  .sitters li.right .tag {
+    right: 0;
+  }
+  /* keep the pointer's path from head to card inside the hover region */
+  .sitters .tag::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 -0.7rem;
+    height: 0.7rem;
+  }
+  .sitters li:hover .tag,
+  .sitters li:focus-within .tag,
+  .sitters li.open .tag {
+    opacity: 1;
+    visibility: visible;
+  }
+  .sitters .tag p {
+    margin: 0;
+  }
+  .sitters .tag p + p {
+    margin-top: 0.3rem;
+  }
+  .sitters .tag strong {
+    font-weight: 400;
+    font-size: 1.1rem;
+    color: #f5b942;
+  }
+  .sitters .tag a {
+    color: #f5b942;
+  }
 }

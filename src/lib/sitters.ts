@@ -11,9 +11,10 @@ export interface Sitter {
   h: number;
   log: number;
   role: 'host' | 'guest';
-  /** the guest's episode slug; hosts get the latest dive instead */
+  /** the guest's episode slug; hosts are in every dive */
   episode?: string;
-  url?: string;
+  /** where to find them, shown on the head's card */
+  links: { label: string; href: string }[];
 }
 
 export const SITTERS: Sitter[] = [
@@ -25,7 +26,10 @@ export const SITTERS: Sitter[] = [
     h: 5.8,
     log: 0,
     role: 'host',
-    url: 'https://threesam.com',
+    links: [
+      { label: 'threesam.com', href: 'https://threesam.com' },
+      { label: 'linkedin', href: 'https://linkedin.com/in/threesam' },
+    ],
   },
   {
     name: 'steve',
@@ -35,5 +39,7 @@ export const SITTERS: Sitter[] = [
     h: 5.8,
     log: 1,
     role: 'host',
+    // ponytail: steve's links go here once he says which
+    links: [],
   },
 ];

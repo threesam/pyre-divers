@@ -148,7 +148,7 @@ export const ROCKS = [
  * length, ry half the thickness, `tilt` radians. Drawn as a log, not a
  * stone: a capsule with the end grain showing on the outer end and bark
  * lines along the body, in the ring's ink. Exported for the same reason
- * ROCKS is: the sitters' heads are DOM buttons placed over the bodies the
+ * ROCKS is: the sitters' heads are DOM list items placed over the bodies the
  * canvas draws, and both read the seat from here.
  */
 export const LOGS = [
@@ -1958,7 +1958,7 @@ export function initPageFx(): void {
     // back rather than written a second time. No sitters, no logs.
     let logsOn = false;
     const sizeRain = () => {
-      const seat = document.querySelector('.sitters button');
+      const seat = document.querySelector('.sitters li');
       logsOn = seat !== null && getComputedStyle(seat).position === 'absolute';
       const de = document.documentElement;
       rw = Math.round(de.clientWidth * dpr);
