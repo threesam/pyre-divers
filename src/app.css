@@ -232,7 +232,10 @@ section {
 }
 @media (max-width: 768px) {
   #join {
-    --b: 0.56;
+    /* --b and the top padding move together: 6% of the height each, so the
+       card, the row and the fire all sit that much lower as one piece */
+    --b: 0.62;
+    padding-top: calc(1rem + 6dvh);
     /* the scene is short here; a full flame swallows it */
     --flame: 0.6;
     /* pulls the logs in from the edge to the text's own margin (page-fx
