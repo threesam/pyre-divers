@@ -11,17 +11,14 @@
   //
   // COORDINATES COME FROM THE CANVAS: LOGS and SEAT are the one description
   // of where a body sits, in viewport heights from FLAME_X, so a head cannot
-  // drift off its shoulders. The button's bottom edge is the shoulder.
+  // drift off its shoulders. The button's bottom edge is the top of the neck.
   let { latest }: { latest: { slug: string; title: string } | null } = $props();
 
   const placed = SITTERS.map((s) => {
     const log = LOGS[s.log];
-    const face = -Math.sign(log.dx); // +1 faces right, toward the flame
     return {
       ...s,
-      // the neck continues the torso's lean, so the head sits at the end of
-      // that one straight line
-      dx: log.dx + face * SEAT.lean * (1 + SEAT.neck / SEAT.torso),
+      dx: log.dx,
       y: log.cy - log.ry - SEAT.torso - SEAT.neck,
     };
   });

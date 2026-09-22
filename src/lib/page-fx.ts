@@ -157,11 +157,11 @@ export const LOGS = [
 ] as const;
 /**
  * A seated body, in heights: the hip sits on the log's top edge, the torso
- * rises TORSO and leans LEAN toward the fire, and the head — the DOM cutout —
- * sits on the shoulder. The component places heads with these; the canvas
- * draws the bodies with them.
+ * rises TORSO straight up, a NECK more to the chin of the head — the DOM
+ * cutout. The component places heads with these; the canvas draws the
+ * bodies with them.
  */
-export const SEAT = { torso: 0.058, lean: 0.014, neck: 0.007 } as const;
+export const SEAT = { torso: 0.058, neck: 0.007 } as const;
 
 /**
  * The ember run the stones are outlined in: three stops across a band
@@ -2145,48 +2145,33 @@ export function initPageFx(): void {
       ctx2.restore();
     };
 
-    // a body sitting on a log, facing the fire: hip on the log's top edge,
-    // torso leaning in, knees up and forward, hands on the knees. The head is
-    // not drawn — it's the DOM cutout the component stamps on the shoulder
-    // (SEAT is the contract). Still, on purpose: the fire moves, the sitters
-    // don't, and a breathing body under a still photograph reads as a glitch.
+    // a body sitting on a log, facing us — the show's own stick figure (see
+    // the episode end-frame): one vertical torso line from the hip to the
+    // chin, arms an inverted V from the shoulder, legs an inverted V from
+    // the hip, hanging in front of the log. The head is not drawn — it's the
+    // DOM cutout the component stamps on the neck (SEAT is the contract).
+    // Still, on purpose: the fire moves, the sitters don't, and a breathing
+    // body under a still photograph reads as a glitch.
     const drawSitter = (l: (typeof LOGS)[number]) => {
-      const f = -Math.sign(l.dx); // +1 faces right, toward the flame
       const hx = FLAME_X * rw + l.dx * rh;
       const hy = (l.cy - l.ry) * rh;
-      const sx = hx + f * SEAT.lean * rh;
-      const sy = hy - SEAT.torso * rh;
       const u = rh;
-      ctx2.strokeStyle = '#f5b942';
+      const sy = hy - SEAT.torso * u; // shoulder
+      ctx2.strokeStyle = '#fff';
       ctx2.globalAlpha = 0.9;
       ctx2.lineWidth = Math.max(1.5 * dpr, 0.0036 * rh);
       ctx2.shadowBlur = 0;
       ctx2.beginPath();
-      // one straight line hip -> shoulder -> under the chin of the photo;
-      // the neck continues the torso's lean
-      const nk = (SEAT.neck + 0.006) / SEAT.torso;
+      // torso, up past the shoulder and under the chin of the photo
       ctx2.moveTo(hx, hy);
-      ctx2.lineTo(sx + (sx - hx) * nk, sy + (sy - hy) * nk);
-      // legs: thigh level out to the knee, shin straight down to the ground
-      // under the log. the second leg sits back a touch for depth.
-      for (const [k, d] of [
-        [0.044, 0],
-        [0.036, 0.005],
-      ]) {
+      ctx2.lineTo(hx, sy - (SEAT.neck + 0.006) * u);
+      for (const side of [-1, 1]) {
+        // arm: shoulder, down and out to about hip height
+        ctx2.moveTo(hx, sy);
+        ctx2.lineTo(hx + side * 0.026 * u, sy + 0.048 * u);
+        // leg: hip, down and out to the ground in front of the log
         ctx2.moveTo(hx, hy);
-        ctx2.lineTo(hx + f * k * u, hy - (0.006 - d) * u);
-        ctx2.lineTo(hx + f * (k + 0.006) * u, hy + (0.04 + d) * u);
-      }
-      // arms: upper arm angles forward off the torso line to an elbow,
-      // forearm on to the knee — a visible bend, so shoulder-hip-knee never
-      // closes into a triangle
-      for (const [k, d] of [
-        [0.044, 0],
-        [0.036, 0.005],
-      ]) {
-        ctx2.moveTo(sx, sy);
-        ctx2.lineTo(sx + f * 0.016 * u, sy + 0.026 * u);
-        ctx2.lineTo(hx + f * (k - 0.006) * u, hy - (0.008 - d) * u);
+        ctx2.lineTo(hx + side * 0.02 * u, hy + 0.05 * u);
       }
       ctx2.stroke();
       ctx2.globalAlpha = 1;
