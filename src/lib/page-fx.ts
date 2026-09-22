@@ -1848,6 +1848,10 @@ export function initPageFx(): void {
       return;
     }
     const rand = mulberry32(77);
+    // the mouth as a fraction of the height (the layout's --b; sizeRain
+    // re-reads it): risers and flecks rise out of it, so they use it, not
+    // the desktop constant — read now, the first seeding is below
+    let yb = layout(joinEl, '--b', FLAME_BASE);
     // each body's ink: randomly interpolated between the two approved
     // riser colors — warm white (#f0e8dd) and salmon (#d6855e)
     const emberMix = (t: number) =>
@@ -1859,7 +1863,7 @@ export function initPageFx(): void {
     const SEED = 0.5; // single central entry point, ~halfway up the flame
     const SPAWN_GAP = 1.8; // seconds between emergences — a staggered trickle
     const fanX = (b: Riser) => {
-      const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
+      const rise = Math.max(0, (yb - b.y) / yb);
       const up = Math.max(0, rise - SEED); // risen since the central entry
       // ARC: up^1.8 so each body leaves the entry going straight up, then
       // curves outward as it rises — a fountain arc, not a straight ray.
@@ -1876,8 +1880,8 @@ export function initPageFx(): void {
       b.fan = (rand() - 0.5) * 2; // [-1, 1] — random flare heading + amount
       b.noisePh = rand() * TAU;
       // emerge ~halfway up: pre-populate SEED→top on first paint, else
-      // (re)seed at the SEED height. y at rise=SEED is FLAME_BASE*(1-SEED).
-      const seedY = FLAME_BASE * (1 - SEED);
+      // (re)seed at the SEED height. y at rise=SEED is yb*(1-SEED).
+      const seedY = yb * (1 - SEED);
       // reseeds sit EXACTLY at the entry (rise == SEED → opacity 0), so the
       // queue of waiting bodies is invisible, not a faint stack.
       b.y = initial ? seedY - rand() * (seedY + 0.05) : seedY;
@@ -1967,7 +1971,7 @@ export function initPageFx(): void {
     }
     const seedFleck = (f: Fleck, initial: boolean) => {
       f.x = FLAME_X + (rand() - 0.5) * 0.05;
-      f.y = initial ? rand() * FLAME_BASE : FLAME_BASE - rand() * 0.1;
+      f.y = initial ? rand() * yb : yb - rand() * 0.1;
     };
     flecks.forEach((f) => seedFleck(f, true));
     let rw = 0;
@@ -1977,7 +1981,6 @@ export function initPageFx(): void {
     // scene x/y from the canvas's own numbers: dx from FLAME_X and cy from
     // FLAME_BASE, both in units
     const sceneX = (dx: number) => FLAME_X * rw + dx * ru;
-    let yb = FLAME_BASE;
     const sceneY = (cy: number) => yb * rh + (cy - FLAME_BASE) * ru;
     const sizeRain = () => {
       yb = layout(joinEl, '--b', FLAME_BASE);
@@ -2243,7 +2246,7 @@ export function initPageFx(): void {
         // fading into full existence by the tip — just as they start drifting
         const a = Math.min(
           1,
-          Math.max(0, ((FLAME_BASE - b.y) / FLAME_BASE - SEED) / (TIP - SEED)),
+          Math.max(0, ((yb - b.y) / yb - SEED) / (TIP - SEED)),
         );
         if (a <= 0.01) {
           continue;
@@ -2268,7 +2271,7 @@ export function initPageFx(): void {
       }
       ctx2.globalAlpha = 1;
       for (const f of flecks) {
-        const rise = Math.max(0, (FLAME_BASE - f.y) / FLAME_BASE);
+        const rise = Math.max(0, (yb - f.y) / yb);
         ctx2.globalAlpha = Math.max(0, 0.9 - rise * 1.1);
         ctx2.fillStyle = f.warm > 0.5 ? '#f5b942' : '#e25822';
         ctx2.beginPath();
