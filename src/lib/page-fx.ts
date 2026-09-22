@@ -135,11 +135,11 @@ export const FLAME_BASE = 0.82;
  * sit on the flame the same way everywhere.
  */
 export const ROCKS = [
-  { dx: -0.105, cy: FLAME_BASE + 0.012, rx: 0.036, ry: 0.022 },
-  { dx: 0.118, cy: FLAME_BASE + 0.01, rx: 0.034, ry: 0.021 },
-  { dx: -0.045, cy: FLAME_BASE + 0.02, rx: 0.052, ry: 0.028 },
-  { dx: 0.062, cy: FLAME_BASE + 0.018, rx: 0.042, ry: 0.024 },
-  { dx: 0.008, cy: FLAME_BASE + 0.028, rx: 0.062, ry: 0.033 },
+  { dx: -0.105, cy: FLAME_BASE + 0.012, rx: 0.032, ry: 0.0195 },
+  { dx: 0.118, cy: FLAME_BASE + 0.01, rx: 0.03, ry: 0.0185 },
+  { dx: -0.045, cy: FLAME_BASE + 0.02, rx: 0.046, ry: 0.025 },
+  { dx: 0.062, cy: FLAME_BASE + 0.018, rx: 0.037, ry: 0.021 },
+  { dx: 0.008, cy: FLAME_BASE + 0.028, rx: 0.04, ry: 0.027 },
 ] as const;
 
 /**
@@ -2152,30 +2152,47 @@ export function initPageFx(): void {
     // DOM cutout the component stamps on the neck (SEAT is the contract).
     // Still, on purpose: the fire moves, the sitters don't, and a breathing
     // body under a still photograph reads as a glitch.
-    const drawSitter = (l: (typeof LOGS)[number]) => {
-      const hx = FLAME_X * rw + l.dx * rh;
-      const hy = (l.cy - l.ry) * rh;
-      const u = rh;
-      const sy = hy - SEAT.torso * u; // shoulder
+    const sitterInk = () => {
       ctx2.strokeStyle = '#fff';
       ctx2.globalAlpha = 0.9;
       ctx2.lineWidth = Math.max(1.5 * dpr, 0.0036 * rh);
       ctx2.shadowBlur = 0;
+    };
+    // the arm on the fire side hangs lower, nearly straight, and its hand
+    // drops behind the log — so it's painted BEFORE the log covers it.
+    const drawNearArm = (l: (typeof LOGS)[number]) => {
+      const f = -Math.sign(l.dx);
+      const hx = FLAME_X * rw + l.dx * rh;
+      const hy = (l.cy - l.ry) * rh;
+      const u = rh;
+      const sy = hy - SEAT.torso * u;
+      sitterInk();
+      ctx2.beginPath();
+      ctx2.moveTo(hx, sy);
+      ctx2.lineTo(hx + f * 0.022 * u, sy + 0.034 * u);
+      ctx2.lineTo(hx + f * 0.032 * u, hy + 0.014 * u);
+      ctx2.stroke();
+      ctx2.globalAlpha = 1;
+    };
+    const drawSitter = (l: (typeof LOGS)[number]) => {
+      const f = -Math.sign(l.dx); // +1 faces right, toward the flame
+      const hx = FLAME_X * rw + l.dx * rh;
+      const hy = (l.cy - l.ry) * rh;
+      const u = rh;
+      const sy = hy - SEAT.torso * u; // shoulder
+      sitterInk();
       ctx2.beginPath();
       // torso, up past the shoulder and under the chin of the photo
       ctx2.moveTo(hx, hy);
       ctx2.lineTo(hx, sy - (SEAT.neck + 0.006) * u);
-      // arms: shoulder, elbow out, hand down on the log's top edge beside
-      // the hip
-      for (const side of [-1, 1]) {
-        ctx2.moveTo(hx, sy);
-        ctx2.lineTo(hx + side * 0.028 * u, sy + 0.03 * u);
-        ctx2.lineTo(hx + side * 0.022 * u, hy);
-      }
+      // far arm: shoulder, elbow out, hand down on the log's top edge
+      // beside the hip (the near arm is drawNearArm, under the log)
+      ctx2.moveTo(hx, sy);
+      ctx2.lineTo(hx - f * 0.028 * u, sy + 0.03 * u);
+      ctx2.lineTo(hx - f * 0.022 * u, hy);
       // legs, knees up toward the fire: thigh forward and above the log's
       // top edge (a level thigh vanishes into that outline), shin down to
       // the ground in front of the log. the second leg sits back a touch.
-      const f = -Math.sign(l.dx); // +1 faces right, toward the flame
       for (const [k, d] of [
         [0.04, 0],
         [0.032, 0.005],
@@ -2264,6 +2281,7 @@ export function initPageFx(): void {
         }
         if (logsOn) {
           for (const l of logs) {
+            drawNearArm(l);
             drawLog(l);
             drawSitter(l);
           }
