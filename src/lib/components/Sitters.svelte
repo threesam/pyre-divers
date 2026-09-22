@@ -46,7 +46,7 @@
         aria-label="about {s.name}"
         data-umami-event="sitter"
         data-umami-event-who={s.name}
-        style="--x:{FLAME_X};--dx:{s.dx};--y:{s.y}"
+        style="--x:{FLAME_X};--dx:{s.dx};--y:{s.y};--h:{s.h}"
         onclick={() => open(s)}
       >
         <img src={s.head} alt="" width={s.w} height="240" />

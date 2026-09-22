@@ -7,6 +7,8 @@ export interface Sitter {
   head: string;
   /** intrinsic px of `head` (240 tall), so the layout never guesses */
   w: number;
+  /** rendered head height in viewport heights */
+  h: number;
   log: number;
   role: 'host' | 'guest';
   /** the guest's episode slug; hosts get the latest dive instead */
@@ -20,6 +22,7 @@ export const SITTERS: Sitter[] = [
     full: "Salvatore D'Angelo",
     head: '/sitters/sam.png',
     w: 205,
+    h: 5.8,
     log: 0,
     role: 'host',
     url: 'https://threesam.com',
@@ -30,6 +33,7 @@ export const SITTERS: Sitter[] = [
     full: 'Steve Tullius',
     head: '/sitters/steve.png',
     w: 144,
+    h: 6.6,
     log: 1,
     role: 'host',
   },

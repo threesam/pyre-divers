@@ -775,7 +775,7 @@ html.dive-go #veil::before {
   }
   .sitters img {
     display: block;
-    height: 6.6vh;
+    height: calc(var(--h) * 1vh);
     width: auto;
     /* photographs by firelight: warmed and dimmed to sit in the scene,
        full colour when pointed at */
