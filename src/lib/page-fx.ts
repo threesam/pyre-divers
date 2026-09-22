@@ -2147,8 +2147,8 @@ export function initPageFx(): void {
 
     // a body sitting on a log, facing us — the show's own stick figure (see
     // the episode end-frame): one vertical torso line from the hip to the
-    // chin, arms an inverted V from the shoulder, legs an inverted V from
-    // the hip, hanging in front of the log. The head is not drawn — it's the
+    // chin, arms an inverted V from the shoulder, legs bent at the knee
+    // toward the fire. The head is not drawn — it's the
     // DOM cutout the component stamps on the neck (SEAT is the contract).
     // Still, on purpose: the fire moves, the sitters don't, and a breathing
     // body under a still photograph reads as a glitch.
@@ -2165,13 +2165,22 @@ export function initPageFx(): void {
       // torso, up past the shoulder and under the chin of the photo
       ctx2.moveTo(hx, hy);
       ctx2.lineTo(hx, sy - (SEAT.neck + 0.006) * u);
+      // arms: shoulder, down and out to about hip height
       for (const side of [-1, 1]) {
-        // arm: shoulder, down and out to about hip height
         ctx2.moveTo(hx, sy);
         ctx2.lineTo(hx + side * 0.026 * u, sy + 0.048 * u);
-        // leg: hip, down and out to the ground in front of the log
+      }
+      // legs, knees up toward the fire: thigh forward and above the log's
+      // top edge (a level thigh vanishes into that outline), shin down to
+      // the ground in front of the log. the second leg sits back a touch.
+      const f = -Math.sign(l.dx); // +1 faces right, toward the flame
+      for (const [k, d] of [
+        [0.04, 0],
+        [0.032, 0.005],
+      ]) {
         ctx2.moveTo(hx, hy);
-        ctx2.lineTo(hx + side * 0.02 * u, hy + 0.05 * u);
+        ctx2.lineTo(hx + f * k * u, hy - (0.024 - d) * u);
+        ctx2.lineTo(hx + f * (k + 0.008) * u, hy + (0.04 + d) * u);
       }
       ctx2.stroke();
       ctx2.globalAlpha = 1;
