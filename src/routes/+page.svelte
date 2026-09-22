@@ -197,15 +197,15 @@
   <canvas id="fire" aria-hidden="true"></canvas>
   <canvas id="rain" aria-hidden="true"></canvas>
   <div class="card">
-    <h2 class="fire patch">
+    <h2 class="fire">
       <span class="fire-ink">come sit by the fire.</span>
     </h2>
-    <p class="patch">
+    <p>
       two builders, live. no script. no polish. no edits. conversations with the
       ones who jumped before they were ready.
     </p>
     {#if !data.latest}
-      <p class="patch">first dive: {LAUNCH.text}.</p>
+      <p>first dive: {LAUNCH.text}.</p>
     {/if}
     <form id="join-form" novalidate>
       <div class="fieldwrap">

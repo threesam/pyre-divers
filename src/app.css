@@ -285,23 +285,14 @@ section {
   box-sizing: border-box;
   display: grid;
   gap: 0.8rem;
-  /* unframed: each element carries its own .patch */
   /* so the heading can size off the CARD instead of the viewport — see .fire */
   container-type: inline-size;
 }
-.patch {
-  /* the 95% olive, element by element — soft top/bottom edges so the
-       divers fade through instead of hitting a hard rectangle */
-  background: linear-gradient(
-    to bottom,
-    rgba(16, 18, 10, 0) 0%,
-    rgba(16, 18, 10, 0.95) 0.55rem,
-    rgba(16, 18, 10, 0.95) calc(100% - 0.55rem),
-    rgba(16, 18, 10, 0) 100%
-  );
-  padding: 0.55rem 0.85rem;
-  border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
-  width: fit-content;
+/* unframed, so the text takes the input's own inset (2.5px ring + 1rem)
+   as its padding: heading, copy, email and button share one left edge */
+.card > h2,
+.card > p {
+  padding: 0 1.15rem;
 }
 .fire {
   margin: 0;
@@ -310,15 +301,16 @@ section {
      a different slice of it and the two lines disagree on colour — hence
      nowrap, and hence a size that actually fits.
      Solved rather than guessed: 100cqw is the card (not the viewport, which is
-     what the old 8.6vw tracked — the card stops at 26rem, so past ~460px the
-     line just ran short), less this heading's own 1.7rem of padding, over the
-     width of the string in ems. 11.05 is measured off the live DOM including
-     letter-spacing; the real ratio drifts 10.75->11.01 with size as hinting
-     rounds, so taking the top of that range fills ~99% and can never overflow.
+     what the old 8.6vw tracked — the card stops at 22rem, so past ~400px the
+     line just ran short), less this heading's own 2.3rem of padding, over the
+     width of the string in ems. 11.05 is
+     measured off the live DOM including letter-spacing; the real ratio drifts
+     10.75->11.01 with size as hinting rounds, so taking the top of that range
+     fills ~99% and can never overflow.
      COUPLED TO THE COPY: re-measure if this heading's text changes. */
   width: 100%;
-  box-sizing: border-box; /* or the 1.7rem padding lands outside the card */
-  font-size: clamp(0.85rem, calc((100cqw - 1.7rem) / 11.05), 4rem);
+  box-sizing: border-box; /* or the padding lands outside the card */
+  font-size: clamp(0.85rem, calc((100cqw - 2.3rem) / 11.05), 4rem);
   white-space: nowrap;
   /* 400 like everything else — see the weight note up top. This one is a class
      on an h2, so it would out-specify the element rule and faux-bold. */
