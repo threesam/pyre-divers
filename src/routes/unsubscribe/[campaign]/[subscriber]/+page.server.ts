@@ -29,8 +29,8 @@ export const actions: Actions = {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: '',
       },
-    );
-    // listmonk 404s an unknown campaign or subscriber
-    return res.ok ? { done: true } : fail(502, { failed: true });
+    ).catch(() => null);
+    // listmonk 404s an unknown campaign or subscriber; null is listmonk down
+    return res?.ok ? { done: true } : fail(502, { failed: true });
   },
 };

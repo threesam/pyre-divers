@@ -255,6 +255,11 @@ export function mountFire(
   c: HTMLCanvasElement,
   host: HTMLElement | null,
 ): () => void {
+  // no gl, or a shader that will not build: the page just has no flame
+  const off = () => {
+    c.style.display = 'none';
+    return noop;
+  };
   // headless audits (lighthouse) run swiftshader: see initPageFx
   const headlessAudit = /HeadlessChrome/.test(navigator.userAgent);
   const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
@@ -267,20 +272,19 @@ export function mountFire(
         premultipliedAlpha: true,
       });
   if (!host || !g) {
-    c.style.display = 'none';
-    return noop;
+    return off();
   }
-  const dbg2 = g.getExtension('WEBGL_debug_renderer_info');
-  const renderer2 = dbg2
-    ? String(g.getParameter(dbg2.UNMASKED_RENDERER_WEBGL))
+  const dbg = g.getExtension('WEBGL_debug_renderer_info');
+  const renderer = dbg
+    ? String(g.getParameter(dbg.UNMASKED_RENDERER_WEBGL))
     : '';
-  const soft2 = /swiftshader|llvmpipe|software|basic render/i.test(renderer2);
-  const VS2 = `#version 300 es
+  const soft = /swiftshader|llvmpipe|software|basic render/i.test(renderer);
+  const VS = `#version 300 es
   void main() {
     vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
     gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
   }`;
-  const FS2 = `#version 300 es
+  const FS = `#version 300 es
   precision highp float;
   uniform vec2 uRes;
   uniform float uT;
@@ -337,48 +341,32 @@ export function mountFire(
     g.compileShader(s);
     return g.getShaderParameter(s, g.COMPILE_STATUS) ? s : null;
   };
-  const v2 = mk(g.VERTEX_SHADER, VS2);
-  const f2 = mk(g.FRAGMENT_SHADER, FS2);
-  if (!v2 || !f2) {
-    c.style.display = 'none';
-    return noop;
+  const vsh = mk(g.VERTEX_SHADER, VS);
+  const fsh = mk(g.FRAGMENT_SHADER, FS);
+  if (!vsh || !fsh) {
+    return off();
   }
-  const p2 = g.createProgram();
-  if (!p2) {
-    c.style.display = 'none';
-    return noop;
+  const prog = g.createProgram();
+  if (!prog) {
+    return off();
   }
-  g.attachShader(p2, v2);
-  g.attachShader(p2, f2);
-  g.linkProgram(p2);
-  if (!g.getProgramParameter(p2, g.LINK_STATUS)) {
-    c.style.display = 'none';
-    return noop;
+  g.attachShader(prog, vsh);
+  g.attachShader(prog, fsh);
+  g.linkProgram(prog);
+  if (!g.getProgramParameter(prog, g.LINK_STATUS)) {
+    return off();
   }
-  g.useProgram(p2);
-  const uRes2 = g.getUniformLocation(p2, 'uRes');
-  const uT2 = g.getUniformLocation(p2, 'uT');
-  const uS2 = g.getUniformLocation(p2, 'uS');
-  const uG2 = g.getUniformLocation(p2, 'uG');
-  const uYb2 = g.getUniformLocation(p2, 'uYb');
+  g.useProgram(prog);
+  const uRes = g.getUniformLocation(prog, 'uRes');
+  const uT = g.getUniformLocation(prog, 'uT');
+  const uS = g.getUniformLocation(prog, 'uS');
+  const uG = g.getUniformLocation(prog, 'uG');
+  const uYb = g.getUniformLocation(prog, 'uYb');
   g.enable(g.BLEND);
   g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
   g.clearColor(0, 0, 0, 0);
   let fw = 0;
   let fh = 0;
-  // sized to the SECTION, not the document: #join is 100dvh, and on iOS the
-  // document's clientHeight is the small viewport — they differ by the
-  // toolbar once it collapses, and the mouth would drift off the stones
-  const sizeFire = () => {
-    fw = Math.max(1, Math.round(host.clientWidth * dpr * 0.6)); // half-ish res — flames are soft
-    fh = Math.max(1, Math.round(host.clientHeight * dpr * 0.6));
-    c.width = fw;
-    c.height = fh;
-    c.style.width = `${host.clientWidth}px`;
-    c.style.height = `${host.clientHeight}px`;
-  };
-  sizeFire();
-  addEventListener('resize', sizeFire);
   let fireVisible = !('IntersectionObserver' in window);
   const io =
     'IntersectionObserver' in window
@@ -390,6 +378,34 @@ export function mountFire(
         )
       : null;
   io?.observe(host);
+  const drawFire = (t: number) => {
+    g.viewport(0, 0, fw, fh);
+    g.uniform2f(uRes, fw, fh);
+    g.uniform1f(uG, Math.min(1, fw / fh / SCENE_W));
+    g.uniform1f(
+      uS,
+      Math.min(1, fw / fh / SCENE_W) * layout(host, '--flame', 1),
+    );
+    g.uniform1f(uYb, 1 - layout(host, '--b', FLAME_BASE));
+    g.uniform1f(uT, t);
+    g.clear(g.COLOR_BUFFER_BIT);
+    g.drawArrays(g.TRIANGLES, 0, 3);
+  };
+  // sized to the SECTION, not the document: #join is 100dvh, and on iOS the
+  // document's clientHeight is the small viewport — they differ by the
+  // toolbar once it collapses, and the mouth would drift off the stones
+  const sizeFire = () => {
+    fw = Math.max(1, Math.round(host.clientWidth * dpr * 0.6)); // half-ish res — flames are soft
+    fh = Math.max(1, Math.round(host.clientHeight * dpr * 0.6));
+    c.width = fw;
+    c.height = fh;
+    c.style.width = `${host.clientWidth}px`;
+    c.style.height = `${host.clientHeight}px`;
+    // resizing clears the canvas: the loop repaints it, a still frame won't
+    if (still || soft) {
+      drawFire(7);
+    }
+  };
   // pages that unmount (404, unsubscribe) hand the context back: browsers
   // cap live webgl contexts, and each visit would otherwise leak one
   let raf = 0;
@@ -399,21 +415,9 @@ export function mountFire(
     io?.disconnect();
     g.getExtension('WEBGL_lose_context')?.loseContext();
   };
-  const drawFire = (t: number) => {
-    g.viewport(0, 0, fw, fh);
-    g.uniform2f(uRes2, fw, fh);
-    g.uniform1f(uG2, Math.min(1, fw / fh / SCENE_W));
-    g.uniform1f(
-      uS2,
-      Math.min(1, fw / fh / SCENE_W) * layout(host, '--flame', 1),
-    );
-    g.uniform1f(uYb2, 1 - layout(host, '--b', FLAME_BASE));
-    g.uniform1f(uT2, t);
-    g.clear(g.COLOR_BUFFER_BIT);
-    g.drawArrays(g.TRIANGLES, 0, 3);
-  };
-  if (still || soft2) {
-    drawFire(7);
+  sizeFire(); // and, when still, the one frame
+  addEventListener('resize', sizeFire);
+  if (still || soft) {
     return stop;
   }
   drawFire(0); // warm the pipeline off-screen — first visible frame stays cheap

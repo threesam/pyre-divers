@@ -333,10 +333,15 @@ section {
 .pyre {
   --b: 0.99;
   --flame: 1.15;
+  /* grows past the screen rather than clipping the button: short landscape
+     phones and enlarged text (section is a fixed 100dvh, overflow hidden) */
+  height: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   align-content: start;
-  padding: calc(3rem + 12dvh) 1.5rem 0;
+  padding: calc(3rem + 12dvh) 1.5rem 2rem;
   background: #10120a;
   text-align: center;
 }
@@ -360,6 +365,13 @@ section {
   /* room for the heading on one line */
   .pyre-copy {
     max-width: 36rem;
+  }
+}
+/* short and wide (a phone on its side): the flame is sized off the height,
+   so at full size it burns straight through the copy */
+@media (max-height: 520px) {
+  .pyre {
+    --flame: 0.45;
   }
 }
 .pyre h1 {
