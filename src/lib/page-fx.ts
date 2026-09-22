@@ -2153,8 +2153,8 @@ export function initPageFx(): void {
     // Still, on purpose: the fire moves, the sitters don't, and a breathing
     // body under a still photograph reads as a glitch.
     const sitterInk = () => {
-      ctx2.strokeStyle = '#f6b98e'; // peach: lit skin, not glare
-      ctx2.globalAlpha = 0.9;
+      ctx2.strokeStyle = '#000'; // a silhouette against the glow
+      ctx2.globalAlpha = 1;
       ctx2.lineWidth = Math.max(1.5 * dpr, 0.0036 * rh);
       ctx2.shadowBlur = 0;
     };
