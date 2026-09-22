@@ -122,13 +122,19 @@ export const FLAME_BASE = 0.82;
  */
 export const SCENE_W = 0.8;
 /**
- * Where the flame's mouth sits, as a fraction of the height: the layout's
- * `--b` on #join (app.css sets it per breakpoint), read back so the canvas
- * and the DOM can never disagree. FLAME_BASE is the desktop value.
+ * A layout number read back off #join, so the canvas and the DOM can never
+ * disagree: `--b`, where the flame's mouth sits as a fraction of the height
+ * (FLAME_BASE is the desktop value), and `--flame`, the flame's size against
+ * the scene (1 on desktop; smaller on a phone, where the scene is already
+ * short and a full flame swallows it). app.css sets both per breakpoint.
  */
-function mouth(join: HTMLElement): number {
-  const b = parseFloat(getComputedStyle(join).getPropertyValue('--b'));
-  return Number.isFinite(b) ? b : FLAME_BASE;
+function layout(
+  join: HTMLElement,
+  name: '--b' | '--flame',
+  fallback: number,
+): number {
+  const v = parseFloat(getComputedStyle(join).getPropertyValue(name));
+  return Number.isFinite(v) ? v : fallback;
 }
 
 /**
@@ -1783,14 +1789,16 @@ export function initPageFx(): void {
     g.clearColor(0, 0, 0, 0);
     let fw = 0;
     let fh = 0;
+    // sized to the SECTION, not the document: #join is 100dvh, and on iOS the
+    // document's clientHeight is the small viewport — they differ by the
+    // toolbar once it collapses, and the mouth would drift off the stones
     const sizeFire = () => {
-      const de = document.documentElement;
-      fw = Math.max(1, Math.round(de.clientWidth * dpr * 0.6)); // half-ish res — flames are soft
-      fh = Math.max(1, Math.round(de.clientHeight * dpr * 0.6));
+      fw = Math.max(1, Math.round(joinEl.clientWidth * dpr * 0.6)); // half-ish res — flames are soft
+      fh = Math.max(1, Math.round(joinEl.clientHeight * dpr * 0.6));
       c.width = fw;
       c.height = fh;
-      c.style.width = `${de.clientWidth}px`;
-      c.style.height = `${de.clientHeight}px`;
+      c.style.width = `${joinEl.clientWidth}px`;
+      c.style.height = `${joinEl.clientHeight}px`;
     };
     sizeFire();
     addEventListener('resize', sizeFire);
@@ -1808,8 +1816,11 @@ export function initPageFx(): void {
     const drawFire = (t: number) => {
       g.viewport(0, 0, fw, fh);
       g.uniform2f(uRes2, fw, fh);
-      g.uniform1f(uS2, Math.min(1, fw / fh / SCENE_W));
-      g.uniform1f(uYb2, 1 - mouth(joinEl));
+      g.uniform1f(
+        uS2,
+        Math.min(1, fw / fh / SCENE_W) * layout(joinEl, '--flame', 1),
+      );
+      g.uniform1f(uYb2, 1 - layout(joinEl, '--b', FLAME_BASE));
       g.uniform1f(uT2, t);
       g.clear(g.COLOR_BUFFER_BIT);
       g.drawArrays(g.TRIANGLES, 0, 3);
@@ -1969,15 +1980,18 @@ export function initPageFx(): void {
     let yb = FLAME_BASE;
     const sceneY = (cy: number) => yb * rh + (cy - FLAME_BASE) * ru;
     const sizeRain = () => {
-      yb = mouth(joinEl);
-      const de = document.documentElement;
-      rw = Math.round(de.clientWidth * dpr);
-      rh = Math.round(de.clientHeight * dpr);
+      yb = layout(joinEl, '--b', FLAME_BASE);
+      // the section's box, same as the flame (see sizeFire)
+      rw = Math.round(joinEl.clientWidth * dpr);
+      rh = Math.round(joinEl.clientHeight * dpr);
       ru = Math.min(rh, rw / SCENE_W);
+      // the DOM heads and links lay out in this same unit: hand it over as
+      // measured, so the css min() (the pre-script value) can't disagree
+      joinEl.style.setProperty('--u', `${ru / dpr}px`);
       c.width = rw;
       c.height = rh;
-      c.style.width = `${de.clientWidth}px`;
-      c.style.height = `${de.clientHeight}px`;
+      c.style.width = `${joinEl.clientWidth}px`;
+      c.style.height = `${joinEl.clientHeight}px`;
     };
     sizeRain();
     addEventListener('resize', sizeRain);
