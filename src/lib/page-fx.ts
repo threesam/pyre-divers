@@ -1710,7 +1710,8 @@ export function initPageFx(): void {
     precision highp float;
     uniform vec2 uRes;
     uniform float uT;
-    uniform float uS; // scene unit as a fraction of the height (SCENE_W)
+    uniform float uS; // the flame's unit: the scene's (SCENE_W) times --flame
+    uniform float uG; // the scene's unit alone — the ground glow keeps it
     uniform float uYb; // the mouth, from the bottom (1 - the layout's --b)
     out vec4 frag;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -1741,9 +1742,10 @@ export function initPageFx(): void {
       body *= smoothstep(-0.12, 0.06, t) * (1.0 - smoothstep(0.68, 1.05, t));
       float lick = fbm(vec2(px * 6.0, uv.y * 5.0 - uT * 2.4));
       float i = body * (0.5 + 0.9 * lick);
-      // the ground glow: wide enough (0.8 heights) to reach past the logs,
-      // so the sitters read as silhouettes against it
-      float glow = smoothstep(0.8, 0.0, length(vec2(px, (uv.y - yb) * 1.5 / uS))) * 0.6;
+      // the ground glow: wide enough (0.8 units) to reach past the logs, so
+      // the sitters read as silhouettes against it — in the SCENE's unit,
+      // so a phone's smaller flame (--flame) still lights the bodies
+      float glow = smoothstep(0.8, 0.0, length(vec2((uv.x - ${FLAME_X}) * aspect, (uv.y - yb) * 1.5) / uG)) * 0.6;
       vec3 col = mix(vec3(0.45, 0.05, 0.03), vec3(0.73, 0.11, 0.11), smoothstep(0.04, 0.22, i));
       col = mix(col, vec3(0.73, 0.11, 0.11), glow);
       col = mix(col, vec3(0.89, 0.35, 0.13), smoothstep(0.22, 0.48, i));
@@ -1783,6 +1785,7 @@ export function initPageFx(): void {
     const uRes2 = g.getUniformLocation(p2, 'uRes');
     const uT2 = g.getUniformLocation(p2, 'uT');
     const uS2 = g.getUniformLocation(p2, 'uS');
+    const uG2 = g.getUniformLocation(p2, 'uG');
     const uYb2 = g.getUniformLocation(p2, 'uYb');
     g.enable(g.BLEND);
     g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
@@ -1816,6 +1819,7 @@ export function initPageFx(): void {
     const drawFire = (t: number) => {
       g.viewport(0, 0, fw, fh);
       g.uniform2f(uRes2, fw, fh);
+      g.uniform1f(uG2, Math.min(1, fw / fh / SCENE_W));
       g.uniform1f(
         uS2,
         Math.min(1, fw / fh / SCENE_W) * layout(joinEl, '--flame', 1),
@@ -1852,6 +1856,14 @@ export function initPageFx(): void {
     // re-reads it): risers and flecks rise out of it, so they use it, not
     // the desktop constant — read now, the first seeding is below
     let yb = layout(joinEl, '--b', FLAME_BASE);
+    // the flame's height as a fraction of the canvas's — the shader's
+    // 0.58 * uS. The risers and flecks measure their rise in it, so they
+    // emerge from the flame that is drawn, not from a desktop-sized one
+    const flameHeight = () =>
+      0.58 *
+      Math.min(1, joinEl.clientWidth / joinEl.clientHeight / SCENE_W) *
+      layout(joinEl, '--flame', 1);
+    let flameH = flameHeight();
     // each body's ink: randomly interpolated between the two approved
     // riser colors — warm white (#f0e8dd) and salmon (#d6855e)
     const emberMix = (t: number) =>
@@ -1859,11 +1871,12 @@ export function initPageFx(): void {
     // horizontal position — every body enters at the flame's centre and fans
     // out along its own lane (b.fan) as it rises: one entry point, then a
     // clean spread that never packs side by side.
-    const TIP = 0.6; // flame tip — full opacity by here (see the fade)
-    const SEED = 0.5; // single central entry point, ~halfway up the flame
+    // in flame heights (see flameH)
+    const TIP = 0.85; // near the tip — full opacity by here (see the fade)
+    const SEED = 0.7; // single central entry point, up in the flame's top third
     const SPAWN_GAP = 1.8; // seconds between emergences — a staggered trickle
     const fanX = (b: Riser) => {
-      const rise = Math.max(0, (yb - b.y) / yb);
+      const rise = Math.max(0, (yb - b.y) / flameH);
       const up = Math.max(0, rise - SEED); // risen since the central entry
       // ARC: up^1.8 so each body leaves the entry going straight up, then
       // curves outward as it rises — a fountain arc, not a straight ray.
@@ -1880,8 +1893,8 @@ export function initPageFx(): void {
       b.fan = (rand() - 0.5) * 2; // [-1, 1] — random flare heading + amount
       b.noisePh = rand() * TAU;
       // emerge ~halfway up: pre-populate SEED→top on first paint, else
-      // (re)seed at the SEED height. y at rise=SEED is yb*(1-SEED).
-      const seedY = yb * (1 - SEED);
+      // (re)seed at the SEED height
+      const seedY = yb - flameH * SEED;
       // reseeds sit EXACTLY at the entry (rise == SEED → opacity 0), so the
       // queue of waiting bodies is invisible, not a faint stack.
       b.y = initial ? seedY - rand() * (seedY + 0.05) : seedY;
@@ -1984,6 +1997,7 @@ export function initPageFx(): void {
     const sceneY = (cy: number) => yb * rh + (cy - FLAME_BASE) * ru;
     const sizeRain = () => {
       yb = layout(joinEl, '--b', FLAME_BASE);
+      flameH = flameHeight();
       // the section's box, same as the flame (see sizeFire)
       rw = Math.round(joinEl.clientWidth * dpr);
       rh = Math.round(joinEl.clientHeight * dpr);
@@ -2246,7 +2260,7 @@ export function initPageFx(): void {
         // fading into full existence by the tip — just as they start drifting
         const a = Math.min(
           1,
-          Math.max(0, ((yb - b.y) / yb - SEED) / (TIP - SEED)),
+          Math.max(0, ((yb - b.y) / flameH - SEED) / (TIP - SEED)),
         );
         if (a <= 0.01) {
           continue;
@@ -2271,8 +2285,8 @@ export function initPageFx(): void {
       }
       ctx2.globalAlpha = 1;
       for (const f of flecks) {
-        const rise = Math.max(0, (yb - f.y) / yb);
-        ctx2.globalAlpha = Math.max(0, 0.9 - rise * 1.1);
+        const rise = Math.max(0, (yb - f.y) / flameH);
+        ctx2.globalAlpha = Math.max(0, 0.9 - rise * 0.78); // gone ~a flame above the tip
         ctx2.fillStyle = f.warm > 0.5 ? '#f5b942' : '#e25822';
         ctx2.beginPath();
         ctx2.arc(
