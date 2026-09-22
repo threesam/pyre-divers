@@ -222,6 +222,7 @@ section {
 #join {
   --b: 0.82;
   --flame: 1;
+  --seat: 1;
   display: grid;
   align-content: start;
   justify-items: stretch;
@@ -234,6 +235,9 @@ section {
     --b: 0.56;
     /* the scene is short here; a full flame swallows it */
     --flame: 0.6;
+    /* pulls the logs in from the edge to the text's own margin (page-fx
+       reads this back for the canvas log/sitter draw) */
+    --seat: 0.93;
     grid-template-rows: auto auto 1fr;
     align-content: stretch;
   }
@@ -338,6 +342,10 @@ section {
 .dive {
   display: grid;
   gap: 0.1rem;
+  /* hugs the text — .dives can be wider than the title (mobile drops its
+     22rem cap), and a box that fills it anyway reads lopsided */
+  width: fit-content;
+  max-width: 100%;
   box-sizing: border-box;
   padding: 0.6rem 1.1rem 0.7rem;
   border: 1.5px solid #e25822;
@@ -794,7 +802,8 @@ html.dive-go #veil::before {
 }
 .sitters li {
   position: absolute;
-  left: calc(var(--x) * 100% + var(--dx) * var(--u));
+  /* --seat (page-fx.ts LOGS scale) pulls the head in with its log */
+  left: calc(var(--x) * 100% + var(--dx) * var(--seat, 1) * var(--u));
   top: calc(var(--b) * 100% + var(--y) * var(--u));
   /* bottom-centre on the shoulder: the chin sits where the neck would */
   transform: translate(-50%, -100%);
