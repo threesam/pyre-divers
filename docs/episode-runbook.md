@@ -163,7 +163,9 @@ ssh $BOX 'set -a; . /opt/infra/.env; curl -fsS -X POST "$PYRE_DEPLOY_HOOK"'
 ```
 
 About a minute later the episode page, the homepage's "latest dive" link, the
-feed item and the sitemap entry are live. Check `https://pyredivers.com/feed.xml`
+feed item (numbered, with `<podcast:transcript>` pointing at
+`/episodes/<slug>/transcript.vtt`), the sitemap entry and the `llms.txt` line
+are live — all of it from the row, nothing per-episode to add. Check `https://pyredivers.com/feed.xml`
 for the item and `https://pyredivers.com/episodes/<slug>`.
 
 ## 11. distribution

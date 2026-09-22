@@ -1,5 +1,6 @@
 <script lang="ts">
   import { FLAME_X, ROCKS, emberAt, setRockLit } from '$lib/page-fx';
+  import { SHOW } from '$lib/links';
 
   // The social and listening links, stamped on the five stones ringing the
   // flame's mouth: the places to listen in the middle, the socials outside.
@@ -37,27 +38,11 @@
   // is written down twice. Listed left to right as they sit on the ring, so
   // the DOM order (tab order, and the row below 1024px) matches what you see.
   const SOCIALS: Social[] = [
-    {
-      name: 'instagram',
-      href: 'https://instagram.com/pyredivers',
-      rock: 0,
-      icon: 'instagram',
-    },
-    {
-      name: 'spotify',
-      href: 'https://open.spotify.com/show/0x25C9ki9Squ3L7HGFQ6qG',
-      rock: 2,
-      icon: 'spotify',
-    },
-    {
-      name: 'youtube',
-      href: 'https://youtube.com/@pyredivers',
-      rock: 4,
-      icon: 'youtube',
-    },
-    // apple podcasts review was submitted 2026-09-21; the show url goes here
-    { name: 'apple podcasts', href: null, rock: 3, icon: 'apple' },
-    { name: 'x', href: 'https://x.com/pyredivers', rock: 1, icon: 'x' },
+    { name: 'instagram', href: SHOW.instagram, rock: 0, icon: 'instagram' },
+    { name: 'spotify', href: SHOW.spotify, rock: 2, icon: 'spotify' },
+    { name: 'youtube', href: SHOW.youtube, rock: 4, icon: 'youtube' },
+    { name: 'apple podcasts', href: SHOW.apple, rock: 3, icon: 'apple' },
+    { name: 'x', href: SHOW.x, rock: 1, icon: 'x' },
   ];
 
   /**

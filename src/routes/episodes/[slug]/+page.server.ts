@@ -14,5 +14,5 @@ export const load: PageServerLoad = async ({ params }) => {
   if (!result) {
     error(404, 'episode not found');
   }
-  return result;
+  return { ...result, number: result.episode.number };
 };
