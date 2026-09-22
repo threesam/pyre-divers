@@ -221,6 +221,7 @@ section {
    back, so the canvas and the DOM agree at every breakpoint. */
 #join {
   --b: 0.82;
+  --flame: 1;
   display: grid;
   align-content: start;
   justify-items: stretch;
@@ -231,6 +232,8 @@ section {
 @media (max-width: 768px) {
   #join {
     --b: 0.56;
+    /* the scene is short here; a full flame swallows it */
+    --flame: 0.6;
     grid-template-rows: auto auto 1fr;
     align-content: stretch;
   }
@@ -454,6 +457,10 @@ button.join:focus-visible {
   .card {
     grid-row: 3;
     align-self: end;
+  }
+  /* the heading and the form carry it; the copy is the desktop's */
+  .card > p {
+    display: none;
   }
 }
 /* ── dive arrival: threesam.com hands off on its marigold coin field.

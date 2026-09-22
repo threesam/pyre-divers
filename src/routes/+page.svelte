@@ -192,7 +192,8 @@
 </div>
 <!-- --u is the scene unit the canvas lays the fire out in (page-fx SCENE_W):
      a viewport height, or less where the viewport is narrower than the
-     scene. (--b, the flame's mouth, is set in app.css per layout.) -->
+     scene. This is the pre-script value; page-fx overwrites it with the unit
+     it measured. (--b, the flame's mouth, is set in app.css per layout.) -->
 <section id="join" style="--u:min(100dvh, {100 / SCENE_W}vw)">
   <canvas id="fire" aria-hidden="true"></canvas>
   <canvas id="rain" aria-hidden="true"></canvas>

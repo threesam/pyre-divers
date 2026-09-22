@@ -122,13 +122,19 @@ export const FLAME_BASE = 0.82;
  */
 export const SCENE_W = 0.8;
 /**
- * Where the flame's mouth sits, as a fraction of the height: the layout's
- * `--b` on #join (app.css sets it per breakpoint), read back so the canvas
- * and the DOM can never disagree. FLAME_BASE is the desktop value.
+ * A layout number read back off #join, so the canvas and the DOM can never
+ * disagree: `--b`, where the flame's mouth sits as a fraction of the height
+ * (FLAME_BASE is the desktop value), and `--flame`, the flame's size against
+ * the scene (1 on desktop; smaller on a phone, where the scene is already
+ * short and a full flame swallows it). app.css sets both per breakpoint.
  */
-function mouth(join: HTMLElement): number {
-  const b = parseFloat(getComputedStyle(join).getPropertyValue('--b'));
-  return Number.isFinite(b) ? b : FLAME_BASE;
+function layout(
+  join: HTMLElement,
+  name: '--b' | '--flame',
+  fallback: number,
+): number {
+  const v = parseFloat(getComputedStyle(join).getPropertyValue(name));
+  return Number.isFinite(v) ? v : fallback;
 }
 
 /**
@@ -1783,14 +1789,16 @@ export function initPageFx(): void {
     g.clearColor(0, 0, 0, 0);
     let fw = 0;
     let fh = 0;
+    // sized to the SECTION, not the document: #join is 100dvh, and on iOS the
+    // document's clientHeight is the small viewport — they differ by the
+    // toolbar once it collapses, and the mouth would drift off the stones
     const sizeFire = () => {
-      const de = document.documentElement;
-      fw = Math.max(1, Math.round(de.clientWidth * dpr * 0.6)); // half-ish res — flames are soft
-      fh = Math.max(1, Math.round(de.clientHeight * dpr * 0.6));
+      fw = Math.max(1, Math.round(joinEl.clientWidth * dpr * 0.6)); // half-ish res — flames are soft
+      fh = Math.max(1, Math.round(joinEl.clientHeight * dpr * 0.6));
       c.width = fw;
       c.height = fh;
-      c.style.width = `${de.clientWidth}px`;
-      c.style.height = `${de.clientHeight}px`;
+      c.style.width = `${joinEl.clientWidth}px`;
+      c.style.height = `${joinEl.clientHeight}px`;
     };
     sizeFire();
     addEventListener('resize', sizeFire);
@@ -1808,8 +1816,11 @@ export function initPageFx(): void {
     const drawFire = (t: number) => {
       g.viewport(0, 0, fw, fh);
       g.uniform2f(uRes2, fw, fh);
-      g.uniform1f(uS2, Math.min(1, fw / fh / SCENE_W));
-      g.uniform1f(uYb2, 1 - mouth(joinEl));
+      g.uniform1f(
+        uS2,
+        Math.min(1, fw / fh / SCENE_W) * layout(joinEl, '--flame', 1),
+      );
+      g.uniform1f(uYb2, 1 - layout(joinEl, '--b', FLAME_BASE));
       g.uniform1f(uT2, t);
       g.clear(g.COLOR_BUFFER_BIT);
       g.drawArrays(g.TRIANGLES, 0, 3);
@@ -1837,6 +1848,10 @@ export function initPageFx(): void {
       return;
     }
     const rand = mulberry32(77);
+    // the mouth as a fraction of the height (the layout's --b; sizeRain
+    // re-reads it): risers and flecks rise out of it, so they use it, not
+    // the desktop constant — read now, the first seeding is below
+    let yb = layout(joinEl, '--b', FLAME_BASE);
     // each body's ink: randomly interpolated between the two approved
     // riser colors — warm white (#f0e8dd) and salmon (#d6855e)
     const emberMix = (t: number) =>
@@ -1848,7 +1863,7 @@ export function initPageFx(): void {
     const SEED = 0.5; // single central entry point, ~halfway up the flame
     const SPAWN_GAP = 1.8; // seconds between emergences — a staggered trickle
     const fanX = (b: Riser) => {
-      const rise = Math.max(0, (FLAME_BASE - b.y) / FLAME_BASE);
+      const rise = Math.max(0, (yb - b.y) / yb);
       const up = Math.max(0, rise - SEED); // risen since the central entry
       // ARC: up^1.8 so each body leaves the entry going straight up, then
       // curves outward as it rises — a fountain arc, not a straight ray.
@@ -1865,8 +1880,8 @@ export function initPageFx(): void {
       b.fan = (rand() - 0.5) * 2; // [-1, 1] — random flare heading + amount
       b.noisePh = rand() * TAU;
       // emerge ~halfway up: pre-populate SEED→top on first paint, else
-      // (re)seed at the SEED height. y at rise=SEED is FLAME_BASE*(1-SEED).
-      const seedY = FLAME_BASE * (1 - SEED);
+      // (re)seed at the SEED height. y at rise=SEED is yb*(1-SEED).
+      const seedY = yb * (1 - SEED);
       // reseeds sit EXACTLY at the entry (rise == SEED → opacity 0), so the
       // queue of waiting bodies is invisible, not a faint stack.
       b.y = initial ? seedY - rand() * (seedY + 0.05) : seedY;
@@ -1956,7 +1971,7 @@ export function initPageFx(): void {
     }
     const seedFleck = (f: Fleck, initial: boolean) => {
       f.x = FLAME_X + (rand() - 0.5) * 0.05;
-      f.y = initial ? rand() * FLAME_BASE : FLAME_BASE - rand() * 0.1;
+      f.y = initial ? rand() * yb : yb - rand() * 0.1;
     };
     flecks.forEach((f) => seedFleck(f, true));
     let rw = 0;
@@ -1966,18 +1981,20 @@ export function initPageFx(): void {
     // scene x/y from the canvas's own numbers: dx from FLAME_X and cy from
     // FLAME_BASE, both in units
     const sceneX = (dx: number) => FLAME_X * rw + dx * ru;
-    let yb = FLAME_BASE;
     const sceneY = (cy: number) => yb * rh + (cy - FLAME_BASE) * ru;
     const sizeRain = () => {
-      yb = mouth(joinEl);
-      const de = document.documentElement;
-      rw = Math.round(de.clientWidth * dpr);
-      rh = Math.round(de.clientHeight * dpr);
+      yb = layout(joinEl, '--b', FLAME_BASE);
+      // the section's box, same as the flame (see sizeFire)
+      rw = Math.round(joinEl.clientWidth * dpr);
+      rh = Math.round(joinEl.clientHeight * dpr);
       ru = Math.min(rh, rw / SCENE_W);
+      // the DOM heads and links lay out in this same unit: hand it over as
+      // measured, so the css min() (the pre-script value) can't disagree
+      joinEl.style.setProperty('--u', `${ru / dpr}px`);
       c.width = rw;
       c.height = rh;
-      c.style.width = `${de.clientWidth}px`;
-      c.style.height = `${de.clientHeight}px`;
+      c.style.width = `${joinEl.clientWidth}px`;
+      c.style.height = `${joinEl.clientHeight}px`;
     };
     sizeRain();
     addEventListener('resize', sizeRain);
@@ -2229,7 +2246,7 @@ export function initPageFx(): void {
         // fading into full existence by the tip — just as they start drifting
         const a = Math.min(
           1,
-          Math.max(0, ((FLAME_BASE - b.y) / FLAME_BASE - SEED) / (TIP - SEED)),
+          Math.max(0, ((yb - b.y) / yb - SEED) / (TIP - SEED)),
         );
         if (a <= 0.01) {
           continue;
@@ -2254,7 +2271,7 @@ export function initPageFx(): void {
       }
       ctx2.globalAlpha = 1;
       for (const f of flecks) {
-        const rise = Math.max(0, (FLAME_BASE - f.y) / FLAME_BASE);
+        const rise = Math.max(0, (yb - f.y) / yb);
         ctx2.globalAlpha = Math.max(0, 0.9 - rise * 1.1);
         ctx2.fillStyle = f.warm > 0.5 ? '#f5b942' : '#e25822';
         ctx2.beginPath();
