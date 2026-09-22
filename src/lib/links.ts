@@ -11,8 +11,7 @@ export const SHOW: Record<
   instagram: 'https://instagram.com/pyredivers',
   spotify: 'https://open.spotify.com/show/0x25C9ki9Squ3L7HGFQ6qG',
   youtube: 'https://youtube.com/@pyredivers',
-  // apple podcasts review was submitted 2026-09-21; the show url goes here
-  apple: null,
+  apple: 'https://podcasts.apple.com/us/podcast/pyre-divers/id6814542793',
   x: 'https://x.com/pyredivers',
 };
 
