@@ -213,22 +213,39 @@ section {
     opacity: 0.9;
   }
 }
+/* the fire burns at the centre. Desktop: the dives top-left, the card
+   top-right, both off the scene. Phone: the dives and the social row at the
+   top, the signup at the bottom with no frame, and the fire raised between
+   them (--b) — the scene scales down to the width (--u, set on the section).
+   --b is the flame's mouth as a fraction of the height; page-fx reads it
+   back, so the canvas and the DOM agree at every breakpoint. */
 #join {
+  --b: 0.82;
   display: grid;
-  place-items: end center;
+  align-content: start;
+  justify-items: stretch;
+  gap: 0.75rem;
   background: #10120a;
   padding: 1rem 1rem calc(1.25rem + env(safe-area-inset-bottom));
+}
+@media (max-width: 768px) {
+  #join {
+    --b: 0.56;
+    grid-template-rows: auto auto 1fr;
+    align-content: stretch;
+  }
+  .dives {
+    grid-row: 1;
+  }
+  .socials {
+    grid-row: 2;
+  }
 }
 #fire {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-}
-@media (max-width: 768px) {
-  #fire {
-    display: none;
-  }
 }
 #rain {
   position: absolute;
@@ -238,8 +255,16 @@ section {
 }
 @media (min-width: 769px) {
   #join {
-    place-items: end;
+    grid-template-columns: 1fr 1fr;
     padding: 3.5rem;
+  }
+  .dives {
+    grid-area: 1 / 1;
+    justify-self: start;
+  }
+  .card {
+    grid-area: 1 / 2;
+    justify-self: end;
   }
 }
 /* divers emerge and dissolve smoothly — olive gradient veils at the screen's edges */
@@ -255,26 +280,13 @@ section {
 .card {
   position: relative;
   z-index: 1;
-  max-width: 26rem;
+  max-width: 22rem;
   width: 100%;
+  box-sizing: border-box;
   display: grid;
   gap: 0.8rem;
   /* so the heading can size off the CARD instead of the viewport — see .fire */
   container-type: inline-size;
-}
-.patch {
-  /* the 95% olive, element by element — soft top/bottom edges so the
-       divers fade through instead of hitting a hard rectangle */
-  background: linear-gradient(
-    to bottom,
-    rgba(16, 18, 10, 0) 0%,
-    rgba(16, 18, 10, 0.95) 0.55rem,
-    rgba(16, 18, 10, 0.95) calc(100% - 0.55rem),
-    rgba(16, 18, 10, 0) 100%
-  );
-  padding: 0.55rem 0.85rem;
-  border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
-  width: fit-content;
 }
 .fire {
   margin: 0;
@@ -283,15 +295,14 @@ section {
      a different slice of it and the two lines disagree on colour — hence
      nowrap, and hence a size that actually fits.
      Solved rather than guessed: 100cqw is the card (not the viewport, which is
-     what the old 8.6vw tracked — the card stops at 26rem, so past ~460px the
-     line just ran short), less this heading's own 1.7rem of padding, over the
-     width of the string in ems. 11.05 is measured off the live DOM including
-     letter-spacing; the real ratio drifts 10.75->11.01 with size as hinting
-     rounds, so taking the top of that range fills ~99% and can never overflow.
+     what the old 8.6vw tracked — the card stops at 22rem, so past ~400px the
+     line just ran short), over the width of the string in ems. 11.05 is
+     measured off the live DOM including letter-spacing; the real ratio drifts
+     10.75->11.01 with size as hinting rounds, so taking the top of that range
+     fills ~99% and can never overflow.
      COUPLED TO THE COPY: re-measure if this heading's text changes. */
   width: 100%;
-  box-sizing: border-box; /* or the 1.7rem padding lands outside the card */
-  font-size: clamp(0.85rem, calc((100cqw - 1.7rem) / 11.05), 4rem);
+  font-size: clamp(0.85rem, calc(100cqw / 11.05), 4rem);
   white-space: nowrap;
   /* 400 like everything else — see the weight note up top. This one is a class
      on an h2, so it would out-specify the element rule and faux-bold. */
@@ -312,6 +323,51 @@ section {
 }
 /* the latest-dive link — same ember as the episode page's links */
 .card a {
+  color: #f5b942;
+}
+/* the dives: the newest as its own hand-drawn slab, the rest a plain list */
+.dives {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 22rem;
+}
+.dive {
+  display: grid;
+  gap: 0.1rem;
+  box-sizing: border-box;
+  padding: 0.6rem 1.1rem 0.7rem;
+  border: 1.5px solid #e25822;
+  border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
+  background: rgba(16, 18, 10, 0.95);
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+.dive:hover,
+.dive:focus-visible {
+  border-color: #f5b942;
+}
+.dive-kicker,
+.dive-meta {
+  font-size: 0.78rem;
+  color: #b7ad9d;
+}
+.dive-title {
+  font-size: 1.6rem;
+  line-height: 1.15;
+  background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.dive-list {
+  margin: 0.5rem 0 0;
+  padding: 0 0 0 1.4rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #b7ad9d;
+}
+.dive-list a {
   color: #f5b942;
 }
 .card form {
@@ -388,26 +444,16 @@ button.join:focus-visible {
   outline: 2px solid #f5b942;
   outline-offset: 3px;
 }
-.tiny {
-  font-size: 0.78rem;
-  color: #7d745f;
-}
-@media (min-width: 769px) {
-  /* the card's own hand-drawn frame — desktop only */
-  .card::before {
-    content: '';
-    position: absolute;
-    inset: -1.3rem -1.5rem;
-    border: 2.5px solid #57492f;
-    border-radius: 60px 14px 50px 14px / 14px 50px 14px 60px;
-    filter: url(#wobble-c);
-    pointer-events: none;
-  }
-}
 @media (max-width: 768px) {
-  /* the card fills the screen here; the heading tracks it via cqw either way */
-  .card {
+  /* the slabs fill the screen here; the heading tracks it via cqw either way.
+     the signup sits at the bottom, over the scene */
+  .card,
+  .dives {
     max-width: none;
+  }
+  .card {
+    grid-row: 3;
+    align-self: end;
   }
 }
 /* ── dive arrival: threesam.com hands off on its marigold coin field.
@@ -583,13 +629,14 @@ html.dive-go #veil::before {
 
    --x / --dx / --y come from the component and are the canvas's own
    numbers: --x is FLAME_X (a width fraction), --dx the stone's offset from
-   it and --y its centre, both in viewport HEIGHTS. #join is
+   it and --y its centre, both in scene units (--u on #join: a viewport
+   height, or less on a narrow screen — see page-fx SCENE_W). #join is
    position:relative and exactly 100dvh, and #fire is inset:0 within it, so
-   a percentage here lands where the canvas paints, and 1vh is the canvas's
-   rh / 100.
+   a percentage here lands where the canvas paints.
 
-   Desktop only. Below 769px #fire is display:none — no stones to stamp —
-   and the same list reflows into a row under the card. */
+   Desktop only. Below 769px the stones are too small and too close to be
+   thumb targets, so the same list reflows into a row under the card and the
+   stones stay unstamped decoration. */
 .socials {
   list-style: none;
   margin: 0;
@@ -690,15 +737,7 @@ html.dive-go #veil::before {
   }
 }
 
-/* 1024, not the 769 the stones themselves appear at. The card is pinned
-   bottom-right at max-width 26rem inside 3.5rem padding, and its wobble
-   frame reaches another 1.5rem left, so its left edge sits at W - 496.
-   The rightmost stone (the outer right of five) is centred at W/3 + 0.118H
-   and reaches 0.04H past that, so at H = 900 its edge is at W/3 + 142: the
-   two meet at roughly 960px, and 1024 leaves a margin up to H ≈ 1200. It
-   was 960 when the ring was three stones. Below the breakpoint the stones
-   go back to being unstamped decoration. */
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
   /* on the stones: each anchor leaves the row and sits on its own rock.
      both the ul and the li dissolve — an li left in flow would still
      generate an empty box and hand #join an extra grid row */
@@ -711,17 +750,16 @@ html.dive-go #veil::before {
     /* the ring is laid out in heights, like the canvas: x = FLAME_X of the
        width plus dx of the height, so the cluster keeps its shape at every
        aspect ratio instead of stretching apart on wide windows */
-    left: calc(var(--x) * 100% + var(--dx) * 100vh);
-    top: calc(var(--y) * 100%);
+    left: calc(var(--x) * 100% + var(--dx) * var(--u));
+    /* the mouth (--b) is a fraction of the height; --y is the offset from
+       it in units, like the canvas's sceneY() */
+    top: calc(var(--b) * 100% + var(--y) * var(--u));
     /* The target is the WHOLE stone, not the icon. --rx/--ry are the rock's
-       half-extents as FRACTIONS of viewport height (the canvas scales point
-       offsets by rh on both axes, so rx is not a vw). Full width is
-       2 * rx * H, and since 1vh = H/100 that is `rx * 200vh` — not
-       `rx * 2vh`, which is the same number 100x too small and lands under
-       the 24px floor. border-radius makes the target elliptical, near
-       enough to a wobbled stone. */
-    width: max(24px, calc(var(--rx) * 200vh));
-    height: max(24px, calc(var(--ry) * 200vh));
+       half-extents as FRACTIONS of the unit (the canvas scales point
+       offsets by ru on both axes, so rx is not a vw). border-radius makes
+       the target elliptical, near enough to a wobbled stone. */
+    width: max(24px, calc(var(--rx) * 2 * var(--u)));
+    height: max(24px, calc(var(--ry) * 2 * var(--u)));
     transform: translate(-50%, -50%);
     /* the stones overlap, and the centre one is drawn last so it sits in
        front. without this the DOM order would decide which stone catches
@@ -729,100 +767,138 @@ html.dive-go #veil::before {
     z-index: var(--z, 1);
   }
   .socials svg {
-    width: calc(var(--size) * 1vh);
-    height: calc(var(--size) * 1vh);
+    width: calc(var(--size) * var(--u) / 100);
+    height: calc(var(--size) * var(--u) / 100);
   }
 }
 
 /* ── the logs and who sits on them ──────────────────────────────────────
    Two logs outside the stone ring, one each side of the fire, with a body
    seated on each — canvas, like the stones. The heads are photo cutouts,
-   real <button>s stamped on the shoulders (see Sitters.svelte); a click
-   opens the card below. --x/--dx/--y are the canvas's own numbers, in the
-   same units the stones use.
-
-   1100, not the stones' 1024: the right log reaches W/3 + 0.375H, and at
-   16:9 that clears the card's left edge (W - 496) only past ~1070px. Below
-   that the heads are not stamped, and page-fx reads that back and leaves
-   the logs undrawn too. */
+   real <button>s stamped on the shoulders (see Sitters.svelte); pointing
+   at one, tabbing to it or tapping it raises the card. --x/--dx/--y are the
+   canvas's own numbers, in the same units the stones use, so the heads
+   scale down with the scene on a phone. */
 .sitters {
-  display: none;
+  display: contents;
   list-style: none;
   margin: 0;
   padding: 0;
 }
-@media (min-width: 1100px) {
-  .sitters,
-  .sitters li {
-    display: contents;
-  }
-  .sitters button {
-    position: absolute;
-    left: calc(var(--x) * 100% + var(--dx) * 100vh);
-    top: calc(var(--y) * 100%);
-    /* bottom-centre on the shoulder: the chin sits where the neck would */
-    transform: translate(-50%, -100%);
-    background: none;
-    border: 0;
-    padding: 0;
-    cursor: pointer;
-    z-index: 1;
-    border-radius: 50%;
-  }
-  .sitters button:focus-visible {
-    outline: 2px solid #f5b942;
-    outline-offset: 4px;
-  }
-  .sitters img {
-    display: block;
-    height: calc(var(--h) * 1vh);
-    width: auto;
-    /* photographs by firelight: warmed and dimmed to sit in the scene,
-       full colour when pointed at */
-    filter: sepia(0.4) saturate(0.85) brightness(0.82);
-    transition: filter 0.25s;
-  }
-  .sitters button:hover img,
-  .sitters button:focus-visible img {
-    filter: none;
-  }
+.sitters li {
+  position: absolute;
+  left: calc(var(--x) * 100% + var(--dx) * var(--u));
+  top: calc(var(--b) * 100% + var(--y) * var(--u));
+  /* bottom-centre on the shoulder: the chin sits where the neck would */
+  transform: translate(-50%, -100%);
+  z-index: 1;
 }
-.sitter-card {
+.sitters .head {
+  position: relative;
+  display: block;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+}
+/* a thumb's worth of target around a head that is ~28px on a phone */
+.sitters .head::after {
+  content: '';
+  position: absolute;
+  inset: -0.6rem;
+}
+.sitters .head:focus-visible {
+  outline: 2px solid #f5b942;
+  outline-offset: 4px;
+}
+.sitters img {
+  display: block;
+  height: calc(var(--h) * var(--u) / 100);
+  width: auto;
+  /* photographs by firelight: warmed and dimmed to sit in the scene,
+     full colour when pointed at */
+  filter: sepia(0.4) saturate(0.85) brightness(0.82);
+  transition: filter 0.25s;
+}
+.sitters li.flip img {
+  transform: scaleX(-1);
+}
+.sitters li:has(:focus-visible) img,
+.sitters li.open img {
+  filter: none;
+}
+/* the card: above the head. A tap on the head (.open), keyboard focus
+   anywhere inside, or — only where there is a pointer that can hover — the
+   pointer over it all raise it. Not :focus-within: a tap focuses the button
+   on some phones, and the card would then never close. On a phone it hangs
+   toward the fire (the other way is off screen); on desktop outward. */
+.sitters .tag {
+  position: absolute;
+  bottom: calc(100% + 0.6rem);
+  width: max-content;
+  max-width: 17rem;
+  padding: 0.7rem 1rem 0.75rem;
   background: #10120a;
   color: #e7e2da;
   border: 1.5px solid #e25822;
-  border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
-  padding: 1.4rem 1.8rem 1.2rem;
-  max-width: 24rem;
-  font-family: 'Pyre Display', ui-rounded, system-ui, sans-serif;
+  border-radius: 40px 6px 30px 6px / 6px 30px 6px 40px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
 }
-.sitter-card::backdrop {
-  background: rgba(16, 18, 10, 0.72);
+.sitters li.left .tag {
+  left: 0;
 }
-.sitter-card h2 {
-  margin: 0 0 0.6rem;
-  font-size: 2rem;
+.sitters li.right .tag {
+  right: 0;
+}
+@media (min-width: 769px) {
+  .sitters li.left .tag {
+    left: auto;
+    right: 30%;
+  }
+  .sitters li.right .tag {
+    right: auto;
+    left: 30%;
+  }
+}
+/* keep the pointer's path from head to card inside the hover region */
+.sitters .tag::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -0.7rem;
+  height: 0.7rem;
+}
+.sitters li:has(:focus-visible) .tag,
+.sitters li.open .tag {
+  opacity: 1;
+  visibility: visible;
+}
+@media (hover: hover) {
+  .sitters li:hover img {
+    filter: none;
+  }
+  .sitters li:hover .tag {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+.sitters .tag p {
+  margin: 0;
+}
+.sitters .tag p + p {
+  margin-top: 0.3rem;
+}
+.sitters .tag strong {
   font-weight: 400;
-}
-.sitter-card p {
-  margin: 0 0 0.5rem;
-  line-height: 1.5;
-}
-.sitter-card a {
+  font-size: 1.1rem;
   color: #f5b942;
 }
-.sitter-card .close {
-  margin-top: 0.6rem;
-  background: none;
-  border: 1px solid #7d745f;
-  border-radius: 40px 6px 30px 6px / 6px 30px 6px 40px;
-  color: #b7ad9d;
-  padding: 0.35rem 0.9rem;
-  font: inherit;
-  cursor: pointer;
-}
-.sitter-card .close:hover,
-.sitter-card .close:focus-visible {
-  color: #e7e2da;
-  border-color: #e7e2da;
+.sitters .tag a {
+  color: #f5b942;
 }

@@ -4,6 +4,7 @@
   import Sitters from '$lib/components/Sitters.svelte';
   import { resolve } from '$app/paths';
   import { FEED, HOSTS, SAME_AS } from '$lib/links';
+  import { SCENE_W } from '$lib/page-fx';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -144,22 +145,6 @@
       yChannelSelector="G"
     />
   </filter>
-  <filter id="wobble-c" x="-6%" y="-6%" width="112%" height="112%">
-    <feTurbulence
-      type="fractalNoise"
-      baseFrequency="0.006 0.02"
-      numOctaves="2"
-      seed="23"
-      result="n"
-    />
-    <feDisplacementMap
-      in="SourceGraphic"
-      in2="n"
-      scale="7"
-      xChannelSelector="R"
-      yChannelSelector="G"
-    />
-  </filter>
 </svg>
 <Splash />
 <!-- dive arrival veil: shown only when the document arrived with ?dive
@@ -205,28 +190,22 @@
     ></span
   >
 </div>
-<section id="join">
+<!-- --u is the scene unit the canvas lays the fire out in (page-fx SCENE_W):
+     a viewport height, or less where the viewport is narrower than the
+     scene. (--b, the flame's mouth, is set in app.css per layout.) -->
+<section id="join" style="--u:min(100dvh, {100 / SCENE_W}vw)">
   <canvas id="fire" aria-hidden="true"></canvas>
   <canvas id="rain" aria-hidden="true"></canvas>
   <div class="card">
-    <h2 class="fire patch">
+    <h2 class="fire">
       <span class="fire-ink">come sit by the fire.</span>
     </h2>
-    <p class="patch">
+    <p>
       two builders, live. no script. no polish. no edits. conversations with the
       ones who jumped before they were ready.
     </p>
-    {#if data.latest}
-      <p class="patch">
-        latest dive:
-        <a
-          class="dive"
-          href={resolve('/episodes/[slug]', { slug: data.latest.slug })}
-          data-umami-event="latest-dive">{data.latest.title}.</a
-        >
-      </p>
-    {:else}
-      <p class="patch">first dive: {LAUNCH.text}.</p>
+    {#if !data.latest}
+      <p>first dive: {LAUNCH.text}.</p>
     {/if}
     <form id="join-form" novalidate>
       <div class="fieldwrap">
@@ -242,8 +221,33 @@
       </div>
       <button class="join" type="submit">save me a seat.</button>
     </form>
-    <p class="tiny patch">no spam. one email when the fire’s lit.</p>
   </div>
+  {#if data.latest}
+    <!-- the dives: the newest as the call-out, the rest listed under it -->
+    <div class="dives">
+      <a
+        class="dive"
+        href={resolve('/episodes/[slug]', { slug: data.latest.slug })}
+        data-umami-event="latest-dive"
+      >
+        <span class="dive-kicker">latest dive · no. {data.latest.number}</span>
+        <span class="dive-title">{data.latest.title}.</span>
+        <span class="dive-meta">{data.latest.minutes} min · listen or read</span
+        >
+      </a>
+      {#if data.dives.length > 1}
+        <ol class="dive-list" reversed>
+          {#each data.dives.slice(1) as d (d.slug)}
+            <li>
+              <a href={resolve('/episodes/[slug]', { slug: d.slug })}
+                >{d.title}</a
+              >
+            </li>
+          {/each}
+        </ol>
+      {/if}
+    </div>
+  {/if}
   <SocialStones />
-  <Sitters latest={data.latest} />
+  <Sitters dives={data.dives} />
 </section>

@@ -11,9 +11,12 @@ export interface Sitter {
   h: number;
   log: number;
   role: 'host' | 'guest';
-  /** the guest's episode slug; hosts get the latest dive instead */
+  /** the guest's episode slug; hosts are in every dive */
   episode?: string;
-  url?: string;
+  /** where to find them, shown on the head's card */
+  links: { label: string; href: string }[];
+  /** mirror the cutout, so they face the fire */
+  flip?: boolean;
 }
 
 export const SITTERS: Sitter[] = [
@@ -25,15 +28,23 @@ export const SITTERS: Sitter[] = [
     h: 5.8,
     log: 0,
     role: 'host',
-    url: 'https://threesam.com',
+    links: [
+      { label: 'threesam.com', href: 'https://threesam.com' },
+      { label: 'linkedin', href: 'https://linkedin.com/in/threesam' },
+    ],
   },
   {
     name: 'steve',
     full: 'Steve Tullius',
     head: '/sitters/steve.png',
     w: 219,
-    h: 5.8,
+    h: 6.4,
     log: 1,
     role: 'host',
+    flip: true,
+    links: [
+      { label: 'waitlistworkshops.com', href: 'https://waitlistworkshops.com' },
+      { label: 'linkedin', href: 'https://www.linkedin.com/in/drtullius/' },
+    ],
   },
 ];

@@ -52,7 +52,6 @@ interface Riser extends Pose {
   x: number;
   y: number;
   px: number;
-  vx: number;
   v: number;
   waiting: boolean;
   hcR: number;
@@ -108,10 +107,29 @@ function must<T extends Element>(selector: string): T {
   return el;
 }
 
-/** A third of the width; the flame burns here and the stones ring its mouth. */
-export const FLAME_X = 1 / 3;
+/** Centre of the width; the flame burns here and the stones ring its mouth. */
+export const FLAME_X = 1 / 2;
 /** Normalized y (from top) of the flame's mouth. */
 export const FLAME_BASE = 0.82;
+/**
+ * The scene's unit. Everything around the flame (stones, logs, sitters, the
+ * flame's own width) is laid out in viewport heights, and reaches SCENE_W of
+ * one to each side of FLAME_X. Where the viewport is narrower than that, a
+ * phone, the unit shrinks to `width / SCENE_W` and the whole scene scales
+ * down together, still centred, still whole. The mouth stays at FLAME_BASE
+ * of the height; only offsets from it scale. #join carries the same number
+ * as `--u` (see +page.svelte), so the DOM heads and links scale with it.
+ */
+export const SCENE_W = 0.8;
+/**
+ * Where the flame's mouth sits, as a fraction of the height: the layout's
+ * `--b` on #join (app.css sets it per breakpoint), read back so the canvas
+ * and the DOM can never disagree. FLAME_BASE is the desktop value.
+ */
+function mouth(join: HTMLElement): number {
+  const b = parseFloat(getComputedStyle(join).getPropertyValue('--b'));
+  return Number.isFinite(b) ? b : FLAME_BASE;
+}
 
 /**
  * The five stones, in PAINT order — the last one is drawn on top, so this
@@ -148,7 +166,7 @@ export const ROCKS = [
  * length, ry half the thickness, `tilt` radians. Drawn as a log, not a
  * stone: a capsule with the end grain showing on the outer end and bark
  * lines along the body, in the ring's ink. Exported for the same reason
- * ROCKS is: the sitters' heads are DOM buttons placed over the bodies the
+ * ROCKS is: the sitters' heads are DOM list items placed over the bodies the
  * canvas draws, and both read the seat from here.
  */
 export const LOGS = [
@@ -1652,10 +1670,9 @@ export function initPageFx(): void {
   // wheel-driven section flight. The two screens just stack; the chevron's
   // #join anchor still glides via scroll-behavior: smooth.
 
-  // ── screen two: the pyre. A GLSL flame burns at a third of the width;
-  // white divers and glowing flecks rise out of it (desktop) or drift up
-  // from the deep (mobile).
-  const deskQ = matchMedia('(min-width: 769px)');
+  // ── screen two: the pyre. A GLSL flame burns at the centre; white divers
+  // and glowing flecks rise out of it. Phones get the same scene, scaled
+  // (SCENE_W).
 
   // screen-two modules land in their own tasks — keeps hydration's
   // main-thread work under the long-task threshold (lighthouse tbt)
@@ -1687,6 +1704,8 @@ export function initPageFx(): void {
     precision highp float;
     uniform vec2 uRes;
     uniform float uT;
+    uniform float uS; // scene unit as a fraction of the height (SCENE_W)
+    uniform float uYb; // the mouth, from the bottom (1 - the layout's --b)
     out vec4 frag;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     float noise(vec2 p) {
@@ -1704,9 +1723,9 @@ export function initPageFx(): void {
     void main() {
       vec2 uv = gl_FragCoord.xy / uRes;
       float aspect = uRes.x / uRes.y;
-      float px = (uv.x - ${FLAME_X}) * aspect;
-      float yb = ${1 - FLAME_BASE};
-      float t = (uv.y - yb) / 0.58;
+      float px = (uv.x - ${FLAME_X}) * aspect / uS;
+      float yb = uYb;
+      float t = (uv.y - yb) / (0.58 * uS);
       float sway = (fbm(vec2(px * 3.0, uv.y * 3.0 - uT * 0.8)) - 0.5) * 0.24 * max(t, 0.0);
       float xx = abs(px - sway);
       // base half-width in viewport heights: 0.18, up from 0.155, so the
@@ -1718,7 +1737,7 @@ export function initPageFx(): void {
       float i = body * (0.5 + 0.9 * lick);
       // the ground glow: wide enough (0.8 heights) to reach past the logs,
       // so the sitters read as silhouettes against it
-      float glow = smoothstep(0.8, 0.0, length(vec2(px, (uv.y - yb) * 1.5))) * 0.6;
+      float glow = smoothstep(0.8, 0.0, length(vec2(px, (uv.y - yb) * 1.5 / uS))) * 0.6;
       vec3 col = mix(vec3(0.45, 0.05, 0.03), vec3(0.73, 0.11, 0.11), smoothstep(0.04, 0.22, i));
       col = mix(col, vec3(0.73, 0.11, 0.11), glow);
       col = mix(col, vec3(0.89, 0.35, 0.13), smoothstep(0.22, 0.48, i));
@@ -1757,6 +1776,8 @@ export function initPageFx(): void {
     g.useProgram(p2);
     const uRes2 = g.getUniformLocation(p2, 'uRes');
     const uT2 = g.getUniformLocation(p2, 'uT');
+    const uS2 = g.getUniformLocation(p2, 'uS');
+    const uYb2 = g.getUniformLocation(p2, 'uYb');
     g.enable(g.BLEND);
     g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
     g.clearColor(0, 0, 0, 0);
@@ -1787,6 +1808,8 @@ export function initPageFx(): void {
     const drawFire = (t: number) => {
       g.viewport(0, 0, fw, fh);
       g.uniform2f(uRes2, fw, fh);
+      g.uniform1f(uS2, Math.min(1, fw / fh / SCENE_W));
+      g.uniform1f(uYb2, 1 - mouth(joinEl));
       g.uniform1f(uT2, t);
       g.clear(g.COLOR_BUFFER_BIT);
       g.drawArrays(g.TRIANGLES, 0, 3);
@@ -1795,11 +1818,9 @@ export function initPageFx(): void {
       drawFire(7);
       return;
     }
-    if (deskQ.matches) {
-      drawFire(0); // warm the pipeline off-screen — first visible frame stays cheap
-    }
+    drawFire(0); // warm the pipeline off-screen — first visible frame stays cheap
     const loop = (now: number) => {
-      if (fireVisible && deskQ.matches) {
+      if (fireVisible) {
         drawFire(now * 0.001);
       }
       requestAnimationFrame(loop);
@@ -1843,25 +1864,14 @@ export function initPageFx(): void {
       b.col = emberMix(rand());
       b.fan = (rand() - 0.5) * 2; // [-1, 1] — random flare heading + amount
       b.noisePh = rand() * TAU;
-      b.vx = 0;
-      if (deskQ.matches) {
-        // emerge ~halfway up: pre-populate SEED→top on first paint, else
-        // (re)seed at the SEED height. y at rise=SEED is FLAME_BASE*(1-SEED).
-        const seedY = FLAME_BASE * (1 - SEED);
-        // reseeds sit EXACTLY at the entry (rise == SEED → opacity 0), so the
-        // queue of waiting bodies is invisible, not a faint stack.
-        b.y = initial ? seedY - rand() * (seedY + 0.05) : seedY;
-        b.x = fanX(b);
-        b.waiting = !initial;
-      } else if (initial) {
-        b.x = rand();
-        b.y = rand();
-        b.vx = (rand() - 0.5) * 0.006;
-      } else {
-        b.x = rand();
-        b.y = 1.05 + rand() * 0.05;
-        b.vx = (rand() - 0.5) * 0.006;
-      }
+      // emerge ~halfway up: pre-populate SEED→top on first paint, else
+      // (re)seed at the SEED height. y at rise=SEED is FLAME_BASE*(1-SEED).
+      const seedY = FLAME_BASE * (1 - SEED);
+      // reseeds sit EXACTLY at the entry (rise == SEED → opacity 0), so the
+      // queue of waiting bodies is invisible, not a faint stack.
+      b.y = initial ? seedY - rand() * (seedY + 0.05) : seedY;
+      b.x = fanX(b);
+      b.waiting = !initial;
       b.px = b.x; // previous x, for the movement-following heading
       b.hcR = 1; // heading (cos/sin); starts pointing straight up
       b.hsR = 0;
@@ -1877,7 +1887,6 @@ export function initPageFx(): void {
         x: 0,
         y: 0,
         px: 0,
-        vx: 0,
         v: 0,
         waiting: false,
         hcR: 1,
@@ -1952,17 +1961,19 @@ export function initPageFx(): void {
     flecks.forEach((f) => seedFleck(f, true));
     let rw = 0;
     let rh = 0;
-    // the logs are drawn only while the sitters' heads are stamped over them.
-    // Ask the layout, like SocialStones does: the buttons are position:
-    // absolute only in the seated layout, so this is the breakpoint read
-    // back rather than written a second time. No sitters, no logs.
-    let logsOn = false;
+    // the scene unit (SCENE_W): a height, or less where the width is short
+    let ru = 0;
+    // scene x/y from the canvas's own numbers: dx from FLAME_X and cy from
+    // FLAME_BASE, both in units
+    const sceneX = (dx: number) => FLAME_X * rw + dx * ru;
+    let yb = FLAME_BASE;
+    const sceneY = (cy: number) => yb * rh + (cy - FLAME_BASE) * ru;
     const sizeRain = () => {
-      const seat = document.querySelector('.sitters button');
-      logsOn = seat !== null && getComputedStyle(seat).position === 'absolute';
+      yb = mouth(joinEl);
       const de = document.documentElement;
       rw = Math.round(de.clientWidth * dpr);
       rh = Math.round(de.clientHeight * dpr);
+      ru = Math.min(rh, rw / SCENE_W);
       c.width = rw;
       c.height = rh;
       c.style.width = `${de.clientWidth}px`;
@@ -1994,10 +2005,10 @@ export function initPageFx(): void {
       for (let i = 0; i <= n; i++) {
         const p = r.pts[i % n];
         const q = r.pts[(i + 1) % n];
-        const x1 = FLAME_X * rw + (r.dx + p[0]) * rh;
-        const y1 = r.cy * rh + p[1] * rh;
-        const x2 = FLAME_X * rw + (r.dx + q[0]) * rh;
-        const y2 = r.cy * rh + q[1] * rh;
+        const x1 = sceneX(r.dx + p[0]);
+        const y1 = sceneY(r.cy) + p[1] * ru;
+        const x2 = sceneX(r.dx + q[0]);
+        const y2 = sceneY(r.cy) + q[1] * ru;
         if (i === 0) {
           ctx2.moveTo((x1 + x2) / 2, (y1 + y2) / 2);
         } else {
@@ -2058,11 +2069,11 @@ export function initPageFx(): void {
     // and glow are the stones' so the seats belong to the same fire.
     const drawLog = (l: Log) => {
       const out = Math.sign(l.dx);
-      const Lg = l.rx * rh,
-        T = l.ry * rh,
+      const Lg = l.rx * ru,
+        T = l.ry * ru,
         E = T * 0.42; // the end cap's half-width: a cylinder seen a little from the side
       ctx2.save();
-      ctx2.translate(FLAME_X * rw + l.dx * rh, l.cy * rh);
+      ctx2.translate(sceneX(l.dx), sceneY(l.cy));
       ctx2.rotate(l.tilt);
       const pts: [number, number][] = [];
       const n = l.wob.length;
@@ -2158,16 +2169,16 @@ export function initPageFx(): void {
     const sitterInk = () => {
       ctx2.strokeStyle = '#000'; // a silhouette against the glow
       ctx2.globalAlpha = 1;
-      ctx2.lineWidth = Math.max(1.5 * dpr, 0.0036 * rh);
+      ctx2.lineWidth = Math.max(1.5 * dpr, 0.0036 * ru);
       ctx2.shadowBlur = 0;
     };
     // the arm on the fire side hangs lower, nearly straight, and its hand
     // drops behind the log — so it's painted BEFORE the log covers it.
     const drawNearArm = (l: (typeof LOGS)[number]) => {
       const f = -Math.sign(l.dx);
-      const hx = FLAME_X * rw + l.dx * rh;
-      const hy = (l.cy - l.ry) * rh;
-      const u = rh;
+      const hx = sceneX(l.dx);
+      const hy = sceneY(l.cy - l.ry);
+      const u = ru;
       const sy = hy - SEAT.torso * u;
       sitterInk();
       ctx2.beginPath();
@@ -2179,9 +2190,9 @@ export function initPageFx(): void {
     };
     const drawSitter = (l: (typeof LOGS)[number]) => {
       const f = -Math.sign(l.dx); // +1 faces right, toward the flame
-      const hx = FLAME_X * rw + l.dx * rh;
-      const hy = (l.cy - l.ry) * rh;
-      const u = rh;
+      const hx = sceneX(l.dx);
+      const hy = sceneY(l.cy - l.ry);
+      const u = ru;
       const sy = hy - SEAT.torso * u; // shoulder
       sitterInk();
       ctx2.beginPath();
@@ -2216,15 +2227,10 @@ export function initPageFx(): void {
       for (const b of drops) {
         // they take form as they rise out of the flame: 0 at the mouth,
         // fading into full existence by the tip — just as they start drifting
-        const a = deskQ.matches
-          ? Math.min(
-              1,
-              Math.max(
-                0,
-                ((FLAME_BASE - b.y) / FLAME_BASE - SEED) / (TIP - SEED),
-              ),
-            )
-          : Math.min(1, Math.max(0, (1.02 - b.y) / 0.28));
+        const a = Math.min(
+          1,
+          Math.max(0, ((FLAME_BASE - b.y) / FLAME_BASE - SEED) / (TIP - SEED)),
+        );
         if (a <= 0.01) {
           continue;
         }
@@ -2247,48 +2253,44 @@ export function initPageFx(): void {
         ctx2.stroke(path);
       }
       ctx2.globalAlpha = 1;
-      if (deskQ.matches) {
-        for (const f of flecks) {
-          const rise = Math.max(0, (FLAME_BASE - f.y) / FLAME_BASE);
-          ctx2.globalAlpha = Math.max(0, 0.9 - rise * 1.1);
-          ctx2.fillStyle = f.warm > 0.5 ? '#f5b942' : '#e25822';
-          ctx2.beginPath();
-          ctx2.arc(
-            f.x * rw + Math.sin(t * 1.3 + f.ph) * 5 * dpr,
-            f.y * rh,
-            f.r * dpr,
-            0,
-            TAU,
-          );
-          ctx2.fill();
-        }
-        ctx2.globalAlpha = 1;
-        ctx2.fillStyle = '#10120a';
-        const rockGrad = ctx2.createLinearGradient(
-          FLAME_X * rw - EMBER_HALF_SPAN * rh,
+      for (const f of flecks) {
+        const rise = Math.max(0, (FLAME_BASE - f.y) / FLAME_BASE);
+        ctx2.globalAlpha = Math.max(0, 0.9 - rise * 1.1);
+        ctx2.fillStyle = f.warm > 0.5 ? '#f5b942' : '#e25822';
+        ctx2.beginPath();
+        ctx2.arc(
+          f.x * rw + Math.sin(t * 1.3 + f.ph) * 5 * dpr,
+          f.y * rh,
+          f.r * dpr,
           0,
-          FLAME_X * rw + EMBER_HALF_SPAN * rh,
-          0,
+          TAU,
         );
-        for (const [at, col] of EMBER_STOPS) {
-          rockGrad.addColorStop(at, col);
-        }
-        ctx2.strokeStyle = rockGrad;
-        rockInk = rockGrad;
-        ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.1);
-        const pulse = 0.5 + 0.5 * Math.sin(t * 0.85); // ~7s breath
-        rockGlow = 0.45 + 0.55 * pulse;
-        rockBlur = (5 + 20 * pulse) * dpr;
-        for (let i = 0; i < rocks.length; i++) {
-          drawRock(rocks[i], litAmt[i]);
-        }
-        if (logsOn) {
-          for (const l of logs) {
-            drawNearArm(l);
-            drawLog(l);
-            drawSitter(l);
-          }
-        }
+        ctx2.fill();
+      }
+      ctx2.globalAlpha = 1;
+      ctx2.fillStyle = '#10120a';
+      const rockGrad = ctx2.createLinearGradient(
+        sceneX(-EMBER_HALF_SPAN),
+        0,
+        sceneX(EMBER_HALF_SPAN),
+        0,
+      );
+      for (const [at, col] of EMBER_STOPS) {
+        rockGrad.addColorStop(at, col);
+      }
+      ctx2.strokeStyle = rockGrad;
+      rockInk = rockGrad;
+      ctx2.lineWidth = Math.max(S * 0.0008, h0 * 0.1);
+      const pulse = 0.5 + 0.5 * Math.sin(t * 0.85); // ~7s breath
+      rockGlow = 0.45 + 0.55 * pulse;
+      rockBlur = (5 + 20 * pulse) * dpr;
+      for (let i = 0; i < rocks.length; i++) {
+        drawRock(rocks[i], litAmt[i]);
+      }
+      for (const l of logs) {
+        drawNearArm(l);
+        drawLog(l);
+        drawSitter(l);
       }
     };
     if (still) {
@@ -2329,11 +2331,7 @@ export function initPageFx(): void {
           }
         }
         b.y -= b.v * dt;
-        if (deskQ.matches) {
-          b.x = fanX(b);
-        } else {
-          b.x += b.vx * dt;
-        }
+        b.x = fanX(b);
         // heading follows movement: the head points along the velocity
         // (mostly up, leaning toward the horizontal drift). Smoothed so the
         // wander doesn't make it twitch.
