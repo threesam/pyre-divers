@@ -10,8 +10,9 @@
   // head is a toggle.
   //
   // COORDINATES COME FROM THE CANVAS: LOGS and SEAT are the one description
-  // of where a body sits, in viewport heights from FLAME_X, so a head cannot
-  // drift off its shoulders. The item's bottom edge is the top of the neck.
+  // of where a body sits, in scene units (--u, see +page.svelte) from
+  // FLAME_X / FLAME_BASE, so a head cannot drift off its shoulders. The
+  // item's bottom edge is the top of the neck.
   type Dive = { slug: string; title: string; number: number };
   let { dives }: { dives: Dive[] } = $props();
 
@@ -21,7 +22,8 @@
       ...s,
       dx: log.dx,
       y: log.cy - log.ry - SEAT.torso - SEAT.neck,
-      // the card hangs off the head's fire-side edge, so it never runs off screen
+      // which side of the fire: the card hangs outward on desktop, inward
+      // on a phone (where outward is off screen)
       side: log.dx < 0 ? 'left' : 'right',
       // hosts are in every dive; a guest is in theirs
       in: s.episode ? dives.filter((d) => d.slug === s.episode) : dives,
@@ -42,6 +44,7 @@
   {#each placed as s (s.name)}
     <li
       class="{s.side} {open === s.name ? 'open' : ''}"
+      class:flip={s.flip}
       style="--x:{FLAME_X};--dx:{s.dx};--y:{s.y};--h:{s.h}"
     >
       <button

@@ -18,9 +18,9 @@
   // is inset:0 inside it, so a percentage of #join is the same coordinate
   // the canvas paints in.
   //
-  // Below 1024px the card's frame reaches across the rightmost stone, so the
-  // same anchors reflow into a plain row and the stones go back to being
-  // unstamped. See the app.css breakpoint note for the arithmetic.
+  // Below 769px the stones are too small and too close to be thumb targets,
+  // so the same anchors reflow into a plain row and the stones go back to
+  // being unstamped. See the app.css note.
   //
   // Icons are drawn in the site's hand — uneven paths through the wobble-i
   // turbulence filter, the same device the card frame and button slab use.
@@ -36,7 +36,7 @@
 
   // Everything else is DERIVED from ROCKS below — nothing about the stones
   // is written down twice. Listed left to right as they sit on the ring, so
-  // the DOM order (tab order, and the row below 1024px) matches what you see.
+  // the DOM order (tab order, and the row below 769px) matches what you see.
   const SOCIALS: Social[] = [
     { name: 'instagram', href: SHOW.instagram, rock: 0, icon: 'instagram' },
     { name: 'spotify', href: SHOW.spotify, rock: 2, icon: 'spotify' },

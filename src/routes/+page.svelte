@@ -4,6 +4,7 @@
   import Sitters from '$lib/components/Sitters.svelte';
   import { resolve } from '$app/paths';
   import { FEED, HOSTS, SAME_AS } from '$lib/links';
+  import { FLAME_BASE, SCENE_W } from '$lib/page-fx';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -205,7 +206,10 @@
     ></span
   >
 </div>
-<section id="join">
+<!-- --u is the scene unit the canvas lays the fire out in (page-fx SCENE_W):
+     a viewport height, or less where the viewport is narrower than the
+     scene. --b is the flame's mouth; the stones and heads sit off it. -->
+<section id="join" style="--u:min(100dvh, {100 / SCENE_W}vw);--b:{FLAME_BASE}">
   <canvas id="fire" aria-hidden="true"></canvas>
   <canvas id="rain" aria-hidden="true"></canvas>
   <div class="card">
@@ -216,18 +220,7 @@
       two builders, live. no script. no polish. no edits. conversations with the
       ones who jumped before they were ready.
     </p>
-    {#if data.latest}
-      <a
-        class="dive"
-        href={resolve('/episodes/[slug]', { slug: data.latest.slug })}
-        data-umami-event="latest-dive"
-      >
-        <span class="dive-kicker">latest dive · no. {data.latest.number}</span>
-        <span class="dive-title">{data.latest.title}.</span>
-        <span class="dive-meta">{data.latest.minutes} min · listen or read</span
-        >
-      </a>
-    {:else}
+    {#if !data.latest}
       <p class="patch">first dive: {LAUNCH.text}.</p>
     {/if}
     <form id="join-form" novalidate>
@@ -244,8 +237,20 @@
       </div>
       <button class="join" type="submit">save me a seat.</button>
     </form>
-    <p class="tiny patch">no spam. one email when the fire’s lit.</p>
+    <p class="tiny patch">no spam. one email per dive.</p>
   </div>
+  {#if data.latest}
+    <!-- the newest dive, its own slab under the card -->
+    <a
+      class="dive"
+      href={resolve('/episodes/[slug]', { slug: data.latest.slug })}
+      data-umami-event="latest-dive"
+    >
+      <span class="dive-kicker">latest dive · no. {data.latest.number}</span>
+      <span class="dive-title">{data.latest.title}.</span>
+      <span class="dive-meta">{data.latest.minutes} min · listen or read</span>
+    </a>
+  {/if}
   <SocialStones />
   <Sitters dives={data.dives} />
 </section>

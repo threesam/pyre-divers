@@ -15,6 +15,8 @@ export interface Sitter {
   episode?: string;
   /** where to find them, shown on the head's card */
   links: { label: string; href: string }[];
+  /** mirror the cutout, so they face the fire */
+  flip?: boolean;
 }
 
 export const SITTERS: Sitter[] = [
@@ -36,9 +38,10 @@ export const SITTERS: Sitter[] = [
     full: 'Steve Tullius',
     head: '/sitters/steve.png',
     w: 219,
-    h: 5.8,
+    h: 6.4,
     log: 1,
     role: 'host',
+    flip: true,
     links: [
       { label: 'waitlistworkshops.com', href: 'https://waitlistworkshops.com' },
       { label: 'linkedin', href: 'https://www.linkedin.com/in/drtullius/' },
