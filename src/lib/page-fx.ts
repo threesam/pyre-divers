@@ -75,7 +75,8 @@ interface Fleck {
 
 /** A hand-wobbled stone at the flame's mouth. */
 interface Rock {
-  cx: number;
+  /** offset from FLAME_X, in viewport HEIGHTS (see ROCKS) */
+  dx: number;
   cy: number;
   pts: [number, number][];
 }
@@ -121,21 +122,30 @@ export const FLAME_BASE = 0.82;
  * Exported because the social links are DOM elements laid over these, and
  * they need the same numbers. Written twice, they drift silently: the links
  * would keep pointing at where the stones used to be, and nothing would
- * fail. `cx` is a fraction of viewport WIDTH; `cy`, `rx` and `ry` are all
- * fractions of viewport HEIGHT, because the canvas scales point offsets by
- * rh on both axes.
+ * fail.
+ *
+ * EVERY NUMBER IS A FRACTION OF VIEWPORT HEIGHT. `dx` is the stone's offset
+ * from FLAME_X (which is the one width fraction, the flame's own x); `cy`,
+ * `rx` and `ry` are height fractions because the canvas scales point offsets
+ * by rh on both axes. dx used to be a width fraction too, and the ring's
+ * shape then depended on the aspect ratio: tight and overlapping in a
+ * square window, pulled apart at 16:9 with gaps around the outer pair. The
+ * square look is the one that was designed, and the flame shader already
+ * works in heights (`px = (uv.x - FLAME_X) * aspect`), so the stones now
+ * sit on the flame the same way everywhere.
  */
 export const ROCKS = [
-  { cx: FLAME_X - 0.105, cy: FLAME_BASE + 0.012, rx: 0.036, ry: 0.022 },
-  { cx: FLAME_X + 0.118, cy: FLAME_BASE + 0.01, rx: 0.034, ry: 0.021 },
-  { cx: FLAME_X - 0.045, cy: FLAME_BASE + 0.02, rx: 0.052, ry: 0.028 },
-  { cx: FLAME_X + 0.062, cy: FLAME_BASE + 0.018, rx: 0.042, ry: 0.024 },
-  { cx: FLAME_X + 0.008, cy: FLAME_BASE + 0.028, rx: 0.062, ry: 0.033 },
+  { dx: -0.105, cy: FLAME_BASE + 0.012, rx: 0.036, ry: 0.022 },
+  { dx: 0.118, cy: FLAME_BASE + 0.01, rx: 0.034, ry: 0.021 },
+  { dx: -0.045, cy: FLAME_BASE + 0.02, rx: 0.052, ry: 0.028 },
+  { dx: 0.062, cy: FLAME_BASE + 0.018, rx: 0.042, ry: 0.024 },
+  { dx: 0.008, cy: FLAME_BASE + 0.028, rx: 0.062, ry: 0.033 },
 ] as const;
 
 /**
  * The ember run the stones are outlined in: three stops across a band
- * centred on the flame, in fractions of viewport width. Each stone sits at
+ * centred on the flame, in fractions of viewport HEIGHT like the stones
+ * (so the run keeps its place on the ring at every aspect). Each stone sits at
  * a different point along it, which is why the left one wears the warm end
  * and the right one the deep end. 0.14, not 0.12, since the ring grew to
  * five: at 0.12 the outer right stone sat at the very end of the run, and
@@ -153,10 +163,10 @@ const EMBER_STOPS: readonly [number, string][] = [
  * the same shade its outline already does — derived rather than sampled by
  * hand, so moving a stone cannot leave its icon a shade wrong.
  */
-export function emberAt(cx: number): string {
+export function emberAt(dx: number): string {
   const t = Math.min(
     1,
-    Math.max(0, (cx - (FLAME_X - EMBER_HALF_SPAN)) / (EMBER_HALF_SPAN * 2)),
+    Math.max(0, (dx + EMBER_HALF_SPAN) / (EMBER_HALF_SPAN * 2)),
   );
   let i = 1;
   while (i < EMBER_STOPS.length - 1 && t > EMBER_STOPS[i][0]) {
@@ -1859,7 +1869,7 @@ export function initPageFx(): void {
       b.swimPh = rand() * TAU;
       drops.push(b);
     }
-    const mkRock = (cx: number, cy: number, rx: number, ry: number): Rock => {
+    const mkRock = (dx: number, cy: number, rx: number, ry: number): Rock => {
       const pts: [number, number][] = [];
       const n = 9;
       for (let i = 0; i < n; i++) {
@@ -1879,10 +1889,10 @@ export function initPageFx(): void {
         p[0] -= mx;
         p[1] -= my;
       }
-      return { cx, cy, pts };
+      return { dx, cy, pts };
     };
     // five rocks ringing the flame's mouth, mildly overlapping; centre drawn last (front)
-    const rocks = ROCKS.map((r) => mkRock(r.cx, r.cy, r.rx, r.ry));
+    const rocks = ROCKS.map((r) => mkRock(r.dx, r.cy, r.rx, r.ry));
 
     const flecks: Fleck[] = [];
     for (let i = 0; i < 90; i++) {
@@ -1938,9 +1948,9 @@ export function initPageFx(): void {
       for (let i = 0; i <= n; i++) {
         const p = r.pts[i % n];
         const q = r.pts[(i + 1) % n];
-        const x1 = r.cx * rw + p[0] * rh;
+        const x1 = FLAME_X * rw + (r.dx + p[0]) * rh;
         const y1 = r.cy * rh + p[1] * rh;
-        const x2 = r.cx * rw + q[0] * rh;
+        const x2 = FLAME_X * rw + (r.dx + q[0]) * rh;
         const y2 = r.cy * rh + q[1] * rh;
         if (i === 0) {
           ctx2.moveTo((x1 + x2) / 2, (y1 + y2) / 2);
@@ -2050,9 +2060,9 @@ export function initPageFx(): void {
         ctx2.globalAlpha = 1;
         ctx2.fillStyle = '#10120a';
         const rockGrad = ctx2.createLinearGradient(
-          (FLAME_X - EMBER_HALF_SPAN) * rw,
+          FLAME_X * rw - EMBER_HALF_SPAN * rh,
           0,
-          (FLAME_X + EMBER_HALF_SPAN) * rw,
+          FLAME_X * rw + EMBER_HALF_SPAN * rh,
           0,
         );
         for (const [at, col] of EMBER_STOPS) {
