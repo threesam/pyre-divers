@@ -288,12 +288,6 @@ section {
   /* so the heading can size off the CARD instead of the viewport — see .fire */
   container-type: inline-size;
 }
-/* unframed, so the text takes the input's own inset (2.5px ring + 1rem)
-   as its padding: heading, copy, email and button share one left edge */
-.card > h2,
-.card > p {
-  padding: 0 1.15rem;
-}
 .fire {
   margin: 0;
   /* One line, sized to fill the card. The fire-ink gradient is painted across
@@ -302,15 +296,13 @@ section {
      nowrap, and hence a size that actually fits.
      Solved rather than guessed: 100cqw is the card (not the viewport, which is
      what the old 8.6vw tracked — the card stops at 22rem, so past ~400px the
-     line just ran short), less this heading's own 2.3rem of padding, over the
-     width of the string in ems. 11.05 is
+     line just ran short), over the width of the string in ems. 11.05 is
      measured off the live DOM including letter-spacing; the real ratio drifts
      10.75->11.01 with size as hinting rounds, so taking the top of that range
      fills ~99% and can never overflow.
      COUPLED TO THE COPY: re-measure if this heading's text changes. */
   width: 100%;
-  box-sizing: border-box; /* or the padding lands outside the card */
-  font-size: clamp(0.85rem, calc((100cqw - 2.3rem) / 11.05), 4rem);
+  font-size: clamp(0.85rem, calc(100cqw / 11.05), 4rem);
   white-space: nowrap;
   /* 400 like everything else — see the weight note up top. This one is a class
      on an h2, so it would out-specify the element rule and faux-bold. */
