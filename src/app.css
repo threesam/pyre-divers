@@ -507,6 +507,31 @@ button.join:focus-visible {
     width: 100%;
     justify-content: space-between;
   }
+  /* below the stones, the row groups: where to listen on the left,
+     socials on the right. `order` only — the DOM stays in SOCIALS' order
+     (instagram, spotify, youtube, apple, x), which is the ring's own
+     left-to-right order at 769px+ (see SocialStones.svelte); nth-child
+     picks each icon off that fixed order the same way the per-icon
+     rotate() rules below already do. Tab order follows the DOM, not this,
+     so it no longer matches the row visually — accepted for the grouping. */
+  .socials {
+    justify-content: space-between;
+  }
+  .socials li:nth-child(1) {
+    order: 4;
+  } /* instagram */
+  .socials li:nth-child(2) {
+    order: 1;
+  } /* spotify */
+  .socials li:nth-child(3) {
+    order: 2;
+  } /* youtube */
+  .socials li:nth-child(4) {
+    order: 3;
+  } /* apple */
+  .socials li:nth-child(5) {
+    order: 5;
+  } /* x */
 }
 /* ── dive arrival: threesam.com hands off on its marigold coin field.
      `html.diving` is set pre-paint (app.html) so the FIRST frame is
