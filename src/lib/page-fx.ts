@@ -1878,15 +1878,23 @@ export function initPageFx(): void {
     const fanX = (b: Riser) => {
       const rise = Math.max(0, (yb - b.y) / flameH);
       const up = Math.max(0, rise - SEED); // risen since the central entry
-      // ARC: up^1.8 so each body leaves the entry going straight up, then
-      // curves outward as it rises — a fountain arc, not a straight ray.
-      // Coefficient kept low for a tight fan.
-      const band = up ** 1.8 * 0.85;
+      // the lean, in HEIGHTS, from the height risen above the entry (also
+      // in heights — never in widths, or a phone sprays them off both
+      // edges): straight up out of the entry, then leaning out to ~25° at
+      // the top of the screen at most. A candle's drift, not a fountain.
+      const risen = up * flameH;
+      const lean = Math.min(1, risen / 0.4) ** 0.8 * 0.45 * risen;
       const wander =
         (Math.sin(b.y * 3 + b.noisePh) * 0.018 +
           Math.sin(b.y * 6.5 + b.noisePh * 1.7) * 0.01) *
         Math.min(1, up * 4); // ~0 at the entry, so the point stays clean
-      return FLAME_X + b.fan * band + wander;
+      // b.x is a width fraction (drawn at b.x * rw); the section's box is
+      // the canvas's, and is valid before sizeRain has run
+      return (
+        FLAME_X +
+        (b.fan * lean * joinEl.clientHeight) / joinEl.clientWidth +
+        wander
+      );
     };
     const seedDrop = (b: Riser, initial: boolean) => {
       b.col = emberMix(rand());
