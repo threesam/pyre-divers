@@ -19,7 +19,7 @@ export const SITTERS: Sitter[] = [
     name: 'sam',
     full: "Salvatore D'Angelo",
     head: '/sitters/sam.png',
-    w: 204,
+    w: 205,
     log: 0,
     role: 'host',
     url: 'https://threesam.com',
