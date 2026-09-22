@@ -20,7 +20,7 @@
     return {
       ...s,
       dx: log.dx + face * SEAT.lean,
-      y: log.cy - log.ry - SEAT.torso,
+      y: log.cy - log.ry - SEAT.torso - SEAT.neck,
     };
   });
 
@@ -50,7 +50,7 @@
         style="--x:{FLAME_X};--dx:{s.dx};--y:{s.y}"
         onclick={() => open(s)}
       >
-        <img src={s.head} alt="" width="202" height="240" />
+        <img src={s.head} alt="" width={s.w} height="240" />
       </button>
     </li>
   {/each}

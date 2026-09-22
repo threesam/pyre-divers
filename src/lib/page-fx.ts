@@ -161,7 +161,7 @@ export const LOGS = [
  * sits on the shoulder. The component places heads with these; the canvas
  * draws the bodies with them.
  */
-export const SEAT = { torso: 0.058, lean: 0.014 } as const;
+export const SEAT = { torso: 0.058, lean: 0.014, neck: 0.012 } as const;
 
 /**
  * The ember run the stones are outlined in: three stops across a band
@@ -2162,9 +2162,10 @@ export function initPageFx(): void {
       ctx2.lineWidth = Math.max(1.5 * dpr, 0.0036 * rh);
       ctx2.shadowBlur = 0;
       ctx2.beginPath();
-      // torso
+      // torso, then a stick neck that tucks up under the chin of the photo
       ctx2.moveTo(hx, hy);
       ctx2.lineTo(sx, sy);
+      ctx2.lineTo(sx, sy - (SEAT.neck + 0.006) * u);
       // legs, knees up the way a low log makes you sit: thigh forward and a
       // little above the hip, shin down to the ground just under the log.
       // the second leg is offset back a touch for depth.

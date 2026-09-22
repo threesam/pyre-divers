@@ -761,7 +761,7 @@ html.dive-go #veil::before {
     left: calc(var(--x) * 100% + var(--dx) * 100vh);
     top: calc(var(--y) * 100%);
     /* bottom-centre on the shoulder: the chin sits where the neck would */
-    transform: translate(-50%, -96%);
+    transform: translate(-50%, -100%);
     background: none;
     border: 0;
     padding: 0;
