@@ -39,7 +39,9 @@ export const SITTERS: Sitter[] = [
     h: 5.8,
     log: 1,
     role: 'host',
-    // ponytail: steve's links go here once he says which
-    links: [],
+    links: [
+      { label: 'waitlistworkshops.com', href: 'https://waitlistworkshops.com' },
+      { label: 'linkedin', href: 'https://www.linkedin.com/in/drtullius/' },
+    ],
   },
 ];
