@@ -243,6 +243,194 @@ export function setRockLit(i: number | null): void {
   litRock = i;
 }
 
+const noop = (): void => undefined;
+
+/**
+ * The pyre's flame, burning on `c` and sized to `host`, laid out by host's
+ * own `--b` (the mouth) and `--flame` (its size), so each page places it in
+ * CSS. The homepage, the 404 and the unsubscribe page all burn this one.
+ * Returns the teardown.
+ */
+export function mountFire(
+  c: HTMLCanvasElement,
+  host: HTMLElement | null,
+): () => void {
+  // no gl, or a shader that will not build: the page just has no flame
+  const off = () => {
+    c.style.display = 'none';
+    return noop;
+  };
+  // headless audits (lighthouse) run swiftshader: see initPageFx
+  const headlessAudit = /HeadlessChrome/.test(navigator.userAgent);
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const g = headlessAudit
+    ? null
+    : c.getContext('webgl2', {
+        alpha: true,
+        antialias: false,
+        premultipliedAlpha: true,
+      });
+  if (!host || !g) {
+    return off();
+  }
+  const dbg = g.getExtension('WEBGL_debug_renderer_info');
+  const renderer = dbg
+    ? String(g.getParameter(dbg.UNMASKED_RENDERER_WEBGL))
+    : '';
+  const soft = /swiftshader|llvmpipe|software|basic render/i.test(renderer);
+  const VS = `#version 300 es
+  void main() {
+    vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
+    gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
+  }`;
+  const FS = `#version 300 es
+  precision highp float;
+  uniform vec2 uRes;
+  uniform float uT;
+  uniform float uS; // the flame's unit: the scene's (SCENE_W) times --flame
+  uniform float uG; // the scene's unit alone — the ground glow keeps it
+  uniform float uYb; // the mouth, from the bottom (1 - the layout's --b)
+  out vec4 frag;
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float noise(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x),
+               mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+  }
+  float fbm(vec2 p) {
+    float v = 0.0;
+    float amp = 0.5;
+    for (int k = 0; k < 5; k++) { v += amp * noise(p); p *= 2.03; amp *= 0.5; }
+    return v;
+  }
+  void main() {
+    vec2 uv = gl_FragCoord.xy / uRes;
+    float aspect = uRes.x / uRes.y;
+    float px = (uv.x - ${FLAME_X}) * aspect / uS;
+    float yb = uYb;
+    float t = (uv.y - yb) / (0.58 * uS);
+    float sway = (fbm(vec2(px * 3.0, uv.y * 3.0 - uT * 0.8)) - 0.5) * 0.24 * max(t, 0.0);
+    float xx = abs(px - sway);
+    // base half-width in viewport heights: 0.18, up from 0.155, so the
+    // ring of five stones (ROCKS) sits around the base rather than under it
+    float w = mix(0.18, 0.02, clamp(t, 0.0, 1.0));
+    float body = smoothstep(w, w * 0.15, xx);
+    body *= smoothstep(-0.12, 0.06, t) * (1.0 - smoothstep(0.68, 1.05, t));
+    float lick = fbm(vec2(px * 6.0, uv.y * 5.0 - uT * 2.4));
+    float i = body * (0.5 + 0.9 * lick);
+    // the ground glow: wide enough (0.8 units) to reach past the logs, so
+    // the sitters read as silhouettes against it — in the SCENE's unit,
+    // so a phone's smaller flame (--flame) still lights the bodies
+    float glow = smoothstep(0.8, 0.0, length(vec2((uv.x - ${FLAME_X}) * aspect, (uv.y - yb) * 1.5) / uG)) * 0.6;
+    vec3 col = mix(vec3(0.45, 0.05, 0.03), vec3(0.73, 0.11, 0.11), smoothstep(0.04, 0.22, i));
+    col = mix(col, vec3(0.73, 0.11, 0.11), glow);
+    col = mix(col, vec3(0.89, 0.35, 0.13), smoothstep(0.22, 0.48, i));
+    col = mix(col, vec3(0.96, 0.73, 0.26), smoothstep(0.48, 0.74, i));
+    col = mix(col, vec3(1.0, 0.96, 0.82), smoothstep(0.82, 1.0, i));
+    float a = clamp(smoothstep(0.05, 0.3, i) + glow * 0.8, 0.0, 1.0);
+    frag = vec4(col * a, a);
+  }`;
+  const mk = (ty: number, src: string) => {
+    const s = g.createShader(ty);
+    if (!s) {
+      return null;
+    }
+    g.shaderSource(s, src);
+    g.compileShader(s);
+    return g.getShaderParameter(s, g.COMPILE_STATUS) ? s : null;
+  };
+  const vsh = mk(g.VERTEX_SHADER, VS);
+  const fsh = mk(g.FRAGMENT_SHADER, FS);
+  if (!vsh || !fsh) {
+    return off();
+  }
+  const prog = g.createProgram();
+  if (!prog) {
+    return off();
+  }
+  g.attachShader(prog, vsh);
+  g.attachShader(prog, fsh);
+  g.linkProgram(prog);
+  if (!g.getProgramParameter(prog, g.LINK_STATUS)) {
+    return off();
+  }
+  g.useProgram(prog);
+  const uRes = g.getUniformLocation(prog, 'uRes');
+  const uT = g.getUniformLocation(prog, 'uT');
+  const uS = g.getUniformLocation(prog, 'uS');
+  const uG = g.getUniformLocation(prog, 'uG');
+  const uYb = g.getUniformLocation(prog, 'uYb');
+  g.enable(g.BLEND);
+  g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
+  g.clearColor(0, 0, 0, 0);
+  let fw = 0;
+  let fh = 0;
+  let fireVisible = !('IntersectionObserver' in window);
+  const io =
+    'IntersectionObserver' in window
+      ? new IntersectionObserver(
+          (es) => {
+            fireVisible = es.some((en) => en.isIntersecting);
+          },
+          { threshold: 0.02 },
+        )
+      : null;
+  io?.observe(host);
+  const drawFire = (t: number) => {
+    g.viewport(0, 0, fw, fh);
+    g.uniform2f(uRes, fw, fh);
+    g.uniform1f(uG, Math.min(1, fw / fh / SCENE_W));
+    g.uniform1f(
+      uS,
+      Math.min(1, fw / fh / SCENE_W) * layout(host, '--flame', 1),
+    );
+    g.uniform1f(uYb, 1 - layout(host, '--b', FLAME_BASE));
+    g.uniform1f(uT, t);
+    g.clear(g.COLOR_BUFFER_BIT);
+    g.drawArrays(g.TRIANGLES, 0, 3);
+  };
+  // sized to the SECTION, not the document: #join is 100dvh, and on iOS the
+  // document's clientHeight is the small viewport — they differ by the
+  // toolbar once it collapses, and the mouth would drift off the stones
+  const sizeFire = () => {
+    fw = Math.max(1, Math.round(host.clientWidth * dpr * 0.6)); // half-ish res — flames are soft
+    fh = Math.max(1, Math.round(host.clientHeight * dpr * 0.6));
+    c.width = fw;
+    c.height = fh;
+    c.style.width = `${host.clientWidth}px`;
+    c.style.height = `${host.clientHeight}px`;
+    // resizing clears the canvas: the loop repaints it, a still frame won't
+    if (still || soft) {
+      drawFire(7);
+    }
+  };
+  // pages that unmount (404, unsubscribe) hand the context back: browsers
+  // cap live webgl contexts, and each visit would otherwise leak one
+  let raf = 0;
+  const stop = () => {
+    cancelAnimationFrame(raf);
+    removeEventListener('resize', sizeFire);
+    io?.disconnect();
+    g.getExtension('WEBGL_lose_context')?.loseContext();
+  };
+  sizeFire(); // and, when still, the one frame
+  addEventListener('resize', sizeFire);
+  if (still || soft) {
+    return stop;
+  }
+  drawFire(0); // warm the pipeline off-screen — first visible frame stays cheap
+  const loop = (now: number) => {
+    if (fireVisible) {
+      drawFire(now * 0.001);
+    }
+    raf = requestAnimationFrame(loop);
+  };
+  raf = requestAnimationFrame(loop);
+  return stop;
+}
+
 export function initPageFx(): void {
   // headless audits (lighthouse) run swiftshader: every gl context they
   // create is a long task. they get the chunked static frame, gl-free.
@@ -1684,165 +1872,11 @@ export function initPageFx(): void {
 
   // screen-two modules land in their own tasks — keeps hydration's
   // main-thread work under the long-task threshold (lighthouse tbt)
-  setTimeout(function fire() {
-    const c = must<HTMLCanvasElement>('#fire');
-    const joinEl = document.getElementById('join');
-    const g = headlessAudit
-      ? null
-      : c.getContext('webgl2', {
-          alpha: true,
-          antialias: false,
-          premultipliedAlpha: true,
-        });
-    if (!joinEl || !g) {
-      c.style.display = 'none';
-      return;
-    }
-    const dbg2 = g.getExtension('WEBGL_debug_renderer_info');
-    const renderer2 = dbg2
-      ? String(g.getParameter(dbg2.UNMASKED_RENDERER_WEBGL))
-      : '';
-    const soft2 = /swiftshader|llvmpipe|software|basic render/i.test(renderer2);
-    const VS2 = `#version 300 es
-    void main() {
-      vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
-      gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
-    }`;
-    const FS2 = `#version 300 es
-    precision highp float;
-    uniform vec2 uRes;
-    uniform float uT;
-    uniform float uS; // the flame's unit: the scene's (SCENE_W) times --flame
-    uniform float uG; // the scene's unit alone — the ground glow keeps it
-    uniform float uYb; // the mouth, from the bottom (1 - the layout's --b)
-    out vec4 frag;
-    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-    float noise(vec2 p) {
-      vec2 i = floor(p), f = fract(p);
-      vec2 u = f * f * (3.0 - 2.0 * f);
-      return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x),
-                 mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
-    }
-    float fbm(vec2 p) {
-      float v = 0.0;
-      float amp = 0.5;
-      for (int k = 0; k < 5; k++) { v += amp * noise(p); p *= 2.03; amp *= 0.5; }
-      return v;
-    }
-    void main() {
-      vec2 uv = gl_FragCoord.xy / uRes;
-      float aspect = uRes.x / uRes.y;
-      float px = (uv.x - ${FLAME_X}) * aspect / uS;
-      float yb = uYb;
-      float t = (uv.y - yb) / (0.58 * uS);
-      float sway = (fbm(vec2(px * 3.0, uv.y * 3.0 - uT * 0.8)) - 0.5) * 0.24 * max(t, 0.0);
-      float xx = abs(px - sway);
-      // base half-width in viewport heights: 0.18, up from 0.155, so the
-      // ring of five stones (ROCKS) sits around the base rather than under it
-      float w = mix(0.18, 0.02, clamp(t, 0.0, 1.0));
-      float body = smoothstep(w, w * 0.15, xx);
-      body *= smoothstep(-0.12, 0.06, t) * (1.0 - smoothstep(0.68, 1.05, t));
-      float lick = fbm(vec2(px * 6.0, uv.y * 5.0 - uT * 2.4));
-      float i = body * (0.5 + 0.9 * lick);
-      // the ground glow: wide enough (0.8 units) to reach past the logs, so
-      // the sitters read as silhouettes against it — in the SCENE's unit,
-      // so a phone's smaller flame (--flame) still lights the bodies
-      float glow = smoothstep(0.8, 0.0, length(vec2((uv.x - ${FLAME_X}) * aspect, (uv.y - yb) * 1.5) / uG)) * 0.6;
-      vec3 col = mix(vec3(0.45, 0.05, 0.03), vec3(0.73, 0.11, 0.11), smoothstep(0.04, 0.22, i));
-      col = mix(col, vec3(0.73, 0.11, 0.11), glow);
-      col = mix(col, vec3(0.89, 0.35, 0.13), smoothstep(0.22, 0.48, i));
-      col = mix(col, vec3(0.96, 0.73, 0.26), smoothstep(0.48, 0.74, i));
-      col = mix(col, vec3(1.0, 0.96, 0.82), smoothstep(0.82, 1.0, i));
-      float a = clamp(smoothstep(0.05, 0.3, i) + glow * 0.8, 0.0, 1.0);
-      frag = vec4(col * a, a);
-    }`;
-    const mk = (ty: number, src: string) => {
-      const s = g.createShader(ty);
-      if (!s) {
-        return null;
-      }
-      g.shaderSource(s, src);
-      g.compileShader(s);
-      return g.getShaderParameter(s, g.COMPILE_STATUS) ? s : null;
-    };
-    const v2 = mk(g.VERTEX_SHADER, VS2);
-    const f2 = mk(g.FRAGMENT_SHADER, FS2);
-    if (!v2 || !f2) {
-      c.style.display = 'none';
-      return;
-    }
-    const p2 = g.createProgram();
-    if (!p2) {
-      c.style.display = 'none';
-      return;
-    }
-    g.attachShader(p2, v2);
-    g.attachShader(p2, f2);
-    g.linkProgram(p2);
-    if (!g.getProgramParameter(p2, g.LINK_STATUS)) {
-      c.style.display = 'none';
-      return;
-    }
-    g.useProgram(p2);
-    const uRes2 = g.getUniformLocation(p2, 'uRes');
-    const uT2 = g.getUniformLocation(p2, 'uT');
-    const uS2 = g.getUniformLocation(p2, 'uS');
-    const uG2 = g.getUniformLocation(p2, 'uG');
-    const uYb2 = g.getUniformLocation(p2, 'uYb');
-    g.enable(g.BLEND);
-    g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
-    g.clearColor(0, 0, 0, 0);
-    let fw = 0;
-    let fh = 0;
-    // sized to the SECTION, not the document: #join is 100dvh, and on iOS the
-    // document's clientHeight is the small viewport — they differ by the
-    // toolbar once it collapses, and the mouth would drift off the stones
-    const sizeFire = () => {
-      fw = Math.max(1, Math.round(joinEl.clientWidth * dpr * 0.6)); // half-ish res — flames are soft
-      fh = Math.max(1, Math.round(joinEl.clientHeight * dpr * 0.6));
-      c.width = fw;
-      c.height = fh;
-      c.style.width = `${joinEl.clientWidth}px`;
-      c.style.height = `${joinEl.clientHeight}px`;
-    };
-    sizeFire();
-    addEventListener('resize', sizeFire);
-    let fireVisible = false;
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(
-        (es) => {
-          fireVisible = es.some((en) => en.isIntersecting);
-        },
-        { threshold: 0.02 },
-      ).observe(joinEl);
-    } else {
-      fireVisible = true;
-    }
-    const drawFire = (t: number) => {
-      g.viewport(0, 0, fw, fh);
-      g.uniform2f(uRes2, fw, fh);
-      g.uniform1f(uG2, Math.min(1, fw / fh / SCENE_W));
-      g.uniform1f(
-        uS2,
-        Math.min(1, fw / fh / SCENE_W) * layout(joinEl, '--flame', 1),
-      );
-      g.uniform1f(uYb2, 1 - layout(joinEl, '--b', FLAME_BASE));
-      g.uniform1f(uT2, t);
-      g.clear(g.COLOR_BUFFER_BIT);
-      g.drawArrays(g.TRIANGLES, 0, 3);
-    };
-    if (still || soft2) {
-      drawFire(7);
-      return;
-    }
-    drawFire(0); // warm the pipeline off-screen — first visible frame stays cheap
-    const loop = (now: number) => {
-      if (fireVisible) {
-        drawFire(now * 0.001);
-      }
-      requestAnimationFrame(loop);
-    };
-    requestAnimationFrame(loop);
+  setTimeout(() => {
+    mountFire(
+      must<HTMLCanvasElement>('#fire'),
+      document.getElementById('join'),
+    );
   }, 0);
 
   // ── the risers: white divers (and flecks, on desktop) floating up

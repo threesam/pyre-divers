@@ -319,11 +319,77 @@ section {
   font-weight: 400;
   letter-spacing: -0.01em;
 }
-.fire .fire-ink {
+.fire-ink {
   background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+/* the one-screen pages (404, unsubscribe): the homepage's flame on its own,
+   rooted at the bottom edge, the copy standing in the smoke above it. the
+   flame's width tracks the screen's aspect, so a phone needs the bigger
+   --flame to not read as a candle, and a desktop the smaller to stay clear
+   of the copy */
+.pyre {
+  --b: 0.99;
+  --flame: 1.15;
+  /* grows past the screen rather than clipping the button: short landscape
+     phones and enlarged text (section is a fixed 100dvh, overflow hidden) */
+  height: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding: calc(3rem + 12dvh) 1.5rem 2rem;
+  background: #10120a;
+  text-align: center;
+}
+.pyre canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.pyre-copy {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1.1rem;
+  max-width: 24rem;
+}
+@media (min-width: 769px) {
+  .pyre {
+    --flame: 0.7;
+  }
+  /* room for the heading on one line */
+  .pyre-copy {
+    max-width: 36rem;
+  }
+}
+/* short and wide (a phone on its side): the flame is sized off the height,
+   so at full size it burns straight through the copy */
+@media (max-height: 520px) {
+  .pyre {
+    --flame: 0.45;
+  }
+}
+.pyre h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 9vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+.pyre p {
+  margin: 0;
+  color: #b7ad9d;
+  line-height: 1.55;
+}
+.pyre form {
+  margin-top: 0.4rem;
+}
+.pyre .ember {
+  color: #f5b942;
 }
 .card p {
   margin: 0;
