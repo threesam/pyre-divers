@@ -140,7 +140,7 @@
      a viewport height, or less where the viewport is narrower than the
      scene. This is the pre-script value; page-fx overwrites it with the unit
      it measured. (--b, the flame's mouth, is set in app.css per layout.) -->
-<section id="join" style="--u:min(100dvh, {100 / SCENE_W}vw)">
+<section id="join" style="--u:min(100svh, {100 / SCENE_W}vw)">
   <canvas id="fire" aria-hidden="true"></canvas>
   <canvas id="rain" aria-hidden="true"></canvas>
   <div class="card">

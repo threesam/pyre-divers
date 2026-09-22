@@ -391,9 +391,9 @@ export function mountFire(
     g.clear(g.COLOR_BUFFER_BIT);
     g.drawArrays(g.TRIANGLES, 0, 3);
   };
-  // sized to the SECTION, not the document: #join is 100dvh, and on iOS the
-  // document's clientHeight is the small viewport — they differ by the
-  // toolbar once it collapses, and the mouth would drift off the stones
+  // sized to the SECTION, not the document: the section is its own box
+  // (100svh on the home page, taller than the screen on a short one), and
+  // the mouth has to sit where the section's --b says, on the stones
   const sizeFire = () => {
     fw = Math.max(1, Math.round(host.clientWidth * dpr * 0.6)); // half-ish res — flames are soft
     fh = Math.max(1, Math.round(host.clientHeight * dpr * 0.6));

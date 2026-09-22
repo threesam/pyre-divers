@@ -20,7 +20,7 @@
   // COORDINATES COME FROM THE CANVAS, not from a copy of them. ROCKS is the
   // one place the stones are described; page-fx feeds it to mkRock and this
   // feeds it to CSS, so a stone cannot move out from under its own link.
-  // `section` is position:relative and exactly 100dvh (app.css:52) and #fire
+  // `section` is position:relative and exactly 100svh (app.css:52) and #fire
   // is inset:0 inside it, so a percentage of #join is the same coordinate
   // the canvas paints in.
   //

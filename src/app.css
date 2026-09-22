@@ -49,10 +49,13 @@ h3,
 h4 {
   font-weight: 400;
 }
+/* svh, not dvh: the SMALL viewport never changes, so opening Safari's
+   toolbar or search doesn't resize the scene under you (dvh did, and the
+   fire and logs, laid out as fractions of the height, jumped with it) */
 section {
   position: relative;
   height: 100vh;
-  height: 100dvh;
+  height: 100svh;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -220,6 +223,10 @@ section {
    --b is the flame's mouth as a fraction of the height; page-fx reads it
    back, so the canvas and the DOM agree at every breakpoint. */
 #join {
+  /* with the toolbar collapsed the screen is taller than 100svh; this dark
+     margin (static too, 0 on desktop) is what shows below the scene then,
+     under its own bottom veil, instead of the splash peeking in above */
+  margin-bottom: calc(100lvh - 100svh);
   --b: 0.82;
   --flame: 1;
   --seat: 1;
@@ -235,7 +242,7 @@ section {
     /* --b and the top padding move together: 6% of the height each, so the
        card, the row and the fire all sit that much lower as one piece */
     --b: 0.62;
-    padding-top: calc(1rem + 6dvh);
+    padding-top: calc(1rem + 6svh);
     /* the scene is short here; a full flame swallows it */
     --flame: 0.6;
     /* pulls the logs in from the edge to the text's own margin (page-fx
@@ -334,14 +341,14 @@ section {
   --b: 0.99;
   --flame: 1.15;
   /* grows past the screen rather than clipping the button: short landscape
-     phones and enlarged text (section is a fixed 100dvh, overflow hidden) */
+     phones and enlarged text (section is a fixed 100svh, overflow hidden) */
   height: auto;
   min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100svh;
   display: grid;
   justify-items: center;
   align-content: start;
-  padding: calc(3rem + 12dvh) 1.5rem 2rem;
+  padding: calc(3rem + 12svh) 1.5rem 2rem;
   background: #10120a;
   text-align: center;
 }
@@ -758,7 +765,7 @@ html.dive-go #veil::before {
    numbers: --x is FLAME_X (a width fraction), --dx the stone's offset from
    it and --y its centre, both in scene units (--u on #join: a viewport
    height, or less on a narrow screen — see page-fx SCENE_W). #join is
-   position:relative and exactly 100dvh, and #fire is inset:0 within it, so
+   position:relative and exactly 100svh, and #fire is inset:0 within it, so
    a percentage here lands where the canvas paints.
 
    Desktop only. Below 769px the stones are too small and too close to be

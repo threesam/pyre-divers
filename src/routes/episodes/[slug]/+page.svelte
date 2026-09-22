@@ -218,7 +218,7 @@
     max-width: 42rem;
     margin: 0 auto;
     padding: 3.5rem 1.25rem 5rem;
-    min-height: 100dvh;
+    min-height: 100svh;
   }
   .back {
     color: #7d745f;
