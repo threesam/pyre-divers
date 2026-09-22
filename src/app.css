@@ -339,7 +339,7 @@ section {
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
-  place-items: center;
+  justify-items: center;
   align-content: start;
   padding: calc(3rem + 12dvh) 1.5rem 2rem;
   background: #10120a;
