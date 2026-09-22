@@ -19,7 +19,9 @@
     const face = -Math.sign(log.dx); // +1 faces right, toward the flame
     return {
       ...s,
-      dx: log.dx + face * SEAT.lean,
+      // the neck continues the torso's lean, so the head sits at the end of
+      // that one straight line
+      dx: log.dx + face * SEAT.lean * (1 + SEAT.neck / SEAT.torso),
       y: log.cy - log.ry - SEAT.torso - SEAT.neck,
     };
   });

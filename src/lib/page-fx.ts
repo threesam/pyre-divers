@@ -135,10 +135,10 @@ export const FLAME_BASE = 0.82;
  * sit on the flame the same way everywhere.
  */
 export const ROCKS = [
-  { dx: -0.12, cy: FLAME_BASE + 0.012, rx: 0.043, ry: 0.026 },
-  { dx: 0.126, cy: FLAME_BASE + 0.01, rx: 0.041, ry: 0.025 },
-  { dx: -0.063, cy: FLAME_BASE + 0.02, rx: 0.06, ry: 0.032 },
-  { dx: 0.066, cy: FLAME_BASE + 0.018, rx: 0.05, ry: 0.029 },
+  { dx: -0.105, cy: FLAME_BASE + 0.012, rx: 0.036, ry: 0.022 },
+  { dx: 0.118, cy: FLAME_BASE + 0.01, rx: 0.034, ry: 0.021 },
+  { dx: -0.045, cy: FLAME_BASE + 0.02, rx: 0.052, ry: 0.028 },
+  { dx: 0.062, cy: FLAME_BASE + 0.018, rx: 0.042, ry: 0.024 },
   { dx: 0.008, cy: FLAME_BASE + 0.028, rx: 0.062, ry: 0.033 },
 ] as const;
 
@@ -161,7 +161,7 @@ export const LOGS = [
  * sits on the shoulder. The component places heads with these; the canvas
  * draws the bodies with them.
  */
-export const SEAT = { torso: 0.058, lean: 0.014, neck: 0.012 } as const;
+export const SEAT = { torso: 0.058, lean: 0.014, neck: 0.007 } as const;
 
 /**
  * The ember run the stones are outlined in: three stops across a band
@@ -2162,29 +2162,31 @@ export function initPageFx(): void {
       ctx2.lineWidth = Math.max(1.5 * dpr, 0.0036 * rh);
       ctx2.shadowBlur = 0;
       ctx2.beginPath();
-      // torso, then a stick neck that tucks up under the chin of the photo
+      // one straight line hip -> shoulder -> under the chin of the photo;
+      // the neck continues the torso's lean
+      const nk = (SEAT.neck + 0.006) / SEAT.torso;
       ctx2.moveTo(hx, hy);
-      ctx2.lineTo(sx, sy);
-      ctx2.lineTo(sx, sy - (SEAT.neck + 0.006) * u);
-      // legs, knees up the way a low log makes you sit: thigh forward and a
-      // little above the hip, shin down to the ground just under the log.
-      // the second leg is offset back a touch for depth.
+      ctx2.lineTo(sx + (sx - hx) * nk, sy + (sy - hy) * nk);
+      // legs: thigh level out to the knee, shin straight down to the ground
+      // under the log. the second leg sits back a touch for depth.
       for (const [k, d] of [
-        [0.042, 0],
-        [0.034, 0.005],
+        [0.044, 0],
+        [0.036, 0.005],
       ]) {
         ctx2.moveTo(hx, hy);
-        ctx2.lineTo(hx + f * k * u, hy - (0.014 - d) * u);
-        ctx2.lineTo(hx + f * (k + 0.01) * u, hy + (0.038 + d) * u);
+        ctx2.lineTo(hx + f * k * u, hy - (0.006 - d) * u);
+        ctx2.lineTo(hx + f * (k + 0.006) * u, hy + (0.04 + d) * u);
       }
-      // arms: shoulder, elbow, a hand resting on the knee
+      // arms: upper arm angles forward off the torso line to an elbow,
+      // forearm on to the knee — a visible bend, so shoulder-hip-knee never
+      // closes into a triangle
       for (const [k, d] of [
-        [0.042, 0],
-        [0.034, 0.005],
+        [0.044, 0],
+        [0.036, 0.005],
       ]) {
-        ctx2.moveTo(sx, sy + 0.006 * u);
-        ctx2.lineTo(sx + f * 0.01 * u, sy + 0.034 * u);
-        ctx2.lineTo(hx + f * (k - 0.004) * u, hy - (0.012 - d) * u);
+        ctx2.moveTo(sx, sy);
+        ctx2.lineTo(sx + f * 0.016 * u, sy + 0.026 * u);
+        ctx2.lineTo(hx + f * (k - 0.006) * u, hy - (0.008 - d) * u);
       }
       ctx2.stroke();
       ctx2.globalAlpha = 1;

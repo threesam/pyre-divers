@@ -52,10 +52,9 @@
    * drawn last is the one in front, and the target that should win the
    * pointer where they overlap. Derived, so it cannot disagree.
    *
-   * `size` is the icon box in vh at ~52% of the stone's height. ry is a
+   * `size` is the icon box in vh at ~62% of the stone's height. ry is a
    * fraction of viewport height, so the stone is `ry * 200` vh tall and
-   * 52% of that is `ry * 104` — room around the glyph so a wobble in the
-   * outline never clips it.
+   * 62% of that is `ry * 124`.
    *
    * `ink` is the ember run sampled where this stone sits, so each icon
    * wears the shade its own outline already does.
@@ -84,7 +83,7 @@
       rx: r.rx,
       ry: r.ry,
       z: s.rock + 1,
-      size: r.ry * 104,
+      size: r.ry * 124,
       ink: emberAt(r.dx),
     };
   });
