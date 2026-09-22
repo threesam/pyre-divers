@@ -2165,10 +2165,12 @@ export function initPageFx(): void {
       // torso, up past the shoulder and under the chin of the photo
       ctx2.moveTo(hx, hy);
       ctx2.lineTo(hx, sy - (SEAT.neck + 0.006) * u);
-      // arms: shoulder, down and out to about hip height
+      // arms: shoulder, elbow out, hand down on the log's top edge beside
+      // the hip
       for (const side of [-1, 1]) {
         ctx2.moveTo(hx, sy);
-        ctx2.lineTo(hx + side * 0.026 * u, sy + 0.048 * u);
+        ctx2.lineTo(hx + side * 0.028 * u, sy + 0.03 * u);
+        ctx2.lineTo(hx + side * 0.022 * u, hy);
       }
       // legs, knees up toward the fire: thigh forward and above the log's
       // top edge (a level thigh vanishes into that outline), shin down to
