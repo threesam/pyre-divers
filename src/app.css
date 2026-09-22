@@ -779,19 +779,12 @@ html.dive-go #veil::before {
     width: auto;
     /* photographs by firelight: warmed and dimmed to sit in the scene,
        full colour when pointed at */
-    filter: sepia(0.4) saturate(0.85) brightness(0.82) var(--sitter-ink);
+    filter: sepia(0.4) saturate(0.85) brightness(0.82);
     transition: filter 0.25s;
-    /* the body's line, drawn round the photo: four chained drop-shadows
-       dilate the cutout's alpha by --s in every direction. --s tracks the
-       canvas stroke (0.0036 of the viewport height). */
-    --s: 0.26vh;
-    --sitter-ink: drop-shadow(var(--s) 0 0 #000)
-      drop-shadow(calc(-1 * var(--s)) 0 0 #000) drop-shadow(0 var(--s) 0 #000)
-      drop-shadow(0 calc(-1 * var(--s)) 0 #000);
   }
   .sitters button:hover img,
   .sitters button:focus-visible img {
-    filter: var(--sitter-ink);
+    filter: none;
   }
 }
 .sitter-card {
