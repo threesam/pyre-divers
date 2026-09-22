@@ -31,7 +31,7 @@ export const SITTERS: Sitter[] = [
     name: 'steve',
     full: 'Steve Tullius',
     head: '/sitters/steve.png',
-    w: 161,
+    w: 219,
     h: 5.8,
     log: 1,
     role: 'host',
