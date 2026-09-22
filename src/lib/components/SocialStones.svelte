@@ -44,10 +44,10 @@
   // is written down twice. Listed left to right as they sit on the ring, so
   // the DOM order (tab order, and the row below 769px) matches what you see.
   const SOCIALS: Social[] = [
-    { name: 'instagram', href: SHOW.instagram, rock: 0, icon: 'instagram' },
+    { name: 'apple podcasts', href: SHOW.apple, rock: 0, icon: 'apple' },
     { name: 'spotify', href: SHOW.spotify, rock: 2, icon: 'spotify' },
     { name: 'youtube', href: SHOW.youtube, rock: 4, icon: 'youtube' },
-    { name: 'apple podcasts', href: SHOW.apple, rock: 3, icon: 'apple' },
+    { name: 'instagram', href: SHOW.instagram, rock: 3, icon: 'instagram' },
     { name: 'x', href: SHOW.x, rock: 1, icon: 'x' },
   ];
 
