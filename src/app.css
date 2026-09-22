@@ -581,9 +581,12 @@ html.dive-go #veil::before {
    on #fire (aria-hidden, decorative); these are the real anchors laid over
    them, so keyboard and screen-reader users get ordinary links.
 
-   --x / --y come from the component and are the canvas's own normalized
-   rock centres. #join is position:relative and exactly 100dvh, and #fire is
-   inset:0 within it, so a percentage here lands where the canvas paints.
+   --x / --dx / --y come from the component and are the canvas's own
+   numbers: --x is FLAME_X (a width fraction), --dx the stone's offset from
+   it and --y its centre, both in viewport HEIGHTS. #join is
+   position:relative and exactly 100dvh, and #fire is inset:0 within it, so
+   a percentage here lands where the canvas paints, and 1vh is the canvas's
+   rh / 100.
 
    Desktop only. Below 769px #fire is display:none — no stones to stamp —
    and the same list reflows into a row under the card. */
@@ -690,10 +693,10 @@ html.dive-go #veil::before {
 /* 1024, not the 769 the stones themselves appear at. The card is pinned
    bottom-right at max-width 26rem inside 3.5rem padding, and its wobble
    frame reaches another 1.5rem left, so its left edge sits at W - 496.
-   The rightmost stone (the outer right of five) is centred at 0.451W and
-   reaches about 36px past that at a 900px-tall window, so the two meet at
-   roughly 970px; 1024 leaves a margin. It was 960 when the ring was three
-   stones and the rightmost sat at 0.395W. Below the breakpoint the stones
+   The rightmost stone (the outer right of five) is centred at W/3 + 0.118H
+   and reaches 0.04H past that, so at H = 900 its edge is at W/3 + 142: the
+   two meet at roughly 960px, and 1024 leaves a margin up to H ≈ 1200. It
+   was 960 when the ring was three stones. Below the breakpoint the stones
    go back to being unstamped decoration. */
 @media (min-width: 1024px) {
   /* on the stones: each anchor leaves the row and sits on its own rock.
@@ -705,7 +708,10 @@ html.dive-go #veil::before {
   }
   .socials a {
     position: absolute;
-    left: calc(var(--x) * 100%);
+    /* the ring is laid out in heights, like the canvas: x = FLAME_X of the
+       width plus dx of the height, so the cluster keeps its shape at every
+       aspect ratio instead of stretching apart on wide windows */
+    left: calc(var(--x) * 100% + var(--dx) * 100vh);
     top: calc(var(--y) * 100%);
     /* The target is the WHOLE stone, not the icon. --rx/--ry are the rock's
        half-extents as FRACTIONS of viewport height (the canvas scales point

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ROCKS, emberAt, setRockLit } from '$lib/page-fx';
+  import { FLAME_X, ROCKS, emberAt, setRockLit } from '$lib/page-fx';
 
   // The social and listening links, stamped on the five stones ringing the
   // flame's mouth: the places to listen in the middle, the socials outside.
@@ -93,13 +93,13 @@
     return {
       ...s,
       href,
-      x: r.cx,
+      dx: r.dx,
       y: r.cy,
       rx: r.rx,
       ry: r.ry,
       z: s.rock + 1,
       size: r.ry * 124,
-      ink: emberAt(r.cx),
+      ink: emberAt(r.dx),
     };
   });
 
@@ -162,7 +162,7 @@
         data-umami-event={EVENT[s.icon]}
         data-umami-event-from="home"
         class:lit={lit === s.rock}
-        style="--x:{s.x};--y:{s.y};--rx:{s.rx};--ry:{s.ry};--z:{s.z};--size:{s.size};--ink:{s.ink}"
+        style="--x:{FLAME_X};--dx:{s.dx};--y:{s.y};--rx:{s.rx};--ry:{s.ry};--z:{s.z};--size:{s.size};--ink:{s.ink}"
         onpointerenter={(e) => light(s.rock, e.currentTarget)}
         onpointerleave={douse}
         onfocus={(e) => light(s.rock, e.currentTarget)}
