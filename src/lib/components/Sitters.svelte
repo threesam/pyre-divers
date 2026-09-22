@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FLAME_X, LOGS, SEAT } from '$lib/page-fx';
+  import { FLAME_BASE, FLAME_X, LOGS, SEAT } from '$lib/page-fx';
   import { SITTERS } from '$lib/sitters';
   import { resolve } from '$app/paths';
 
@@ -21,7 +21,8 @@
     return {
       ...s,
       dx: log.dx,
-      y: log.cy - log.ry - SEAT.torso - SEAT.neck,
+      // from the mouth, in units — the layout puts the mouth where --b says
+      y: log.cy - log.ry - SEAT.torso - SEAT.neck - FLAME_BASE,
       // which side of the fire: the card hangs outward on desktop, inward
       // on a phone (where outward is off screen)
       side: log.dx < 0 ? 'left' : 'right',

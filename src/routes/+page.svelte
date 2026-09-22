@@ -4,7 +4,7 @@
   import Sitters from '$lib/components/Sitters.svelte';
   import { resolve } from '$app/paths';
   import { FEED, HOSTS, SAME_AS } from '$lib/links';
-  import { FLAME_BASE, SCENE_W } from '$lib/page-fx';
+  import { SCENE_W } from '$lib/page-fx';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -145,22 +145,6 @@
       yChannelSelector="G"
     />
   </filter>
-  <filter id="wobble-c" x="-6%" y="-6%" width="112%" height="112%">
-    <feTurbulence
-      type="fractalNoise"
-      baseFrequency="0.006 0.02"
-      numOctaves="2"
-      seed="23"
-      result="n"
-    />
-    <feDisplacementMap
-      in="SourceGraphic"
-      in2="n"
-      scale="7"
-      xChannelSelector="R"
-      yChannelSelector="G"
-    />
-  </filter>
 </svg>
 <Splash />
 <!-- dive arrival veil: shown only when the document arrived with ?dive
@@ -208,8 +192,8 @@
 </div>
 <!-- --u is the scene unit the canvas lays the fire out in (page-fx SCENE_W):
      a viewport height, or less where the viewport is narrower than the
-     scene. --b is the flame's mouth; the stones and heads sit off it. -->
-<section id="join" style="--u:min(100dvh, {100 / SCENE_W}vw);--b:{FLAME_BASE}">
+     scene. (--b, the flame's mouth, is set in app.css per layout.) -->
+<section id="join" style="--u:min(100dvh, {100 / SCENE_W}vw)">
   <canvas id="fire" aria-hidden="true"></canvas>
   <canvas id="rain" aria-hidden="true"></canvas>
   <div class="card">
@@ -237,19 +221,32 @@
       </div>
       <button class="join" type="submit">save me a seat.</button>
     </form>
-    <p class="tiny patch">no spam. one email per dive.</p>
   </div>
   {#if data.latest}
-    <!-- the newest dive, its own slab under the card -->
-    <a
-      class="dive"
-      href={resolve('/episodes/[slug]', { slug: data.latest.slug })}
-      data-umami-event="latest-dive"
-    >
-      <span class="dive-kicker">latest dive · no. {data.latest.number}</span>
-      <span class="dive-title">{data.latest.title}.</span>
-      <span class="dive-meta">{data.latest.minutes} min · listen or read</span>
-    </a>
+    <!-- the dives: the newest as the call-out, the rest listed under it -->
+    <div class="dives">
+      <a
+        class="dive"
+        href={resolve('/episodes/[slug]', { slug: data.latest.slug })}
+        data-umami-event="latest-dive"
+      >
+        <span class="dive-kicker">latest dive · no. {data.latest.number}</span>
+        <span class="dive-title">{data.latest.title}.</span>
+        <span class="dive-meta">{data.latest.minutes} min · listen or read</span
+        >
+      </a>
+      {#if data.dives.length > 1}
+        <ol class="dive-list" reversed>
+          {#each data.dives.slice(1) as d (d.slug)}
+            <li>
+              <a href={resolve('/episodes/[slug]', { slug: d.slug })}
+                >{d.title}</a
+              >
+            </li>
+          {/each}
+        </ol>
+      {/if}
+    </div>
   {/if}
   <SocialStones />
   <Sitters dives={data.dives} />

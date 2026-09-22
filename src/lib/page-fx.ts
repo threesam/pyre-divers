@@ -121,6 +121,15 @@ export const FLAME_BASE = 0.82;
  * as `--u` (see +page.svelte), so the DOM heads and links scale with it.
  */
 export const SCENE_W = 0.8;
+/**
+ * Where the flame's mouth sits, as a fraction of the height: the layout's
+ * `--b` on #join (app.css sets it per breakpoint), read back so the canvas
+ * and the DOM can never disagree. FLAME_BASE is the desktop value.
+ */
+function mouth(join: HTMLElement): number {
+  const b = parseFloat(getComputedStyle(join).getPropertyValue('--b'));
+  return Number.isFinite(b) ? b : FLAME_BASE;
+}
 
 /**
  * The five stones, in PAINT order — the last one is drawn on top, so this
@@ -1696,6 +1705,7 @@ export function initPageFx(): void {
     uniform vec2 uRes;
     uniform float uT;
     uniform float uS; // scene unit as a fraction of the height (SCENE_W)
+    uniform float uYb; // the mouth, from the bottom (1 - the layout's --b)
     out vec4 frag;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     float noise(vec2 p) {
@@ -1714,7 +1724,7 @@ export function initPageFx(): void {
       vec2 uv = gl_FragCoord.xy / uRes;
       float aspect = uRes.x / uRes.y;
       float px = (uv.x - ${FLAME_X}) * aspect / uS;
-      float yb = ${1 - FLAME_BASE};
+      float yb = uYb;
       float t = (uv.y - yb) / (0.58 * uS);
       float sway = (fbm(vec2(px * 3.0, uv.y * 3.0 - uT * 0.8)) - 0.5) * 0.24 * max(t, 0.0);
       float xx = abs(px - sway);
@@ -1767,6 +1777,7 @@ export function initPageFx(): void {
     const uRes2 = g.getUniformLocation(p2, 'uRes');
     const uT2 = g.getUniformLocation(p2, 'uT');
     const uS2 = g.getUniformLocation(p2, 'uS');
+    const uYb2 = g.getUniformLocation(p2, 'uYb');
     g.enable(g.BLEND);
     g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
     g.clearColor(0, 0, 0, 0);
@@ -1798,6 +1809,7 @@ export function initPageFx(): void {
       g.viewport(0, 0, fw, fh);
       g.uniform2f(uRes2, fw, fh);
       g.uniform1f(uS2, Math.min(1, fw / fh / SCENE_W));
+      g.uniform1f(uYb2, 1 - mouth(joinEl));
       g.uniform1f(uT2, t);
       g.clear(g.COLOR_BUFFER_BIT);
       g.drawArrays(g.TRIANGLES, 0, 3);
@@ -1954,8 +1966,10 @@ export function initPageFx(): void {
     // scene x/y from the canvas's own numbers: dx from FLAME_X and cy from
     // FLAME_BASE, both in units
     const sceneX = (dx: number) => FLAME_X * rw + dx * ru;
-    const sceneY = (cy: number) => FLAME_BASE * rh + (cy - FLAME_BASE) * ru;
+    let yb = FLAME_BASE;
+    const sceneY = (cy: number) => yb * rh + (cy - FLAME_BASE) * ru;
     const sizeRain = () => {
+      yb = mouth(joinEl);
       const de = document.documentElement;
       rw = Math.round(de.clientWidth * dpr);
       rh = Math.round(de.clientHeight * dpr);

@@ -213,16 +213,33 @@ section {
     opacity: 0.9;
   }
 }
-/* the fire burns at the centre; the card and the latest dive stack in the
-   top corner like toasts, off the scene. On a phone they span the width and
-   the scene scales down under them (--u, set on the section). */
+/* the fire burns at the centre. Desktop: the dives top-left, the card
+   top-right, both off the scene. Phone: the dives and the social row at the
+   top, the signup at the bottom with no frame, and the fire raised between
+   them (--b) — the scene scales down to the width (--u, set on the section).
+   --b is the flame's mouth as a fraction of the height; page-fx reads it
+   back, so the canvas and the DOM agree at every breakpoint. */
 #join {
+  --b: 0.82;
   display: grid;
   align-content: start;
   justify-items: stretch;
   gap: 0.75rem;
   background: #10120a;
   padding: 1rem 1rem calc(1.25rem + env(safe-area-inset-bottom));
+}
+@media (max-width: 768px) {
+  #join {
+    --b: 0.56;
+    grid-template-rows: auto auto 1fr;
+    align-content: stretch;
+  }
+  .dives {
+    grid-row: 1;
+  }
+  .socials {
+    grid-row: 2;
+  }
 }
 #fire {
   position: absolute;
@@ -238,8 +255,16 @@ section {
 }
 @media (min-width: 769px) {
   #join {
-    justify-items: end;
+    grid-template-columns: 1fr 1fr;
     padding: 3.5rem;
+  }
+  .dives {
+    grid-area: 1 / 1;
+    justify-self: start;
+  }
+  .card {
+    grid-area: 1 / 2;
+    justify-self: end;
   }
 }
 /* divers emerge and dissolve smoothly — olive gradient veils at the screen's edges */
@@ -260,20 +285,9 @@ section {
   box-sizing: border-box;
   display: grid;
   gap: 0.8rem;
-  padding: 0.6rem 0.4rem;
-  background: rgba(16, 18, 10, 0.95);
+  /* unframed: each element carries its own .patch */
   /* so the heading can size off the CARD instead of the viewport — see .fire */
   container-type: inline-size;
-}
-/* the card's own hand-drawn frame */
-.card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 2.5px solid #57492f;
-  border-radius: 60px 14px 50px 14px / 14px 50px 14px 60px;
-  filter: url(#wobble-c);
-  pointer-events: none;
 }
 .patch {
   /* the 95% olive, element by element — soft top/bottom edges so the
@@ -327,14 +341,16 @@ section {
 .card a {
   color: #f5b942;
 }
-/* the call-out: the newest dive as its own hand-drawn slab, under the card */
-.dive {
+/* the dives: the newest as its own hand-drawn slab, the rest a plain list */
+.dives {
   position: relative;
   z-index: 1;
-  display: grid;
-  gap: 0.1rem;
   width: 100%;
   max-width: 22rem;
+}
+.dive {
+  display: grid;
+  gap: 0.1rem;
   box-sizing: border-box;
   padding: 0.6rem 1.1rem 0.7rem;
   border: 1.5px solid #e25822;
@@ -359,6 +375,16 @@ section {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+.dive-list {
+  margin: 0.5rem 0 0;
+  padding: 0 0 0 1.4rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #b7ad9d;
+}
+.dive-list a {
+  color: #f5b942;
 }
 .card form {
   display: grid;
@@ -434,15 +460,16 @@ button.join:focus-visible {
   outline: 2px solid #f5b942;
   outline-offset: 3px;
 }
-.tiny {
-  font-size: 0.78rem;
-  color: #7d745f;
-}
 @media (max-width: 768px) {
-  /* the slabs fill the screen here; the heading tracks it via cqw either way */
+  /* the slabs fill the screen here; the heading tracks it via cqw either way.
+     the signup sits at the bottom, over the scene */
   .card,
-  .dive {
+  .dives {
     max-width: none;
+  }
+  .card {
+    grid-row: 3;
+    align-self: end;
   }
 }
 /* ── dive arrival: threesam.com hands off on its marigold coin field.
@@ -740,9 +767,9 @@ html.dive-go #veil::before {
        width plus dx of the height, so the cluster keeps its shape at every
        aspect ratio instead of stretching apart on wide windows */
     left: calc(var(--x) * 100% + var(--dx) * var(--u));
-    /* the mouth (--b) is a fraction of the height; the offset from it is
-       in units, like the canvas's sy() */
-    top: calc(var(--b) * 100% + (var(--y) - var(--b)) * var(--u));
+    /* the mouth (--b) is a fraction of the height; --y is the offset from
+       it in units, like the canvas's sceneY() */
+    top: calc(var(--b) * 100% + var(--y) * var(--u));
     /* The target is the WHOLE stone, not the icon. --rx/--ry are the rock's
        half-extents as FRACTIONS of the unit (the canvas scales point
        offsets by ru on both axes, so rx is not a vw). border-radius makes
@@ -777,7 +804,7 @@ html.dive-go #veil::before {
 .sitters li {
   position: absolute;
   left: calc(var(--x) * 100% + var(--dx) * var(--u));
-  top: calc(var(--b) * 100% + (var(--y) - var(--b)) * var(--u));
+  top: calc(var(--b) * 100% + var(--y) * var(--u));
   /* bottom-centre on the shoulder: the chin sits where the neck would */
   transform: translate(-50%, -100%);
   z-index: 1;
@@ -813,14 +840,15 @@ html.dive-go #veil::before {
 .sitters li.flip img {
   transform: scaleX(-1);
 }
-.sitters li:hover img,
-.sitters li:focus-within img,
+.sitters li:has(:focus-visible) img,
 .sitters li.open img {
   filter: none;
 }
-/* the card: above the head. hover, keyboard focus anywhere inside, or a
-   tap on the head all raise it. On a phone it hangs toward the fire (the
-   other way is off screen); on desktop it hangs outward, off the flame. */
+/* the card: above the head. A tap on the head (.open), keyboard focus
+   anywhere inside, or — only where there is a pointer that can hover — the
+   pointer over it all raise it. Not :focus-within: a tap focuses the button
+   on some phones, and the card would then never close. On a phone it hangs
+   toward the fire (the other way is off screen); on desktop outward. */
 .sitters .tag {
   position: absolute;
   bottom: calc(100% + 0.6rem);
@@ -862,11 +890,19 @@ html.dive-go #veil::before {
   inset: auto 0 -0.7rem;
   height: 0.7rem;
 }
-.sitters li:hover .tag,
-.sitters li:focus-within .tag,
+.sitters li:has(:focus-visible) .tag,
 .sitters li.open .tag {
   opacity: 1;
   visibility: visible;
+}
+@media (hover: hover) {
+  .sitters li:hover img {
+    filter: none;
+  }
+  .sitters li:hover .tag {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 .sitters .tag p {
   margin: 0;

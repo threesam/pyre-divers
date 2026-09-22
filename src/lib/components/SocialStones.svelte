@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { FLAME_X, ROCKS, emberAt, setRockLit } from '$lib/page-fx';
+  import {
+    FLAME_BASE,
+    FLAME_X,
+    ROCKS,
+    emberAt,
+    setRockLit,
+  } from '$lib/page-fx';
   import { SHOW } from '$lib/links';
 
   // The social and listening links, stamped on the five stones ringing the
@@ -79,7 +85,8 @@
       ...s,
       href,
       dx: r.dx,
-      y: r.cy,
+      // from the mouth, in units — the layout puts the mouth where --b says
+      y: r.cy - FLAME_BASE,
       rx: r.rx,
       ry: r.ry,
       z: s.rock + 1,
