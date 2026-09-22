@@ -27,13 +27,12 @@ export const SITTERS: Sitter[] = [
     role: 'host',
     url: 'https://threesam.com',
   },
-  // steve's cutout looks to his right, so he sits on the right log, facing in
   {
     name: 'steve',
     full: 'Steve Tullius',
     head: '/sitters/steve.png',
-    w: 144,
-    h: 6.6,
+    w: 161,
+    h: 5.8,
     log: 1,
     role: 'host',
   },
