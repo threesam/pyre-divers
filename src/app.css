@@ -129,7 +129,8 @@ section {
   line-height: 1;
 }
 .wordmark .line {
-  white-space: nowrap;
+  /* no nowrap: at 14vw it fits with room to spare, and under user text
+     spacing (WCAG 1.4.12) wrapping onto two lines beats clipping "divers" */
   /* x: css centres the advance box, but the eye centres the ink. "p" opens on
      a 90-unit bearing and "s" closes on 54, so the ink sits 18 units right of
      centre — half the difference, pushed back.
@@ -303,7 +304,10 @@ section {
   /* One line, sized to fill the card. The fire-ink gradient is painted across
      the whole element and clipped to the glyphs, so a wrapped second line gets
      a different slice of it and the two lines disagree on colour — hence
-     nowrap, and hence a size that actually fits.
+     one line, and hence a size that actually fits. Not `nowrap`, though: user
+     text spacing (WCAG 1.4.12) widens it past the card, and nowrap clipped it
+     at the screen edge. Now it wraps instead, and .fire-ink's clone gives the
+     second line its own full gradient.
      Solved rather than guessed: 100cqw is the card (not the viewport, which is
      what the old 8.6vw tracked — the card stops at 22rem, so past ~400px the
      line just ran short), over the width of the string in ems. 11.05 is
@@ -313,14 +317,18 @@ section {
      COUPLED TO THE COPY: re-measure if this heading's text changes. */
   width: 100%;
   font-size: clamp(0.85rem, calc(100cqw / 11.05), 4rem);
-  white-space: nowrap;
   /* 400 like everything else — see the weight note up top. This one is a class
      on an h2, so it would out-specify the element rule and faux-bold. */
   font-weight: 400;
   letter-spacing: -0.01em;
 }
 .fire-ink {
-  background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
+  /* the red end is a touch lighter than the brand #b91c1c: glyphs past 90%
+     sit on it flat, and #b91c1c is 2.92:1 on the scene (large text needs 3) */
+  background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #c31e1e 90%);
+  /* if it ever wraps, each line gets the whole run, not a slice of it */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -523,7 +531,7 @@ section {
   font-size: 1rem;
 }
 .fieldwrap input::placeholder {
-  color: #6d6450;
+  color: #887d64; /* 4.6:1 — a hint is still text */
 }
 button.join {
   position: relative;
@@ -770,7 +778,10 @@ html.dive-go #veil::before {
   padding: 0;
   display: flex;
   justify-content: center;
-  gap: 1.4rem;
+  /* 1.4rem, or less when five 44px targets and 1.4rem gaps (310px) would
+     push the row past a 320 screen (WCAG 1.4.10).
+     ponytail: the 5 is the stone count, change it with SOCIALS */
+  gap: min(1.4rem, (100% - 5 * 44px) / 4);
   position: relative;
   z-index: 1;
 }
@@ -965,7 +976,9 @@ html.dive-go #veil::before {
   position: absolute;
   bottom: calc(100% + 0.6rem);
   width: max-content;
-  max-width: 17rem;
+  /* 6rem: the phone's head sits ~2.2rem in, and the card has to end
+     inside the screen from there, padding and all */
+  max-width: min(17rem, 100vw - 6rem);
   padding: 0.7rem 1rem 0.75rem;
   background: #10120a;
   color: #e7e2da;

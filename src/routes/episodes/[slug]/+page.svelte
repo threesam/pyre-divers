@@ -221,7 +221,7 @@
     min-height: 100dvh;
   }
   .back {
-    color: #7d745f;
+    color: #877d67;
     text-decoration: none;
     font-size: 0.85rem;
   }
@@ -264,6 +264,11 @@
     /* native controls in the page's dark palette, not a white slab */
     color-scheme: dark;
   }
+  /* the native controls' own focus ring is faint on the dark scheme */
+  .listen:focus-visible {
+    outline: 2px solid #f5b942;
+    outline-offset: 3px;
+  }
   .elsewhere {
     display: flex;
     flex-wrap: wrap;
@@ -286,7 +291,7 @@
     line-height: 1.6;
   }
   .t {
-    color: #7d745f;
+    color: #877d67;
     font-size: 0.78rem;
     margin-right: 0.5rem;
   }
