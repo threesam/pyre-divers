@@ -376,6 +376,11 @@
   }
   .transcript {
     margin-top: 3rem;
+    /* app.css sizes every section as one clipped screen (the landing's
+       scenes). A transcript is long-form: it has to grow, or everything past
+       the first screen is cut off and can't be scrolled to. */
+    height: auto;
+    overflow: visible;
   }
   .transcript h2 {
     font-size: 1.1rem;
