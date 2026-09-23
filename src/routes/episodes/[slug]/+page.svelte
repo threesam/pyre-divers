@@ -60,8 +60,10 @@
   }
 
   // descript-style: a transcript segment plays the episode from where it
-  // starts. preload is none, so a first click finds nothing loaded, and iOS
-  // Safari drops a currentTime set before metadata — so that one waits for it.
+  // starts. preload is none, so a first click finds nothing loaded, and that
+  // one waits for metadata. Setting currentTime before it does start playback
+  // in the right place, but it isn't a seek: chromium and webkit both record
+  // `played` as 0 to there, and a cold jump to 18:05 would log a quarter heard.
   let player: HTMLMediaElement | undefined = $state();
   let now = $state(0);
   // the segment under the playhead: the last one to start at or before it
@@ -197,10 +199,15 @@
   {#if episode.videoUrl}
     <div class="player" id="listen">
       <!-- the full transcript is right below the player -->
+      <!-- ponytail: video doesn't dock like the audio does, since no episode
+           has one yet. Pin the player (or go picture-in-picture) when one
+           does. playsinline: an iPhone would otherwise take a transcript tap
+           fullscreen, over the transcript -->
       <!-- svelte-ignore a11y_media_has_caption -->
       <video
         src={episode.videoUrl}
         controls
+        playsinline
         preload="metadata"
         bind:this={player}
         bind:currentTime={now}
