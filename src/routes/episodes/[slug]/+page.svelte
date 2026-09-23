@@ -242,19 +242,19 @@
           class="watch"
           href={episode.youtubeUrl}
           data-umami-event="watch-youtube"
-          data-umami-event-from="episode">watch on youtube</a
+          data-umami-event-from="episode">watch on YouTube</a
         >{/if}
       {#if episode.spotifyUrl}<a
           class="watch"
           href={episode.spotifyUrl}
           data-umami-event="listen-spotify"
-          data-umami-event-from="episode">spotify</a
+          data-umami-event-from="episode">Spotify</a
         >{/if}
       {#if episode.applePodcastsUrl}<a
           class="watch"
           href={episode.applePodcastsUrl}
           data-umami-event="listen-apple"
-          data-umami-event-from="episode">apple podcasts</a
+          data-umami-event-from="episode">Apple Podcasts</a
         >{/if}
     </p>
     <!-- eslint-enable svelte/no-navigation-without-resolve -->
