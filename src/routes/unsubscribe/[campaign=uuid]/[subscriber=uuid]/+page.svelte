@@ -1,9 +1,17 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import Flame from '$lib/components/Flame.svelte';
+  import { forgetJoined } from '$lib/subscribe';
   import type { ActionData } from './$types';
 
   let { form }: { form: ActionData } = $props();
+
+  // off the list, so the episode page's bar may ask again in this browser
+  $effect(() => {
+    if (form?.done) {
+      forgetJoined();
+    }
+  });
 </script>
 
 <svelte:head>
