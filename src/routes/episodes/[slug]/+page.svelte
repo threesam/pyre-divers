@@ -27,30 +27,27 @@
   }
 
   // listening, not just loading: one `play` per visit, then `listened` as
-  // the time actually heard crosses each quarter. Heard, not the playhead's
+  // the share actually heard crosses each quarter. Heard, not the playhead's
   // position: a transcript click jumps, and a jump to 30:00 is not 75% of an
-  // episode listened to. 95, not 100 — the tail is outro music, and a
+  // episode listened to. `played` is the browser's own record of the ranges
+  // that played, seeks excluded. 95, not 100 — the tail is outro music, and a
   // finished episode shouldn't hinge on its last seconds.
   const MARKS = [25, 50, 75, 95];
   // also docks the player at the top: once it's playing, its pause control
   // has to stay in reach of a reader deep in the transcript
-  let played = $state(false);
+  let started = $state(false);
   let nextMark = 0;
-  let heard = 0;
-  let last = 0;
   function onplay() {
-    if (!played) {
-      played = true;
+    if (!started) {
+      started = true;
       window.umami?.track('play', { episode: episode.slug });
     }
   }
   function ontimeupdate(e: Event & { currentTarget: HTMLAudioElement }) {
-    const { currentTime, duration } = e.currentTarget;
-    // playback creeps (timeupdate fires every ~250ms, even at 2x); a seek leaps
-    const step = currentTime - last;
-    last = currentTime;
-    if (step > 0 && step < 2) {
-      heard += step;
+    const { played, duration } = e.currentTarget;
+    let heard = 0;
+    for (let i = 0; i < played.length; i++) {
+      heard += played.end(i) - played.start(i);
     }
     const pct = (heard / duration) * 100;
     while (nextMark < MARKS.length && pct >= MARKS[nextMark]) {
@@ -214,7 +211,7 @@
     <audio
       id="listen"
       class="listen"
-      class:docked={played}
+      class:docked={started}
       src={episode.audioUrl}
       controls
       preload="none"
