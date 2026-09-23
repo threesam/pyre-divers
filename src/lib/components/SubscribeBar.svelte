@@ -41,6 +41,11 @@
 
   async function join(e: SubmitEvent) {
     e.preventDefault();
+    // send is only aria-disabled while it's out: a disabled button drops
+    // keyboard focus to the body. So a second press lands here, and stops
+    if (busy) {
+      return;
+    }
     busy = true;
     // cleared first, so a retry that comes back with the same failure is
     // announced again
@@ -88,7 +93,7 @@
             bind:value={email}
           />
         </div>
-        <button class="join" type="submit" disabled={busy}>send</button>
+        <button class="join" type="submit" aria-disabled={busy}>send</button>
         <button class="x" type="button" aria-label="close" onclick={close}
           >×</button
         >
@@ -147,7 +152,7 @@
     font-size: 1rem;
     padding: 0.6rem 1.1rem;
   }
-  .join:disabled {
+  .join[aria-disabled='true'] {
     opacity: 0.6;
     cursor: progress;
   }
