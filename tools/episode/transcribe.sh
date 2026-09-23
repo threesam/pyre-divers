@@ -6,8 +6,9 @@
 # ~6.5 min wall for a 38-min episode; ep 1 cost $0.76 (40.7k in, 65.9k out tokens).
 #
 # needs: BOX=user@host of the infra box (OPENAI_API_KEY in /opt/infra/.env) and
-# SPEAKERS=dir of 2-10 s solo clips named <speaker>.wav (gitignored — voices
-# don't go in a public repo; ep 1's are in assets/speakers/).
+# SPEAKERS=dir of 2-10 s solo clips named as the transcript shows the speaker,
+# Sam.wav, Steve.wav (gitignored — voices don't go in a public repo; ep 1's are
+# in assets/speakers/).
 # usage: BOX=... SPEAKERS=assets/speakers transcribe.sh PUBLISHDIR
 set -e
 PB=$(cd "$1" && pwd); : "${BOX:?set BOX=user@host}"; : "${SPEAKERS:?set SPEAKERS=dir of <name>.wav}"

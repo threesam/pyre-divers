@@ -30,7 +30,7 @@ export const SITTERS: Sitter[] = [
     role: 'host',
     links: [
       { label: 'threesam.com', href: 'https://threesam.com' },
-      { label: 'linkedin', href: 'https://linkedin.com/in/threesam' },
+      { label: 'LinkedIn', href: 'https://linkedin.com/in/threesam' },
     ],
   },
   {
@@ -44,7 +44,7 @@ export const SITTERS: Sitter[] = [
     flip: true,
     links: [
       { label: 'waitlistworkshops.com', href: 'https://waitlistworkshops.com' },
-      { label: 'linkedin', href: 'https://www.linkedin.com/in/drtullius/' },
+      { label: 'LinkedIn', href: 'https://www.linkedin.com/in/drtullius/' },
     ],
   },
 ];
