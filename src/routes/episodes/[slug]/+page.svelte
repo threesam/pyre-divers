@@ -100,7 +100,10 @@
     if (!segment) {
       return;
     }
-    // a drag to copy a quote isn't a seek; the button always is
+    // a drag to copy a quote isn't a seek; the button always is. A
+    // double-click on a word still seeks: its first click can't know a second
+    // is coming, and waiting to find out would slow every click (and can lose
+    // the user gesture iOS wants for play()). Click-anywhere is the point.
     if (!target.closest('button') && getSelection()?.toString()) {
       return;
     }
