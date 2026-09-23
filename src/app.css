@@ -562,6 +562,11 @@ button.join:focus-visible {
   outline: 2px solid #f5b942;
   outline-offset: 3px;
 }
+/* while a signup is out (both forms) */
+button.join[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
+}
 @media (max-width: 768px) {
   /* the slabs fill the screen here; the heading tracks it via cqw either way.
      the signup sits at the bottom, over the scene */
