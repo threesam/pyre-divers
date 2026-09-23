@@ -154,10 +154,6 @@
     font-size: 1rem;
     padding: 0.6rem 1.1rem;
   }
-  .join[aria-disabled='true'] {
-    opacity: 0.6;
-    cursor: progress;
-  }
   .x {
     grid-area: x;
     justify-self: end;

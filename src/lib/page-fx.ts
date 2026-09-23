@@ -1830,13 +1830,18 @@ export function initPageFx(): void {
       const emailInput = joinForm.querySelector<HTMLInputElement>(
         'input[name="email"]',
       );
-      if (!btn || !emailInput) {
+      // the button is only aria-disabled while the request is out, as on the
+      // episode page's bar: a disabled button drops keyboard focus to the
+      // body. So a second press lands here, and stops
+      if (!btn || !emailInput || btn.getAttribute('aria-disabled') === 'true') {
         return;
       }
-      btn.disabled = true;
+      btn.setAttribute('aria-disabled', 'true');
+      emailInput.readOnly = true;
       const res = await subscribeFlow(emailInput.value, LISTMONK, fetch);
       btn.textContent = res.message;
-      btn.disabled = false;
+      btn.removeAttribute('aria-disabled');
+      emailInput.readOnly = false;
       if (res.state === 'joined') {
         rememberJoined();
       }
