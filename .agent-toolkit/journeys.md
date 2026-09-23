@@ -59,3 +59,14 @@ into the per-IP budget. The signup journey deliberately stops at validation.
 - expect the bar is still there
 - expect no request to mail.sixtom.com
 - expect no console errors
+
+## episode subscribe bar hands focus back when closed
+
+- go to /episodes/first-dive?test
+- focus the button "play from 37:39" (the transcript's last)
+- press Tab: expect focus in `#subscribe-email`
+- press Tab twice: expect focus on the button "close"
+- press Enter
+- expect the landmark "subscribe" is gone
+- expect focus on the button "play from 37:39"
+- expect no console errors

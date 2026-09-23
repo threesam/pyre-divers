@@ -12,14 +12,32 @@
   // on the list. Client-side only: whether this browser already joined lives
   // in localStorage, and a prerendered bar would flash for readers who have.
   let open = $state(false);
-  let joined = $state(false);
   let busy = $state(false);
   let email = $state('');
   let message = $state('');
+  let dock: HTMLElement | undefined = $state();
+  // where focus came into the bar from: closing hands it back there
+  let back: HTMLElement | null = null;
 
   onMount(() => {
     open = !hasJoined();
   });
+
+  function onfocusin(e: FocusEvent) {
+    const from = e.relatedTarget as HTMLElement | null;
+    if (!dock?.contains(from)) {
+      back = from;
+    }
+  }
+
+  function close() {
+    // focus in the bar would go with it, to the top of the document. Back
+    // where it came from instead, without scrolling a reader who moved on
+    if (dock?.contains(document.activeElement)) {
+      back?.focus({ preventScroll: true });
+    }
+    open = false;
+  }
 
   async function join(e: SubmitEvent) {
     e.preventDefault();
@@ -27,14 +45,14 @@
     // cleared first, so a retry that fails the same way is announced again
     message = '';
     const res = await subscribeFlow(email, LISTMONK, fetch);
-    busy = false;
     message = res.message;
     if (res.state === 'joined') {
-      joined = true;
       rememberJoined();
-      // long enough to read the confirmation (and for a screen reader to say
-      // it), then out of the reader's way
-      setTimeout(() => (open = false), 2600);
+      // send stays off. The confirmation is up long enough to read (and for a
+      // screen reader to say), then the bar goes
+      setTimeout(close, 2600);
+    } else {
+      busy = false;
     }
     // the landing form's event names, so the monday digest counts both;
     // `from` tells them apart
@@ -48,34 +66,31 @@
   <aside
     class="dock"
     aria-label="subscribe"
+    bind:this={dock}
+    {onfocusin}
     transition:fade={{ duration: 250 }}
   >
     <div class="bar">
-      {#if !joined}
-        <form novalidate onsubmit={join}>
-          <label for="subscribe-email">get the next dive by email.</label>
-          <div class="fieldwrap">
-            <input
-              id="subscribe-email"
-              name="email"
-              type="email"
-              inputmode="email"
-              autocomplete="email"
-              placeholder="your@email.com"
-              aria-describedby="subscribe-msg"
-              required
-              bind:value={email}
-            />
-          </div>
-          <button class="join" type="submit" disabled={busy}>send</button>
-          <button
-            class="x"
-            type="button"
-            aria-label="close"
-            onclick={() => (open = false)}>×</button
-          >
-        </form>
-      {/if}
+      <form novalidate onsubmit={join}>
+        <label for="subscribe-email">get the next dive by email.</label>
+        <div class="fieldwrap">
+          <input
+            id="subscribe-email"
+            name="email"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="your@email.com"
+            aria-describedby="subscribe-msg"
+            required
+            bind:value={email}
+          />
+        </div>
+        <button class="join" type="submit" disabled={busy}>send</button>
+        <button class="x" type="button" aria-label="close" onclick={close}
+          >×</button
+        >
+      </form>
       <!-- always in the page while the bar is: a live region has to exist
            before its message does, or it isn't announced -->
       <p id="subscribe-msg" class="msg" role="status">{message}</p>
@@ -99,13 +114,14 @@
   }
   /* the ember card is the landing's .dive */
   .bar {
+    container-type: inline-size;
     padding: 0.75rem 1rem;
     border: 1.5px solid #e25822;
     border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
   }
   form {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       'label x'
       'field send';
@@ -161,13 +177,32 @@
     color: #f5b942;
     font-size: 0.9rem;
   }
-  /* the form above it only while there is one: after a join it's gone */
-  form + .msg:not(:empty) {
+  /* empty, it takes no room */
+  .msg:not(:empty) {
     margin-top: 0.5rem;
   }
-  @media (min-width: 640px) {
+  /* anything scrolled into view (a transcript button tabbed to, say) stops
+     above the bar instead of under it. ponytail: at normal text sizes the
+     bar is at most ~13.5rem (stacked, with a message); at 200% text on a
+     phone it's taller than this. Measure it (bind:offsetHeight) if that
+     combination ever matters */
+  :global(html:has(aside.dock)) {
+    scroll-padding-bottom: calc(14rem + env(safe-area-inset-bottom));
+  }
+  /* laid out by the card's own width in rem, so a zoomed page or a bigger
+     text size gets the roomier layout too. Too narrow for the field beside
+     send (a zoomed phone): send goes under it */
+  @container (max-width: 14rem) {
     form {
-      grid-template-columns: auto 1fr auto auto;
+      grid-template-areas:
+        'label x'
+        'field field'
+        'send send';
+    }
+  }
+  @container (min-width: 32rem) {
+    form {
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
       grid-template-areas: 'label field send x';
     }
   }
