@@ -110,13 +110,15 @@
      place at the end of the page, so the transcript's last lines scroll clear
      of it instead of ending under it. The dock is a plain page-colour band:
      text scrolls under the card and mustn't show through or around it, and a
-     shadow would follow the card's hand-drawn corners and leave gaps. */
+     shadow would follow the card's hand-drawn corners and leave gaps. It
+     reaches 1rem past the card to cover the transcript's now-playing rule too,
+     which sits in the gutter at 0.75rem + 2px. */
   .dock {
     position: sticky;
     bottom: 0;
     z-index: 1;
-    margin: 3rem -0.75rem 0;
-    padding: 0.75rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
+    margin: 3rem -1rem 0;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
     background: #10120a;
   }
   /* the ember card is the landing's .dive */
