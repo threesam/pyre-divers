@@ -43,54 +43,63 @@
 </script>
 
 {#if open}
-  <aside class="bar" aria-label="subscribe" transition:fade={{ duration: 250 }}>
-    {#if !joined}
-      <form novalidate onsubmit={join}>
-        <label for="subscribe-email">get the next dive by email.</label>
-        <div class="fieldwrap">
-          <input
-            id="subscribe-email"
-            name="email"
-            type="email"
-            inputmode="email"
-            autocomplete="email"
-            placeholder="your@email.com"
-            aria-describedby="subscribe-msg"
-            required
-            bind:value={email}
-          />
-        </div>
-        <button class="join" type="submit" disabled={busy}>send</button>
-        <button
-          class="x"
-          type="button"
-          aria-label="close"
-          onclick={() => (open = false)}>×</button
-        >
-      </form>
-    {/if}
-    <!-- always in the page while the bar is: a live region has to exist
-         before its message does, or it isn't announced -->
-    <p id="subscribe-msg" class="msg" role="status">{message}</p>
+  <aside
+    class="dock"
+    aria-label="subscribe"
+    transition:fade={{ duration: 250 }}
+  >
+    <div class="bar">
+      {#if !joined}
+        <form novalidate onsubmit={join}>
+          <label for="subscribe-email">get the next dive by email.</label>
+          <div class="fieldwrap">
+            <input
+              id="subscribe-email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="your@email.com"
+              aria-describedby="subscribe-msg"
+              required
+              bind:value={email}
+            />
+          </div>
+          <button class="join" type="submit" disabled={busy}>send</button>
+          <button
+            class="x"
+            type="button"
+            aria-label="close"
+            onclick={() => (open = false)}>×</button
+          >
+        </form>
+      {/if}
+      <!-- always in the page while the bar is: a live region has to exist
+           before its message does, or it isn't announced -->
+      <p id="subscribe-msg" class="msg" role="status">{message}</p>
+    </div>
   </aside>
 {/if}
 
 <style>
   /* sticky, not fixed: it rides the bottom of the screen but keeps its own
      place at the end of the page, so the transcript's last lines scroll clear
-     of it instead of ending under it. The ember card is the landing's .dive,
-     opaque here with the page colour around it (the docked player's device):
-     text scrolls under it, and shouldn't show through or around. */
-  .bar {
+     of it instead of ending under it. The dock is a plain page-colour band:
+     text scrolls under the card and mustn't show through or around it, and a
+     shadow would follow the card's hand-drawn corners and leave gaps. */
+  .dock {
     position: sticky;
-    bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    bottom: 0;
     z-index: 1;
-    margin-top: 3rem;
+    margin: 3rem -0.75rem 0;
+    padding: 0.75rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
+    background: #10120a;
+  }
+  /* the ember card is the landing's .dive */
+  .bar {
     padding: 0.75rem 1rem;
     border: 1.5px solid #e25822;
     border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
-    background: #10120a;
-    box-shadow: 0 0 0 0.75rem #10120a;
   }
   form {
     display: grid;
