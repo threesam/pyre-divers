@@ -8,10 +8,12 @@
   let { children }: { children: Snippet } = $props();
 </script>
 
-<section class="pyre">
-  <canvas aria-hidden="true" {@attach (c) => mountFire(c, c.parentElement)}
-  ></canvas>
-  <div class="pyre-copy">
-    {@render children()}
-  </div>
-</section>
+<main>
+  <section class="pyre">
+    <canvas aria-hidden="true" {@attach (c) => mountFire(c, c.parentElement)}
+    ></canvas>
+    <div class="pyre-copy">
+      {@render children()}
+    </div>
+  </section>
+</main>
