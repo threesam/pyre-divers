@@ -24,6 +24,8 @@
   async function join(e: SubmitEvent) {
     e.preventDefault();
     busy = true;
+    // cleared first, so a retry that fails the same way is announced again
+    message = '';
     const res = await subscribeFlow(email, LISTMONK, fetch);
     busy = false;
     message = res.message;
