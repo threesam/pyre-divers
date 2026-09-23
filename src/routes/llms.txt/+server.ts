@@ -28,7 +28,7 @@ speaker, timestamped. the transcript is the primary source for what was said.
 
 - feed (rss): ${FEED}
 - signup: ${SITE}/
-- sam: https://threesam.com
+- Sam: https://threesam.com
 
 ## episodes
 

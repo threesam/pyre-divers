@@ -992,6 +992,10 @@ html.dive-go #veil::before {
     opacity 0.2s,
     visibility 0.2s;
 }
+/* name is also the umami `who` value, so it stays lowercase in the data */
+.sitters .who strong {
+  text-transform: capitalize;
+}
 .sitters li.left .tag {
   left: 0;
 }

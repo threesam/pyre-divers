@@ -18,7 +18,8 @@ description. Everything else is a default.
 - **db access**: `vercel env pull .env.local --environment=production` gives you
   `DATABASE_URL` for `db.mjs`. The file is gitignored.
 - **speaker references**: 2–10 s of each host talking alone, as
-  `assets/speakers/<name>.wav` (16 kHz mono). They're gitignored, because voices
+  `assets/speakers/<Name>.wav` (16 kHz mono), named as the transcript shows the
+  speaker: `Sam.wav`, `Steve.wav`. They're gitignored, because voices
   don't go in a public repo. Ep 1's are there; reuse them. A guest needs one too:
   cut it from their first long solo turn and check it by transcribing it.
 - **the box** (`BOX=user@host`, see `~/Code/Me/infra`): `/opt/media` is served
@@ -36,7 +37,7 @@ runs to gigabytes. Below: `EP=assets/epN`, `RAW` = the StreamYard export,
 ## 1. record
 
 Recorded live on StreamYard, in one take. Ep 1 wasn't broadcast; from ep 2 the show streams live. Either way, export the finished recording: 1920×1080, two
-panels, **steve on the left, sam on the right**. The name tags and the
+panels, **Steve on the left, Sam on the right**. The name tags and the
 renderer's crops assume that layout.
 
 ## 2. cut list: tighten the pauses
@@ -187,7 +188,7 @@ for the item and `https://pyredivers.com/episodes/<slug>`.
   5. Then put `youtubeUrl` in the manifest, run `db.mjs draft`, and fire the
      deploy hook.
 - **email**: in listmonk (`mail.sixtom.com`), the list is "pyre divers" and mail
-  goes from `fire@pyredivers.com` through Resend. Draft it, sam approves, send.
+  goes from `fire@pyredivers.com` through Resend. Draft it, Sam approves, send.
 - **LinkedIn**: Wednesday is the drop (the best clip plus the link). Clips fill
   the off days, 4 per episode at most (see content-engine's AGENTS.md). Pick
   30–60 s that stand alone from `transcript.md`, set the cut points on sentence
