@@ -84,6 +84,7 @@
             placeholder="your@email.com"
             aria-describedby="subscribe-msg"
             required
+            readonly={busy}
             bind:value={email}
           />
         </div>
