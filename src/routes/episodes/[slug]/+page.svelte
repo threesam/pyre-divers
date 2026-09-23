@@ -27,13 +27,17 @@
   }
 
   // listening, not just loading: one `play` per visit, then `listened` as
-  // it crosses each quarter. 95, not 100 — the tail is outro music, and a
+  // the time actually heard crosses each quarter. Heard, not the playhead's
+  // position: a transcript click jumps, and a jump to 30:00 is not 75% of an
+  // episode listened to. 95, not 100 — the tail is outro music, and a
   // finished episode shouldn't hinge on its last seconds.
   const MARKS = [25, 50, 75, 95];
   // also docks the player at the top: once it's playing, its pause control
   // has to stay in reach of a reader deep in the transcript
   let played = $state(false);
   let nextMark = 0;
+  let heard = 0;
+  let last = 0;
   function onplay() {
     if (!played) {
       played = true;
@@ -41,7 +45,14 @@
     }
   }
   function ontimeupdate(e: Event & { currentTarget: HTMLAudioElement }) {
-    const pct = (e.currentTarget.currentTime / e.currentTarget.duration) * 100;
+    const { currentTime, duration } = e.currentTarget;
+    // playback creeps (timeupdate fires every ~250ms, even at 2x); a seek leaps
+    const step = currentTime - last;
+    last = currentTime;
+    if (step > 0 && step < 2) {
+      heard += step;
+    }
+    const pct = (heard / duration) * 100;
     while (nextMark < MARKS.length && pct >= MARKS[nextMark]) {
       window.umami?.track('listened', {
         episode: episode.slug,
@@ -381,8 +392,15 @@
     padding-left: 0.75rem;
     margin-left: calc(-0.75rem - 2px);
   }
-  .segment:hover {
-    color: #d6cfc4;
+  /* hover-capable pointers only: a phone keeps a tapped segment in :hover,
+     which would read as a second now-playing mark */
+  @media (hover: hover) {
+    .segment:hover {
+      color: #d6cfc4;
+    }
+    .t:hover {
+      color: #f5b942;
+    }
   }
   .segment.now {
     color: #e7e2da;
@@ -399,7 +417,6 @@
     margin: 0 0.25rem 0 -0.25rem;
     cursor: pointer;
   }
-  .t:hover,
   .segment.now .t {
     color: #f5b942;
   }
