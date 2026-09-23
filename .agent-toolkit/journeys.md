@@ -39,3 +39,23 @@ into the per-IP budget. The signup journey deliberately stops at validation.
 - go to /episodes/does-not-exist
 - expect a 404 or a graceful not-found, not a crash
 - expect no console errors
+
+## transcript seeks
+
+- go to /episodes/first-dive?test
+- click the button "play from 18:05"
+- expect the audio playing from about 18:05 (currentTime 1085 to 1095)
+- expect `audio.docked` at the top of the screen
+- expect a `.segment.now` under the playhead
+- expect no console errors
+
+## episode subscribe bar rejects a bad address
+
+- go to /episodes/first-dive?test
+- expect a landmark "subscribe" stuck to the bottom of the screen
+- fill `#subscribe-email` with "not-an-email"
+- click "send"
+- expect text "needs a real email."
+- expect the bar is still there
+- expect no request to mail.sixtom.com
+- expect no console errors

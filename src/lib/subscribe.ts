@@ -16,6 +16,23 @@ export const LISTMONK: ListmonkConfig = {
   url: 'https://mail.sixtom.com',
   list: '5f4d8764-8e70-4e56-a7f2-4ac00157921d',
 };
+// a signup from either form hides the episode page's bar in this browser.
+// Storage can throw (some private modes); then the bar just shows again.
+const JOINED_KEY = 'pyre:joined';
+export function rememberJoined(): void {
+  try {
+    localStorage.setItem(JOINED_KEY, '1');
+  } catch {
+    // no storage: nothing to remember it in
+  }
+}
+export function hasJoined(): boolean {
+  try {
+    return localStorage.getItem(JOINED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
 export async function subscribeFlow(
   email: string | null | undefined,
   cfg: ListmonkConfig | null,

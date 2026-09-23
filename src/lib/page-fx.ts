@@ -5,7 +5,7 @@
 // screen one, its Canvas2D fallback, and the risers on screen two. Every body
 // is "dressed" once — pose baked into cos/sin pairs — then drawn by whichever
 // renderer owns it.
-import { LISTMONK, subscribeFlow } from './subscribe';
+import { LISTMONK, rememberJoined, subscribeFlow } from './subscribe';
 
 /** Seeded PRNG. The same souls every load. */
 type Rand = () => number;
@@ -1837,6 +1837,9 @@ export function initPageFx(): void {
       const res = await subscribeFlow(emailInput.value, LISTMONK, fetch);
       btn.textContent = res.message;
       btn.disabled = false;
+      if (res.state === 'joined') {
+        rememberJoined();
+      }
       // The site's only conversion. `joined` and `failed` get separate names
       // because the monday digest ranks by event name, not by property — one
       // `seat` event with a state property would report attempts and hide the

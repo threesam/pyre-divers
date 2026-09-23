@@ -8,6 +8,7 @@
   import '@fontsource/epilogue/700.css';
   import '@fontsource/epilogue/700-italic.css';
   import { resolve } from '$app/paths';
+  import SubscribeBar from '$lib/components/SubscribeBar.svelte';
   import { FEED, HOSTS, SITE } from '$lib/links';
   import type { PageProps } from './$types';
 
@@ -196,6 +197,9 @@
       {/each}
     </section>
   {/if}
+
+  <!-- last in main: it sticks to the bottom for as long as main is on screen -->
+  <SubscribeBar />
 </main>
 
 <style>
