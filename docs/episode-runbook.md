@@ -14,7 +14,9 @@ description. Everything else is a default.
   no openh264). python3 with numpy, pillow, opencv and mediapipe for
   `ascii6.py`, which loads the two MediaPipe models that sit next to it
   (selfie segmenter + BlazeFace, Apache-2.0). The voicepipe venv
-  (`~/Code/Me/voicepipe/.venv`) for faster-whisper. Node 24 with `npm ci`. FL Studio.
+  (`~/Code/Me/voicepipe/.venv`) for faster-whisper. Node 24 with `npm ci`.
+  For the clean: a venv with `pip install pedalboard==0.9.25 numpy`, and FabFilter
+  Pro-Q 4, Pro-DS, Pro-C 3 and Pro-L 2 installed as VST3. FL Studio for the outro music.
 - **db access**: `vercel env pull .env.local --environment=production` gives you
   `DATABASE_URL` for `db.mjs`. The file is gitignored.
 - **speaker references**: 2–10 s of each host talking alone, as
@@ -36,7 +38,10 @@ runs to gigabytes. Below: `EP=assets/epN`, `RAW` = the StreamYard export,
 
 ## 1. record
 
-Recorded live on StreamYard, in one take. Ep 1 wasn't broadcast; from ep 2 the show streams live. Either way, export the finished recording: 1920×1080, two
+Recorded live on StreamYard, in one take. **Before recording, turn on local
+recordings** in the studio's settings: each host then gets a separate, uncompressed
+track. The regular export has both voices in one dual-mono mix, and ep 2 had to
+tell them apart from the transcript. It can't be switched on afterwards. Ep 1 wasn't broadcast; from ep 2 the show streams live. Either way, export the finished recording: 1920×1080, two
 panels, **Steve on the left, Sam on the right**. The name tags and the
 renderer's crops assume that layout.
 
@@ -74,20 +79,39 @@ python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 BPM   # ep 1: 69
 This takes the raw footage in the renderer's panel framing, cut by `keep.json`.
 It opens fully ASCII and dissolves to footage over 3 bars, with the wordmark and
 the name tags. The ASCII returns over the last 6 bars: fading in for 3, full
-for 3. The audio is loudnormed to −16 LUFS and becomes FL's input. The body (30
+for 3. The audio is loudnormed to −16 LUFS and becomes the clean's input. The body (30
 s to show − 45 s) is cached in `$EP/assemble-work/`, so re-running for a head or tail
 change takes about a minute.
 
-## 5. FL: clean the audio, write the outro
+## 5. clean the audio, write the outro
 
-- `ffmpeg -nostdin -i $EP/ep$N-edit.mp4 -vn -c:a pcm_f32le $EP/edit.wav`, then run
-  it through FL with the cleanup preset (ep 1's project is `pyredivers_01.flp`).
-  Render it to `$EP/clean.wav`.
+```sh
+/usr/local/bin/ffmpeg -nostdin -i $EP/ep$N-edit.mp4 -vn -c:a pcm_f32le $EP/edit.wav
+SHOW=$(python3 -c "import json; print(sum(b-a for a,b in json.load(open('$EP/keep.json'))))")
+python3 $T/audio.py - $EP/edit.wav $SHOW $N $EP/publish                  # transcription parts
+BOX=... SPEAKERS=assets/speakers $T/transcribe.sh $EP/publish           # ~7 min, ~$1
+python3 $T/clean.py $EP/edit.wav $EP/clean.wav $EP/publish              # ~3 min per pass
+```
+
+- **Transcribe first**: the clean uses the diarized turns, and the edit has the
+  same timeline as everything after it, so this is also the episode's transcript.
+  Give the diarized text one read-through: ep 1's labels were right the whole way.
+- **`clean.py`** runs FabFilter without a DAW: Pedalboard hosts the VST3s and sets
+  every knob by name, from `clean.json`. Pro-Q 4 (light: rumble cut, −3 dB at
+  200 Hz, −2 dB at 1 kHz), Pro-DS (split band, 3–16 kHz), Pro-C 3 (opto, −24 dB,
+  2:1) and Pro-L 2 (−1 dBTP). It fits the limiter's gain to −13.5 LUFS, re-rendering
+  once if the first pass misses, and the output stays sample-aligned with the edit.
+  Steve's turns get a +6 dB low shelf at 220 Hz and −2.5 dB at 4.5 kHz: his mic runs
+  12–14 dB light at 100–200 Hz next to Sam's. The switch is a 50 ms crossfade between
+  two Pro-Qs, driven by the transcript.
+- To change the sound, A/B short clips at matched loudness (`loudnorm` each one)
+  before rendering the whole show, and have Sam pick blind.
 - Outro music at the episode's BPM: 6 bars under the ASCII ending, plus a tail
   (ep 1: 69 bpm, 26.000 s total). Load the edit into FL's video player to line
   it up. Render, trim to length, and save as `$EP/outro.wav`.
 - The FL projects live in
   `~/Documents/Image-Line/FL Studio/Projects/me/actually trying/pyredivers/`.
+  Ep 1's clean was FL (`pyredivers_01.flp`), which was all EQ plus a limiter.
 
 ## 6. mix
 
@@ -125,24 +149,21 @@ loudness. This is the file for YouTube and the Drive folder.
 ## 9. publish kit
 
 ```sh
-SHOW=$(python3 -c "import json; print(sum(b-a for a,b in json.load(open('$EP/keep.json'))))")
-python3 $T/audio.py $EP/mix.wav $EP/clean.wav $SHOW $N $EP/publish "title"
+python3 $T/audio.py $EP/mix.wav - $SHOW $N $EP/publish "title"
 scp $EP/publish/pyre-divers-$(printf %03d $N).mp3 $BOX:/opt/media/
 curl -sI https://media.pyredivers.com/pyre-divers-$(printf %03d $N).mp3   # 200, audio/mpeg, content-length, accept-ranges
-BOX=... SPEAKERS=assets/speakers $T/transcribe.sh $EP/publish           # ~7 min, ~$1
-python3 $T/transcript.py $EP/publish                                    # transcript.json/.md, captions.srt
+python3 $T/transcript.py $EP/publish                                    # transcript.json/.md, captions.srt (from step 5)
 ```
 
-- **`audio.py`** writes two kinds of file:
+- **`audio.py`** writes two kinds of file, and `-` for either input skips it:
   - The podcast mp3: one static gain to −16 LUFS (Apple's spec), 44.1 kHz stereo,
     128k CBR, tagged, with the cover embedded.
-  - The transcription parts: the clean conversation without music, split at a
+  - The transcription parts (step 5): the conversation without music, split at a
     pause so each part is at most 1380 s.
 - **mp3 URLs are write-once.** A re-cut gets a new filename; never put new bytes
   at an old URL, because apps cache them.
-- **`transcribe.sh`** runs `gpt-4o-transcribe-diarize` on the box with the speaker
-  references, so segments come back named. Give the diarized text one
-  read-through: ep 1's labels were right the whole way.
+- **`transcribe.sh`** (step 5) runs `gpt-4o-transcribe-diarize` on the box with the
+  speaker references, so segments come back named.
 
 Then write `$EP/publish/episode.json` (ep 1's is the template: `slug`, `title`,
 `description`, `audioUrl`, `durationSeconds`, `publishAt`, `transcript`), and:
@@ -209,7 +230,8 @@ for the item and `https://pyredivers.com/episodes/<slug>`.
 | tighten                    | ~5 s                                    | —                  |
 | ASCII head + tail          | a few min (not timed)                   | —                  |
 | assemble (first run)       | ~20 min (the body re-encode; not timed) | —                  |
-| FL clean + outro music     | ≤1 h (cap)                              | —                  |
+| transcribe + clean (ep 2)  | ~7 min + ~6 min                         | $0.68              |
+| FL outro music             | ≤1 h (cap)                              | —                  |
 | mix, outro, final + verify | ~10 min                                 | —                  |
 | transcription              | ~6.5 min                                | $0.76 (~$0.02/min) |
 | media hosting              | —                                       | the box, ~38 MB/ep |
@@ -237,4 +259,7 @@ for the item and `https://pyredivers.com/episodes/<slug>`.
 - **Headless captures of the site can't show the vortex**: without a GPU the site
   draws its static fallback. That's why `whirl.py` re-implements the sim rather
   than recording it.
+- **Don't tone-match to ep 1** (ep 2): fitting ep 2's EQ to ep 1's finished
+  tone came out thin in every version, and blind, Sam picked the raw. Ep 2 was
+  recorded better (a 5 dB quieter floor), so the defaults in `clean.json` are light.
 - **Disk**: every full render is about 1 GB. Delete intermediates as you go.
