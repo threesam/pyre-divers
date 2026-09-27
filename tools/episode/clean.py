@@ -37,6 +37,9 @@ def pro_q(bands):
     return q
 
 
+# ponytail: knobs not set here come from each plugin's "Default Setting" preset in
+# ~/Documents/FabFilter/Presets (Pro-Q 4 loads with no bands); re-saving one changes the
+# sound, so pin its knobs here if that ever happens
 def dynamics(s, gain):
     ds = load_plugin(VST.format('Pro-DS'))
     ds.mode, ds.band_processing = 'Single Vocal', 'Split Band'
@@ -108,3 +111,5 @@ for _ in range(2):
     if abs(i - TARGET) <= 0.3:
         break
     gain += TARGET - i
+else:
+    sys.exit(f'{out}: missed {TARGET} LUFS after 2 renders, re-run with l_gain {gain:.1f} in clean.json')
