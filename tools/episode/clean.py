@@ -10,7 +10,6 @@
 # the EQ, crossfaded over 50 ms: two Pro-Q instances, switched by who's talking. Steve's
 # mic runs 12-14 dB light at 100-200 Hz next to Sam's, so his turns get a low shelf.
 # usage: clean.py EDIT.wav OUT.wav [PUBDIR]
-import glob
 import json
 import os
 import re
@@ -61,11 +60,11 @@ def delay(s, sr):
 
 def turns(pub, who, n):
     # 1 inside who's diarized turns, 0 elsewhere, on a 10 ms grid with 50 ms ramps
-    off = dict(line.split() for line in open(f'{pub}/parts.txt'))
     m = np.zeros(n)
-    for f in glob.glob(f'{pub}/diarized-part*.json'):
-        o = float(off[os.path.basename(f)[len('diarized-'):].replace('.json', '.mp3')])
-        for sg in json.load(open(f))['segments']:
+    for line in open(f'{pub}/parts.txt'):  # every part must have its transcript, or a stretch goes unmatched
+        part, o = line.split()
+        o = float(o)
+        for sg in json.load(open(f"{pub}/diarized-{part.removesuffix('.mp3')}.json"))['segments']:
             if (sg.get('speaker') or '').lower() == who:
                 m[int((o + sg['start']) * 100):int((o + sg['end']) * 100) + 1] = 1
     return np.convolve(m, np.ones(5) / 5, 'same')
@@ -77,17 +76,18 @@ def render(src, out, s, gain, pub):
         d = delay(s, int(f.samplerate))
         if pub:
             mask = turns(pub, s['speaker'], int(f.frames / f.samplerate * 100) + 2)
+            grid = np.arange(len(mask)) / 100
             print(f"{s['speaker']}: {mask.sum() / 100:.0f} s of turns")
         while f.tell() < f.frames:
             t0, x = f.tell(), f.read(f.samplerate * 10)
             y = eq(x, f.samplerate, reset=False)
             if pub:
-                g = np.interp((t0 + np.arange(x.shape[1])) / f.samplerate, np.arange(len(mask)) / 100, mask).astype(np.float32)
+                g = np.interp((t0 + np.arange(x.shape[1])) / f.samplerate, grid, mask).astype(np.float32)
                 y = y * (1 - g) + eq_spk(x, f.samplerate, reset=False) * g
             y = dyn(y, f.samplerate, reset=False)
             skip = min(d, y.shape[1]); d -= skip
             o.write(y[:, skip:])
-        o.write(dyn(np.zeros((f.num_channels, f.samplerate), np.float32), f.samplerate, reset=False)[:, :f.frames - o.frames])
+        o.write(dyn(np.zeros((f.num_channels, f.samplerate), np.float32), f.samplerate, reset=False)[:, d:d + f.frames - o.frames])  # d > 0 only if the edit is shorter than the latency
         assert o.frames == f.frames, 'output must stay sample-aligned with the edit'
 
 
