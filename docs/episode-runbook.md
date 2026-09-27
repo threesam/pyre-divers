@@ -43,7 +43,8 @@ recordings** in the studio's settings: each host then gets a separate, uncompres
 track. The regular export has both voices in one dual-mono mix, and ep 2 had to
 tell them apart from the transcript. It can't be switched on afterwards. Ep 1 wasn't broadcast; from ep 2 the show streams live. Either way, export the finished recording: 1920×1080, two
 panels, **Steve on the left, Sam on the right**. The name tags and the
-renderer's crops assume that layout.
+renderer's crops assume that layout. Ep 2 came out the other way round; `SWAP=1` on
+assemble.py swaps the panels back (and the ASCII clips' halves, below), so Sam stays on the right.
 
 ## 2. cut list: tighten the pauses
 
@@ -80,8 +81,11 @@ From ep 2 the show opens on the whirlpool, no words: it flips, darkest cell firs
 ASCII, and the title waits for it (ep 2: 77 bpm, 5 bars of outro music + 1 fade bar):
 
 ```sh
-INTRO=1 python3 $T/whirl.py $EP/head-ascii.mp4 $EP/intro.mkv 116          # ~20 s
-INTRO=$EP/intro.mkv HOLD_M=2.5507 TITLE_IN=4.833 SECTION_M=4.1203 \
+SW="split[a][b];[a]crop=960:1080:960:0[r];[b]crop=960:1080:0:0[l];[r][l]hstack"   # ep 2 only: panels swapped
+for c in head tail; do ffmpeg -nostdin -i $EP/$c-ascii.mp4 -vf "$SW" -crf 12 $EP/$c-ascii-swap.mp4; done
+INTRO=1 python3 $T/whirl.py $EP/head-ascii-swap.mp4 $EP/intro.mkv 116     # ~20 s
+SWAP=1 HEAD_ASCII=$EP/head-ascii-swap.mp4 TAIL_ASCII=$EP/tail-ascii-swap.mp4 \
+  INTRO=$EP/intro.mkv HOLD_M=2.5507 TITLE_IN=4.833 SECTION_M=4.1203 \
   python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 77
 ```
 
@@ -133,8 +137,8 @@ python3 $T/clean.py $EP/edit.wav $EP/clean.wav $EP/publish              # ~3 min
 $T/mix.sh $EP $EP/clean.wav $EP/outro.wav BPM $EP/mix.wav
 ```
 
-The music enters at 50% on the first frame of the ASCII ending, rises to 100%
-over those 6 bars, sits +3.3 dB for balance, and goes through a limiter. Ep 1
+The music enters from silence on the first frame of the ASCII ending (ep 1 entered
+at 50%: pass `FROM=0.5` as the 8th arg), rises to 100% over those bars, sits +3.3 dB for balance, and goes through a limiter. Ep 1
 came out at −14.0 LUFS, −1.2 dBTP, and this script reproduces ep 1's shipped mix
 bit for bit.
 

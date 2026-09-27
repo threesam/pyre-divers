@@ -5,7 +5,7 @@
 # END_WORDMARK=1 puts the ink wordmark back on the tail; off by default since ep 1's outro sequence (whirl.py) carries it.
 # usage: assemble.py EPDIR RAW.mp4 OUT.mp4 BPM   (EPDIR holds keep.json, head-ascii.mp4, tail-ascii.mp4)
 import json,os,subprocess,sys
-S,SRC,OUT,BPM=os.path.abspath(sys.argv[1]),sys.argv[2],sys.argv[3],float(sys.argv[4]); ASCII=f"{S}/tail-ascii.mp4"
+S,SRC,OUT,BPM=os.path.abspath(sys.argv[1]),sys.argv[2],sys.argv[3],float(sys.argv[4]); ASCII=os.environ.get('TAIL_ASCII',f"{S}/tail-ascii.mp4")
 BRAND=os.path.join(os.path.dirname(os.path.abspath(__file__)),"brand"); END_WM=os.environ.get('END_WORDMARK')=='1'
 FF="/usr/local/bin/ffmpeg"; FP="/usr/local/bin/ffprobe"; FPS=24
 keep=json.load(open(os.environ.get('KEEP',f"{S}/keep.json"))); show=sum(b-a for a,b in keep); n=len(keep)
@@ -21,7 +21,8 @@ assert TAGS_IN+TAGS_HOLD+1<HW, "head window too short for the title/tags timelin
 CRF=os.environ.get('CRF','20'); W=f"{S}/assemble-work"; os.makedirs(W,exist_ok=True)
 def run(cmd): subprocess.run(cmd,check=True)
 def probe(args): return subprocess.run([FP,"-v","error"]+args,capture_output=True,text=True,check=True).stdout
-GEO="split=2[gl][gr];[gl]crop=843:940:57:30,scale=960:1080[pl];[gr]crop=843:940:1017:30,scale=960:1080[pr];[pl][pr]hstack,fps=%d"%FPS   # renderer's crop, 8px shorter: hides the name-bar edge
+GEO="split=2[gl][gr];[gl]crop=843:940:57:30,scale=960:1080[pl];[gr]crop=843:940:1017:30,scale=960:1080[pr];%shstack,fps=%d"%("[pr][pl]" if os.environ.get('SWAP')=='1' else "[pl][pr]",FPS)   # renderer's crop, 8px shorter: hides the name-bar edge
+# SWAP=1: StreamYard put the panels the other way round (ep 2), so swap them back: Steve left, Sam right, as the tags say
 def pieces_for(t0,t1):
     out=[]; e0=0.0
     for a,b in keep:
