@@ -52,11 +52,11 @@ def dynamics(s, gain):
     return Pedalboard([ds, c, lim])
 
 
-def delay(s):
+def delay(s, sr):
     # streaming with reset=False does NOT compensate plugin latency, and the reported
     # latencies miss Pro-L's oversampling filter (ep 2: 1794 samples), so measure it
-    x = np.zeros((2, 48000 * 10), np.float32); x[:, 24000] = 0.5
-    return int(np.argmax(np.abs(dynamics(s, 0.0)(x, 48000, reset=False)[0]))) - 24000
+    x = np.zeros((2, sr * 10), np.float32); x[:, sr // 2] = 0.5
+    return int(np.argmax(np.abs(dynamics(s, 0.0)(x, sr, reset=False)[0]))) - sr // 2
 
 
 def turns(pub, who, n):
@@ -72,9 +72,9 @@ def turns(pub, who, n):
 
 
 def render(src, out, s, gain, pub):
-    d = delay(s)
     eq, eq_spk, dyn = pro_q(s['eq']), pro_q(s['eq'] + s['speaker_bands']), dynamics(s, gain)
     with AudioFile(src) as f, AudioFile(out, 'w', f.samplerate, f.num_channels, bit_depth=32) as o:
+        d = delay(s, int(f.samplerate))
         if pub:
             mask = turns(pub, s['speaker'], int(f.frames / f.samplerate * 100) + 2)
             print(f"{s['speaker']}: {mask.sum() / 100:.0f} s of turns")
@@ -82,8 +82,8 @@ def render(src, out, s, gain, pub):
             t0, x = f.tell(), f.read(f.samplerate * 10)
             y = eq(x, f.samplerate, reset=False)
             if pub:
-                g = np.interp((t0 + np.arange(x.shape[1])) / f.samplerate, np.arange(len(mask)) / 100, mask)
-                y = y * (1 - g.astype(np.float32)) + eq_spk(x, f.samplerate, reset=False) * g.astype(np.float32)
+                g = np.interp((t0 + np.arange(x.shape[1])) / f.samplerate, np.arange(len(mask)) / 100, mask).astype(np.float32)
+                y = y * (1 - g) + eq_spk(x, f.samplerate, reset=False) * g
             y = dyn(y, f.samplerate, reset=False)
             skip = min(d, y.shape[1]); d -= skip
             o.write(y[:, skip:])

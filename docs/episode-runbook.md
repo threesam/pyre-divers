@@ -149,6 +149,7 @@ loudness. This is the file for YouTube and the Drive folder.
 ## 9. publish kit
 
 ```sh
+SHOW=$(python3 -c "import json; print(sum(b-a for a,b in json.load(open('$EP/keep.json'))))")
 python3 $T/audio.py $EP/mix.wav - $SHOW $N $EP/publish "title"
 scp $EP/publish/pyre-divers-$(printf %03d $N).mp3 $BOX:/opt/media/
 curl -sI https://media.pyredivers.com/pyre-divers-$(printf %03d $N).mp3   # 200, audio/mpeg, content-length, accept-ranges
