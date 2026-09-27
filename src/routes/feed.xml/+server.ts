@@ -132,8 +132,8 @@ export const GET: RequestHandler = async () => {
       '</channel>',
       [
         `  <itunes:image href="${COVER}"/>`,
-        // the show is unfiltered by design (ep 1 has a swear in it) —
-        // flagged at the channel so no episode can ship mislabeled
+        // the show is unfiltered by design (ep 1 has a swear in it). apple
+        // reads this; spotify needs the per-item copy in addItem too
         '  <itunes:explicit>true</itunes:explicit>',
         '  <itunes:type>episodic</itunes:type>',
         '</channel>',
