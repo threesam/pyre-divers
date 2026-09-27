@@ -89,6 +89,9 @@ export const GET: RequestHandler = async () => {
       extensions: [
         { name: 'itunes:episode', objects: { _text: String(episode.number) } },
         { name: 'itunes:episodeType', objects: { _text: 'full' } },
+        // spotify reads explicit per episode and does not inherit the
+        // channel flag (ep 1 showed "explicit: no" there), so repeat it here
+        { name: 'itunes:explicit', objects: { _text: 'true' } },
         // the transcript the apps show in sync (podcasting 2.0 namespace,
         // read by apple, pocket casts, overcast, fountain…)
         {
@@ -129,8 +132,8 @@ export const GET: RequestHandler = async () => {
       '</channel>',
       [
         `  <itunes:image href="${COVER}"/>`,
-        // the show is unfiltered by design (ep 1 has a swear in it) —
-        // flagged at the channel so no episode can ship mislabeled
+        // the show is unfiltered by design (ep 1 has a swear in it). apple
+        // reads this; spotify needs the per-item copy in addItem too
         '  <itunes:explicit>true</itunes:explicit>',
         '  <itunes:type>episodic</itunes:type>',
         '</channel>',
