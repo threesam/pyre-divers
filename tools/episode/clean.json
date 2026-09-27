@@ -1,0 +1,20 @@
+{
+  "eq": [
+    ["Low Cut", 60, 0, 0],
+    ["Low Shelf", 200, -3.0, 0.7],
+    ["Bell", 1050, -2.0, 1.4]
+  ],
+  "speaker": "steve",
+  "speaker_bands": [
+    ["Low Shelf", 220, 6.0, 0.7],
+    ["Bell", 4500, -2.5, 1.2]
+  ],
+  "ds_threshold": -62.0,
+  "ds_range": 12.0,
+  "ds_hp": 3000.0,
+  "ds_lp": 16000.0,
+  "c_style": "Opto",
+  "c_threshold": -24.0,
+  "c_ratio": 2.0,
+  "l_gain": 9.9
+}

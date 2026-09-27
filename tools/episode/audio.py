@@ -1,5 +1,5 @@
 # The two audio files the publish step needs, from the episode's mix and its
-# FL-cleaned conversation:
+# conversation without music (the edit, step 5):
 #   pyre-divers-NNN.mp3   the podcast enclosure: loudness-matched to -16 LUFS
 #                         (apple's spec; the mix is ~-14 for youtube), 44.1 kHz
 #                         stereo, 128k CBR, id3v2.3 tags + the cover embedded
@@ -8,7 +8,7 @@
 #                         per request, so it's split at the longest pause near
 #                         each boundary, and parts.txt records each part's
 #                         offset on the show timeline for transcript.py
-# usage: audio.py MIX.wav CLEAN.wav SHOW_SECONDS NUM OUTDIR [TITLE]
+# usage: audio.py MIX.wav|- CLEAN.wav|- SHOW_SECONDS NUM OUTDIR [TITLE]   (- skips that file)
 import os
 import re
 import subprocess
@@ -28,19 +28,23 @@ def ff(*args, capture=False):
     return r.stderr
 
 
-# podcast mp3: measure, then one static gain to -16 LUFS (no dynamics touched)
-loud = float(re.findall(r'I:\s+(-?[\d.]+) LUFS', ff('-i', mix, '-af', 'ebur128', '-f', 'null', '-'))[-1])
-gain = -16.0 - loud
-mp3 = os.path.join(out, f'pyre-divers-{num:03d}.mp3')
-ff('-v', 'error', '-y', '-i', mix, '-i', COVER, '-map', '0:a', '-map', '1:v',
-   '-af', f'volume={gain:.2f}dB,aresample=44100:filter_size=64:phase_shift=10:cutoff=0.97',
-   '-c:a', 'libmp3lame', '-b:a', '128k', '-c:v', 'copy', '-disposition:v', 'attached_pic',
-   '-id3v2_version', '3', '-write_id3v1', '1', '-metadata', f'title={title}', '-metadata', 'artist=pyre divers',
-   '-metadata', 'album=pyre divers', '-metadata', f'track={num}', '-metadata', 'genre=Podcast',
-   '-metadata', 'comment=https://pyredivers.com', '-metadata:s:v', 'title=Album cover',
-   '-metadata:s:v', 'comment=Cover (front)', mp3)
-after = re.findall(r'(I|Peak):\s+(-?[\d.]+)', ff('-i', mp3, '-map', '0:a', '-af', 'ebur128=peak=true', '-f', 'null', '-'))
-print(f'{mp3}: {os.path.getsize(mp3)} bytes, mix {loud} LUFS {gain:+.2f} dB -> {dict(after[-2:])}')
+if mix != '-':  # '-' = parts only (step 5, before there's a mix)
+    # podcast mp3: measure, then one static gain to -16 LUFS (no dynamics touched)
+    loud = float(re.findall(r'I:\s+(-?[\d.]+) LUFS', ff('-i', mix, '-af', 'ebur128', '-f', 'null', '-'))[-1])
+    gain = -16.0 - loud
+    mp3 = os.path.join(out, f'pyre-divers-{num:03d}.mp3')
+    ff('-v', 'error', '-y', '-i', mix, '-i', COVER, '-map', '0:a', '-map', '1:v',
+       '-af', f'volume={gain:.2f}dB,aresample=44100:filter_size=64:phase_shift=10:cutoff=0.97',
+       '-c:a', 'libmp3lame', '-b:a', '128k', '-c:v', 'copy', '-disposition:v', 'attached_pic',
+       '-id3v2_version', '3', '-write_id3v1', '1', '-metadata', f'title={title}', '-metadata', 'artist=pyre divers',
+       '-metadata', 'album=pyre divers', '-metadata', f'track={num}', '-metadata', 'genre=Podcast',
+       '-metadata', 'comment=https://pyredivers.com', '-metadata:s:v', 'title=Album cover',
+       '-metadata:s:v', 'comment=Cover (front)', mp3)
+    after = re.findall(r'(I|Peak):\s+(-?[\d.]+)', ff('-i', mp3, '-map', '0:a', '-af', 'ebur128=peak=true', '-f', 'null', '-'))
+    print(f'{mp3}: {os.path.getsize(mp3)} bytes, mix {loud} LUFS {gain:+.2f} dB -> {dict(after[-2:])}')
+
+if clean == '-':  # '-' = the mp3 only (step 9: the parts were cut from the edit in step 5)
+    sys.exit()
 
 # transcription parts: pauses in the conversation stem, then greedy splits
 gaps = []
