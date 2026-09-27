@@ -76,6 +76,20 @@ ink), rooms at 45%, no ring. Every knob is an env var, documented at the top of
 python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 BPM   # ep 1: 69
 ```
 
+From ep 2 the show opens on the whirlpool, no words: it flips, darkest cell first, into the
+ASCII, and the title waits for it (ep 2: 77 bpm, 5 bars of outro music + 1 fade bar):
+
+```sh
+INTRO=1 python3 $T/whirl.py $EP/head-ascii.mp4 $EP/intro.mkv 116          # ~20 s
+INTRO=$EP/intro.mkv HOLD_M=2.5507 TITLE_IN=4.833 SECTION_M=4.1203 \
+  python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 77
+```
+
+`HOLD_M` = the intro (116 frames) plus a bar of full ASCII, in bars. `SECTION_M` ends
+the edit 2.75 s (whirl.py's wordmark frame 66) before the outro's last bar, so the
+closing "pyre divers" starts on its downbeat: bars = (show − music-in) / bar, with
+music-in snapped to a frame; pass the same number to `mix.sh` as BARS.
+
 This takes the raw footage in the renderer's panel framing, cut by `keep.json`.
 It opens fully ASCII and dissolves to footage over 3 bars, with the wordmark and
 the name tags. The ASCII returns over the last 6 bars: fading in for 3, full

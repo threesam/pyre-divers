@@ -12,7 +12,7 @@ keep=json.load(open(os.environ.get('KEEP',f"{S}/keep.json"))); show=sum(b-a for 
 MEAS=4*60/BPM; SECTION=float(os.environ.get('SECTION_M','6'))*MEAS; F=SECTION/2; TAIL=float(os.environ.get('TAIL','9')); AFADE=1.5
 TAILWIN=float(os.environ.get('TAILWIN','45')); HW=float(os.environ.get('HW','30')); Ks=show-TAILWIN; D=show-Ks; A0=D-SECTION
 assert SECTION+3<=TAILWIN, "SECTION longer than the tail window"
-WM_I,TAGS=f"{BRAND}/wordmark-ink.png",f"{BRAND}/tags.png"; HEAD_ASCII=os.environ.get('HEAD_ASCII',f"{S}/head-ascii.mp4")
+WM_I,TAGS=f"{BRAND}/wordmark-ink.png",f"{BRAND}/tags.png"; HEAD_ASCII=os.environ.get('HEAD_ASCII',f"{S}/head-ascii.mp4"); INTRO=os.environ.get('INTRO')   # INTRO: whirl.py's INTRO=1 clip, over the ASCII
 HOLD1=float(os.environ.get('HOLD_M','1'))*MEAS                     # full ASCII holds this long before it starts dissolving to footage
 OPEN=float(os.environ.get('OPEN_M','3'))*MEAS                      # then dissolves to footage over OPEN seconds
 T_IN=float(os.environ.get('TITLE_IN','0')); TITLE_FADE=float(os.environ.get('TITLE_FADE','0.3'))   # wordmark fades in fast, immediately, over the still-full ASCII
@@ -38,10 +38,11 @@ run([FF,"-nostdin","-v","error","-y","-i",SRC,"-filter_complex",aud,"-map","[a]"
 #    wordmark fades in fast right at the start, sitting on the still-full ASCII, not waiting for the footage to clear;
 #    the tags flash in after it and hold longer. Words are always the top layer.
 pc=pieces_for(0,HW)
-fc=(cut(pc)+f"[1:v]format=yuva420p,fade=t=out:st={HOLD1:.3f}:d={OPEN:.3f}:alpha=1[ao];[g][ao]overlay=format=auto:eof_action=pass[v1];"
-    f"[3:v]format=yuva420p,fade=t=in:st={TAGS_IN:.3f}:d=0.25:alpha=1,fade=t=out:st={TAGS_IN+TAGS_HOLD:.3f}:d=0.5:alpha=1[tg];[v1][tg]overlay=format=auto:eof_action=pass[v2];"
+fc=(cut(pc)+f"[1:v]format=yuva420p,fade=t=out:st={HOLD1:.3f}:d={OPEN:.3f}:alpha=1[ao];[g][ao]overlay=format=auto:eof_action=pass[v0];"
+    +("[4:v]format=rgba[iw];[v0][iw]overlay=format=auto:eof_action=pass[v1];" if INTRO else "[v0]null[v1];")
+    +f"[3:v]format=yuva420p,fade=t=in:st={TAGS_IN:.3f}:d=0.25:alpha=1,fade=t=out:st={TAGS_IN+TAGS_HOLD:.3f}:d=0.5:alpha=1[tg];[v1][tg]overlay=format=auto:eof_action=pass[v2];"
     f"[2:v]format=yuva420p,fade=t=in:st={T_IN:.3f}:d={TITLE_FADE:.3f}:alpha=1,fade=t=out:st={T_IN+TITLE_HOLD:.3f}:d=0.8:alpha=1[wm];[v2][wm]overlay=format=auto:eof_action=pass,format=yuv420p[v]")
-run([FF,"-nostdin","-v","error","-y","-i",SRC,"-i",HEAD_ASCII,"-loop","1","-t",f"{HW:.3f}","-i",WM_I,"-loop","1","-t",f"{HW:.3f}","-i",TAGS,"-filter_complex",fc,"-map","[v]","-an","-r",str(FPS),"-t",f"{HW:.6f}"]+ENC+[f"{W}/head.mp4"])
+run([FF,"-nostdin","-v","error","-y","-i",SRC,"-i",HEAD_ASCII,"-loop","1","-t",f"{HW:.3f}","-i",WM_I,"-loop","1","-t",f"{HW:.3f}","-i",TAGS]+(["-i",INTRO] if INTRO else [])+["-filter_complex",fc,"-map","[v]","-an","-r",str(FPS),"-t",f"{HW:.6f}"]+ENC+[f"{W}/head.mp4"])
 # 3. body: plain footage [HW,Ks), cached
 body=f"{W}/body-plain.mp4"; ok=False
 if os.path.exists(body):
