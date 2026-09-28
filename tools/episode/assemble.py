@@ -21,7 +21,10 @@ assert TAGS_IN+TAGS_HOLD+1<HW, "head window too short for the title/tags timelin
 CRF=os.environ.get('CRF','20'); W=f"{S}/assemble-work"; os.makedirs(W,exist_ok=True)
 def run(cmd): subprocess.run(cmd,check=True)
 def probe(args): return subprocess.run([FP,"-v","error"]+args,capture_output=True,text=True,check=True).stdout
-GEO="split=2[gl][gr];[gl]crop=843:940:57:30,scale=960:1080[pl];[gr]crop=843:940:1017:30,scale=960:1080[pr];%shstack,fps=%d"%("[pr][pl]" if os.environ.get('SWAP')=='1' else "[pl][pr]",FPS)   # renderer's crop, 8px shorter: hides the name-bar edge
+hd=float(probe(["-show_entries","format=duration","-of","csv=p=0",HEAD_ASCII]).strip())
+assert hd>=HOLD1+OPEN, f"head ASCII is {hd:.2f}s but the dissolve ends at {HOLD1+OPEN:.2f}s: rerun windows.py with HEAD >= {HOLD1+OPEN:.1f} (it pops off mid-fade otherwise)"
+SWAP=os.environ.get('SWAP')=='1'
+GEO="split=2[gl][gr];[gl]crop=843:940:57:30,scale=960:1080[pl];[gr]crop=843:940:1017:30,scale=960:1080[pr];%shstack,fps=%d"%("[pr][pl]" if SWAP else "[pl][pr]",FPS)   # renderer's crop, 8px shorter: hides the name-bar edge
 # SWAP=1: StreamYard put the panels the other way round (ep 2), so swap them back: Steve left, Sam right, as the tags say
 def pieces_for(t0,t1):
     out=[]; e0=0.0
@@ -45,7 +48,7 @@ fc=(cut(pc)+f"[1:v]format=yuva420p,fade=t=out:st={HOLD1:.3f}:d={OPEN:.3f}:alpha=
     f"[2:v]format=yuva420p,fade=t=in:st={T_IN:.3f}:d={TITLE_FADE:.3f}:alpha=1,fade=t=out:st={T_IN+TITLE_HOLD:.3f}:d=0.8:alpha=1[wm];[v2][wm]overlay=format=auto:eof_action=pass,format=yuv420p[v]")
 run([FF,"-nostdin","-v","error","-y","-i",SRC,"-i",HEAD_ASCII,"-loop","1","-t",f"{HW:.3f}","-i",WM_I,"-loop","1","-t",f"{HW:.3f}","-i",TAGS]+(["-i",INTRO] if INTRO else [])+["-filter_complex",fc,"-map","[v]","-an","-r",str(FPS),"-t",f"{HW:.6f}"]+ENC+[f"{W}/head.mp4"])
 # 3. body: plain footage [HW,Ks), cached
-body=f"{W}/body-plain.mp4"; ok=False
+body=f"{W}/body-plain{'-swap' if SWAP else ''}.mp4"; ok=False   # swap changes the pixels, not the length, so it keys the cache
 if os.path.exists(body):
     bd=float(probe(["-select_streams","v:0","-show_entries","stream=duration","-of","csv=p=0",body]).strip()); ok=abs(bd-(Ks-HW))<1.5/FPS
 if not ok:
@@ -61,7 +64,7 @@ if END_WM:
 fc+=",format=yuv420p[v]"
 run([FF,"-nostdin","-v","error","-y","-ss",f"{SEEK:.3f}","-i",SRC,"-i",ASCII]+wm_in+["-filter_complex",fc,"-map","[v]","-an","-r",str(FPS),"-t",f"{D:.6f}"]+ENC+[f"{W}/tail.mp4"])
 # 5. splice + mux
-open(f"{W}/list.txt","w").write("file 'head.mp4'\nfile 'body-plain.mp4'\nfile 'tail.mp4'\n")
+open(f"{W}/list.txt","w").write(f"file 'head.mp4'\nfile '{os.path.basename(body)}'\nfile 'tail.mp4'\n")
 run([FF,"-nostdin","-v","error","-y","-f","concat","-safe","0","-i",f"{W}/list.txt","-i",f"{W}/audio.m4a","-map","0:v","-map","1:a","-c","copy","-movflags","+faststart",OUT])
 vd=float(probe(["-select_streams","v:0","-show_entries","stream=duration","-of","csv=p=0",OUT]).strip()); ad=float(probe(["-select_streams","a:0","-show_entries","stream=duration","-of","csv=p=0",OUT]).strip())
 for f in ("head.mp4","tail.mp4","audio.m4a","list.txt"): os.remove(f"{W}/{f}")

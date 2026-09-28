@@ -63,7 +63,7 @@ its word timings stretch across the pauses.
 ## 3. custom video filtering: the ASCII head and tail
 
 ```sh
-python3 $T/windows.py $EP        # which raw seconds make the edit's first 12 s and last 45 s
+python3 $T/windows.py $EP [HEAD]   # which raw seconds make the edit's first HEAD s (default 12) and last 45 s
 $T/ascii-ends.sh $EP "$RAW"      # -> $EP/head-ascii.mp4, $EP/tail-ascii.mp4, rendered in parallel
 ```
 
@@ -82,6 +82,7 @@ ASCII, and the title waits for it (ep 2: 77 bpm, 5 bars of outro music + 1 fade 
 
 ```sh
 SW="split[a][b];[a]crop=960:1080:960:0[r];[b]crop=960:1080:0:0[l];[r][l]hstack"   # ep 2 only: panels swapped
+python3 $T/windows.py $EP 18 && $T/ascii-ends.sh $EP "$RAW"   # the head must outlast HOLD_M + OPEN_M bars (17.3 s here); assemble.py refuses a shorter one
 for c in head tail; do ffmpeg -nostdin -i $EP/$c-ascii.mp4 -vf "$SW" -crf 12 $EP/$c-ascii-swap.mp4; done
 INTRO=1 python3 $T/whirl.py $EP/head-ascii-swap.mp4 $EP/intro.mkv 116     # ~20 s
 SWAP=1 HEAD_ASCII=$EP/head-ascii-swap.mp4 TAIL_ASCII=$EP/tail-ascii-swap.mp4 \
@@ -138,7 +139,7 @@ $T/mix.sh $EP $EP/clean.wav $EP/outro.wav BPM $EP/mix.wav
 ```
 
 The music enters from silence on the first frame of the ASCII ending (ep 1 entered
-at 50%: pass `FROM=0.5` as the 8th arg), rises to 100% over those bars, sits +3.3 dB for balance, and goes through a limiter. Ep 1
+at 50%: pass `0.5` as the 8th arg, FROM), rises to 100% over those bars, sits +3.3 dB for balance, and goes through a limiter. Ep 1
 came out at −14.0 LUFS, −1.2 dBTP, and this script reproduces ep 1's shipped mix
 bit for bit.
 
