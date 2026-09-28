@@ -6,7 +6,7 @@ export const FEED = `${SITE}/feed.xml`;
 
 export const SHOW: Record<
   'instagram' | 'spotify' | 'youtube' | 'apple' | 'x',
-  string | null
+  string
 > = {
   instagram: 'https://instagram.com/pyredivers',
   spotify: 'https://open.spotify.com/show/0x25C9ki9Squ3L7HGFQ6qG',
@@ -15,10 +15,8 @@ export const SHOW: Record<
   x: 'https://x.com/pyredivers',
 };
 
-/** every listing that exists today, for json-ld sameAs */
-export const SAME_AS = Object.values(SHOW).filter(
-  (url): url is string => url !== null,
-);
+/** every listing, for json-ld sameAs */
+export const SAME_AS = Object.values(SHOW);
 
 export const HOSTS = [
   {

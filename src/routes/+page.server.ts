@@ -4,6 +4,8 @@ import { listPublishedEpisodes } from '$lib/server/queries';
 // read at prerender. publishing an episode fires the deploy hook, and that
 // rebuild is what swaps the pre-launch line on the card for a link to the
 // newest dive, and pins the series' json-ld startDate to the first one.
+export const prerender = true;
+
 export const load: PageServerLoad = async () => {
   const episodes = await listPublishedEpisodes();
   const first = episodes.at(-1);

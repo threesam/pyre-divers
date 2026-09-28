@@ -13,9 +13,9 @@ export const GET: RequestHandler = async () => {
     const day = e.publishedAt?.toISOString().slice(0, 10) ?? 'unpublished';
     return `- [${e.number}. ${e.title}](${page}) (${day}): ${e.description}\n  audio: ${e.audioUrl ?? '-'}\n  transcript: ${page} (html), ${page}/transcript.vtt (webvtt)`;
   });
-  const listings = Object.entries(SHOW)
-    .filter(([, url]) => url)
-    .map(([name, url]) => `- ${name}: ${url}`);
+  const listings = Object.entries(SHOW).map(
+    ([name, url]) => `- ${name}: ${url}`,
+  );
   const body = `# pyre divers
 
 > a podcast: two builders, live and unedited, in conversation with the ones
