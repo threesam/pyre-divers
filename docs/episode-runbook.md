@@ -63,7 +63,7 @@ its word timings stretch across the pauses.
 ## 3. custom video filtering: the ASCII head and tail
 
 ```sh
-python3 $T/windows.py $EP [HEAD]   # which raw seconds make the edit's first HEAD s (default 12) and last 45 s
+python3 $T/windows.py $EP        # which raw seconds make the edit's first 18 s and last 45 s
 $T/ascii-ends.sh $EP "$RAW"      # -> $EP/head-ascii.mp4, $EP/tail-ascii.mp4, rendered in parallel
 ```
 
@@ -82,7 +82,6 @@ ASCII, and the title waits for it (ep 2: 77 bpm, 5 bars of outro music + 1 fade 
 
 ```sh
 SW="split[a][b];[a]crop=960:1080:960:0[r];[b]crop=960:1080:0:0[l];[r][l]hstack"   # ep 2 only: panels swapped
-python3 $T/windows.py $EP 18 && $T/ascii-ends.sh $EP "$RAW"   # the head must outlast HOLD_M + OPEN_M bars (17.3 s here); assemble.py refuses a shorter one
 for c in head tail; do ffmpeg -nostdin -i $EP/$c-ascii.mp4 -vf "$SW" -crf 12 $EP/$c-ascii-swap.mp4; done
 INTRO=1 python3 $T/whirl.py $EP/head-ascii-swap.mp4 $EP/intro.mkv 116     # ~20 s
 SWAP=1 HEAD_ASCII=$EP/head-ascii-swap.mp4 TAIL_ASCII=$EP/tail-ascii-swap.mp4 \
@@ -90,7 +89,9 @@ SWAP=1 HEAD_ASCII=$EP/head-ascii-swap.mp4 TAIL_ASCII=$EP/tail-ascii-swap.mp4 \
   python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 77
 ```
 
-`HOLD_M` = the intro (116 frames) plus a bar of full ASCII, in bars. `SECTION_M` ends
+`HOLD_M` = the intro (116 frames) plus a bar of full ASCII, in bars. The head ASCII
+has to outlast HOLD_M + OPEN_M bars (17.3 s here) or it pops off mid-dissolve;
+assemble.py refuses a shorter one. `SECTION_M` ends
 the edit 2.75 s (whirl.py's wordmark frame 66) before the outro's last bar, so the
 closing "pyre divers" starts on its downbeat: bars = (show − music-in) / bar, with
 music-in snapped to a frame; pass the same number to `mix.sh` as BARS.
