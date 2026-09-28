@@ -455,10 +455,12 @@ section {
 }
 .dive-links {
   display: grid;
-  gap: 0.35rem;
   justify-items: end;
 }
+/* 24px rows (WCAG 2.5.8 target size), in rem so a bigger text size grows
+   them with the text. The rows butt up: the old gap lives in each line box */
 .dive-links a {
+  line-height: 1.5rem;
   color: #f5b942;
   font-size: 0.85rem;
   white-space: nowrap;
