@@ -4,12 +4,12 @@
 #   head-range.txt / tail-range.txt   raw start, raw end (tail: + edited start)
 #   head-sel.txt   / tail-sel.txt     ffmpeg select expr over that raw clip that
 #                                     keeps only the kept pieces
-# usage: windows.py EPDIR [HEAD=12] [TAIL=45]
+# usage: windows.py EPDIR [HEAD=18] [TAIL=45]   HEAD must outlast assemble.py's HOLD_M + OPEN_M bars (ep 2: 17.3 s)
 import json
 import sys
 
 ep = sys.argv[1]
-HEAD = float(sys.argv[2]) if len(sys.argv) > 2 else 12.0
+HEAD = float(sys.argv[2]) if len(sys.argv) > 2 else 18.0
 TAIL = float(sys.argv[3]) if len(sys.argv) > 3 else 45.0
 keep = json.load(open(f'{ep}/keep.json'))
 show = sum(b - a for a, b in keep)

@@ -43,7 +43,8 @@ recordings** in the studio's settings: each host then gets a separate, uncompres
 track. The regular export has both voices in one dual-mono mix, and ep 2 had to
 tell them apart from the transcript. It can't be switched on afterwards. Ep 1 wasn't broadcast; from ep 2 the show streams live. Either way, export the finished recording: 1920×1080, two
 panels, **Steve on the left, Sam on the right**. The name tags and the
-renderer's crops assume that layout.
+renderer's crops assume that layout. Ep 2 came out the other way round; `SWAP=1` on
+assemble.py swaps the panels back (and the ASCII clips' halves, below), so Sam stays on the right.
 
 ## 2. cut list: tighten the pauses
 
@@ -62,7 +63,7 @@ its word timings stretch across the pauses.
 ## 3. custom video filtering: the ASCII head and tail
 
 ```sh
-python3 $T/windows.py $EP        # which raw seconds make the edit's first 12 s and last 45 s
+python3 $T/windows.py $EP        # which raw seconds make the edit's first 18 s and last 45 s
 $T/ascii-ends.sh $EP "$RAW"      # -> $EP/head-ascii.mp4, $EP/tail-ascii.mp4, rendered in parallel
 ```
 
@@ -75,6 +76,25 @@ ink), rooms at 45%, no ring. Every knob is an env var, documented at the top of
 ```sh
 python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 BPM   # ep 1: 69
 ```
+
+From ep 2 the show opens on the whirlpool, no words: it flips, darkest cell first, into the
+ASCII, and the title waits for it (ep 2: 77 bpm, 5 bars of outro music + 1 fade bar):
+
+```sh
+SW="split[a][b];[a]crop=960:1080:960:0[r];[b]crop=960:1080:0:0[l];[r][l]hstack"   # ep 2 only: panels swapped
+for c in head tail; do ffmpeg -nostdin -i $EP/$c-ascii.mp4 -vf "$SW" -crf 12 $EP/$c-ascii-swap.mp4; done
+INTRO=1 python3 $T/whirl.py $EP/head-ascii-swap.mp4 $EP/intro.mkv 116     # ~20 s
+SWAP=1 HEAD_ASCII=$EP/head-ascii-swap.mp4 TAIL_ASCII=$EP/tail-ascii-swap.mp4 \
+  INTRO=$EP/intro.mkv HOLD_M=2.5507 TITLE_IN=4.833 SECTION_M=4.1203 \
+  python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 77
+```
+
+`HOLD_M` = the intro (116 frames) plus a bar of full ASCII, in bars. The head ASCII
+has to outlast HOLD_M + OPEN_M bars (17.3 s here) or it pops off mid-dissolve;
+assemble.py refuses a shorter one. `SECTION_M` ends
+the edit 2.75 s (whirl.py's wordmark frame 66) before the outro's last bar, so the
+closing "pyre divers" starts on its downbeat: bars = (show − music-in) / bar, with
+music-in snapped to a frame; pass the same number to `mix.sh` as BARS.
 
 This takes the raw footage in the renderer's panel framing, cut by `keep.json`.
 It opens fully ASCII and dissolves to footage over 3 bars, with the wordmark and
@@ -119,8 +139,8 @@ python3 $T/clean.py $EP/edit.wav $EP/clean.wav $EP/publish              # ~3 min
 $T/mix.sh $EP $EP/clean.wav $EP/outro.wav BPM $EP/mix.wav
 ```
 
-The music enters at 50% on the first frame of the ASCII ending, rises to 100%
-over those 6 bars, sits +3.3 dB for balance, and goes through a limiter. Ep 1
+The music enters from silence on the first frame of the ASCII ending (ep 1 entered
+at 50%: pass `0.5` as the 8th arg, FROM), rises to 100% over those bars, sits +3.3 dB for balance, and goes through a limiter. Ep 1
 came out at −14.0 LUFS, −1.2 dBTP, and this script reproduces ep 1's shipped mix
 bit for bit.
 
@@ -180,6 +200,11 @@ permanent once published**: it's the feed guid and the URL.
 
 ## 10. publish
 
+Nothing to run: the draft's `publishAt` is the schedule. A cron on the box
+(`/opt/infra/pyre-publish.sh`, every 5 min, in the infra repo) flips any draft
+whose time has passed and fires the deploy hook. It logs to
+`/var/log/pyre-publish.log`. To go live right now instead:
+
 ```sh
 node --env-file=.env.local $T/db.mjs publish <slug>
 ssh $BOX 'set -a; . /opt/infra/.env; curl -fsS -X POST "$PYRE_DEPLOY_HOOK"'
@@ -206,7 +231,9 @@ for the item and `https://pyredivers.com/episodes/<slug>`.
   1. Upload `ep$N-final.mp4` in Studio.
   2. Add the title, and a description with chapters (from `transcript.md`).
   3. Upload `publish/captions.srt` as the captions.
-  4. Add a thumbnail and schedule it.
+  4. Add a thumbnail and schedule it. The thumbnail is the wordmark on paper
+     from the episode's own ending, about 5 s after the conversation stops:
+     `ffmpeg -ss $(echo "$SHOW + 5" | bc) -i $EP/ep$N-final.mp4 -frames:v 1 -vf scale=1280:720 -q:v 2 $EP/publish/thumbnail-paper.jpg`
   5. Then put `youtubeUrl` in the manifest, run `db.mjs draft`, and fire the
      deploy hook.
 - **email**: in listmonk (`mail.sixtom.com`), the list is "pyre divers" and mail
