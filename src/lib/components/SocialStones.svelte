@@ -33,8 +33,7 @@
 
   interface Social {
     name: string;
-    /** null until the listing exists; the stone stays plain until then */
-    href: string | null;
+    href: string;
     /** which stone, as an index into ROCKS — the single source of geometry */
     rock: number;
     icon: 'instagram' | 'spotify' | 'youtube' | 'apple' | 'x';
@@ -76,14 +75,10 @@
     x: 'follow-x',
   };
 
-  const placed = SOCIALS.flatMap(({ href, ...s }) => {
-    if (!href) {
-      return [];
-    }
+  const placed = SOCIALS.map((s) => {
     const r = ROCKS[s.rock];
     return {
       ...s,
-      href,
       dx: r.dx,
       // from the mouth, in units — the layout puts the mouth where --b says
       y: r.cy - FLAME_BASE,
