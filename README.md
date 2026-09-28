@@ -21,8 +21,8 @@ Beyond the page:
 - **/episodes/[slug]** — per-episode pages: audio player, listen links, and the
   full diarized transcript. Built from the db at prerender, like the feed and
   `/sitemap.xml`; `PREVIEW_DRAFTS=1` includes unpublished rows in a local build.
-- **AEO/SEO** — PodcastSeries + WebSite JSON-LD on the page; `static/llms.txt`,
-  `static/robots.txt`, `static/sitemap.xml`, OG art in `static/`.
+- **AEO/SEO** — PodcastSeries + WebSite JSON-LD on the page; `/llms.txt` and
+  `/sitemap.xml` (prerendered routes), `static/robots.txt`, OG art in `static/`.
 - **Social kit** — launch assets (StreamYard overlay, banners for YT/FB/IG/X/
   LinkedIn) in `assets/social/` — deliberately NOT under `static/`, since nothing
   serves them and `static/` is uploaded to the CDN on every deploy. Grab them
