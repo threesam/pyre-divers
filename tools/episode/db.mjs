@@ -85,7 +85,7 @@ try {
       throw new Error(`no episode with slug ${arg}`);
     }
     say(
-      `#${row.id} ${arg}: ${row.published ? 'LIVE' : 'unpublished'} (published_at ${row.publishedAt?.toISOString()})`,
+      `#${row.id} ${arg}: ${row.published ? 'LIVE' : 'unpublished'} (published_at ${row.publishedAt?.toISOString() ?? '-'})`,
     );
     if (process.env.PYRE_DEPLOY_HOOK) {
       const res = await fetch(process.env.PYRE_DEPLOY_HOOK, { method: 'POST' });
