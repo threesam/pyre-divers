@@ -198,6 +198,11 @@ permanent once published**: it's the feed guid and the URL.
 
 ## 10. publish
 
+Nothing to run: the draft's `publishAt` is the schedule. A cron on the box
+(`/opt/infra/pyre-publish.sh`, every 5 min, in the infra repo) flips any draft
+whose time has passed and fires the deploy hook. It logs to
+`/var/log/pyre-publish.log`. To go live right now instead:
+
 ```sh
 node --env-file=.env.local $T/db.mjs publish <slug>
 ssh $BOX 'set -a; . /opt/infra/.env; curl -fsS -X POST "$PYRE_DEPLOY_HOOK"'
@@ -224,7 +229,9 @@ for the item and `https://pyredivers.com/episodes/<slug>`.
   1. Upload `ep$N-final.mp4` in Studio.
   2. Add the title, and a description with chapters (from `transcript.md`).
   3. Upload `publish/captions.srt` as the captions.
-  4. Add a thumbnail and schedule it.
+  4. Add a thumbnail and schedule it. The thumbnail is the wordmark on paper
+     from the episode's own ending, about 5 s after the conversation stops:
+     `ffmpeg -ss $(echo "$SHOW + 5" | bc) -i $EP/ep$N-final.mp4 -frames:v 1 -vf scale=1280:720 -q:v 2 $EP/publish/thumbnail-paper.jpg`
   5. Then put `youtubeUrl` in the manifest, run `db.mjs draft`, and fire the
      deploy hook.
 - **email**: in listmonk (`mail.sixtom.com`), the list is "pyre divers" and mail
