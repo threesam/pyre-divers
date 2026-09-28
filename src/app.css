@@ -455,10 +455,12 @@ section {
 }
 .dive-links {
   display: grid;
-  gap: 0.35rem;
   justify-items: end;
 }
+/* 24px rows (WCAG 2.5.8 target size) — the rows butt up, so the old gap
+   lives inside each link's line box instead */
 .dive-links a {
+  line-height: 24px;
   color: #f5b942;
   font-size: 0.85rem;
   white-space: nowrap;
