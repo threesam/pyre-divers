@@ -12,6 +12,8 @@
 // publish: published = true, published_at = now. then fire the deploy hook —
 //   nothing on the site changes until a build runs. if PYRE_DEPLOY_HOOK is in
 //   the env it is fired here; otherwise see docs/episode-runbook.md.
+// unpublish: published = false and published_at cleared, so the box's
+//   scheduled-publish cron (published_at <= now) can't put it straight back.
 import { dirname, resolve } from 'node:path';
 import postgres from 'postgres';
 import { readFileSync } from 'node:fs';
@@ -77,7 +79,7 @@ try {
     const on = cmd === 'publish';
     const [row] = await sql`
       update episodes set published = ${on},
-        published_at = case when ${on} then now() else published_at end
+        published_at = case when ${on} then now() else null end
       where slug = ${arg} returning id, published, published_at`;
     if (!row) {
       throw new Error(`no episode with slug ${arg}`);

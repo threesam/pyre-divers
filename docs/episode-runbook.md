@@ -234,8 +234,9 @@ for the item and `https://pyredivers.com/episodes/<slug>`.
   4. Add a thumbnail and schedule it. The thumbnail is the wordmark on paper
      from the episode's own ending, about 5 s after the conversation stops:
      `ffmpeg -ss $(echo "$SHOW + 5" | bc) -i $EP/ep$N-final.mp4 -frames:v 1 -vf scale=1280:720 -q:v 2 $EP/publish/thumbnail-paper.jpg`
-  5. Then put `youtubeUrl` in the manifest, run `db.mjs draft`, and fire the
-     deploy hook.
+  5. Then put `youtubeUrl` in the manifest and run `db.mjs draft`. Fire the
+     deploy hook only if the episode is already live; a draft picks it up when
+     the cron publishes it.
 - **email**: in listmonk (`mail.sixtom.com`), the list is "pyre divers" and mail
   goes from `fire@pyredivers.com` through Resend. Draft it, Sam approves, send.
 - **LinkedIn**: Wednesday is the drop (the best clip plus the link). Clips fill
