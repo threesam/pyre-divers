@@ -92,6 +92,16 @@ export const GET: RequestHandler = async () => {
         // spotify reads explicit per episode and does not inherit the
         // channel flag (ep 1 showed "explicit: no" there), so repeat it here
         { name: 'itunes:explicit', objects: { _text: 'true' } },
+        // the episode's own title card (tools/episode/card.py), uploaded
+        // beside the mp3. apps show it in place of the show cover.
+        {
+          name: 'itunes:image',
+          objects: {
+            _attributes: {
+              href: episode.audioUrl.replace(/\.mp3$/, '-cover.jpg'),
+            },
+          },
+        },
         // the transcript the apps show in sync (podcasting 2.0 namespace,
         // read by apple, pocket casts, overcast, fountain…)
         {
