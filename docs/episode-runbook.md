@@ -174,7 +174,16 @@ python3 $T/audio.py $EP/mix.wav - $SHOW $N $EP/publish "title"
 scp $EP/publish/pyre-divers-$(printf %03d $N).mp3 $BOX:/opt/media/
 curl -sI https://media.pyredivers.com/pyre-divers-$(printf %03d $N).mp3   # 200, audio/mpeg, content-length, accept-ranges
 python3 $T/transcript.py $EP/publish                                    # transcript.json/.md, captions.srt (from step 5)
+python3 $T/card.py $EP/publish/pyre-divers-$(printf %03d $N)-cover.jpg 3000x3000 "title"   # | breaks lines
+python3 $T/card.py $EP/publish/pyre-divers-$(printf %03d $N)-outro.jpg 1280x720 "title"
+scp $EP/publish/pyre-divers-$(printf %03d $N)-{cover,outro}.jpg $BOX:/opt/media/
 ```
+
+- **`card.py`** draws the episode's title card. The square `-cover.jpg` is the
+  feed's per-episode `<itunes:image>`, and the feed derives its URL from the mp3's
+  (`.mp3` → `-cover.jpg`), so **it has to be on the media server before publish**
+  or the apps get a 404 for the art. The 16:9 `-outro.jpg` is the YouTube
+  thumbnail and the email image.
 
 - **`audio.py`** writes two kinds of file, and `-` for either input skips it:
   - The podcast mp3: one static gain to −16 LUFS (Apple's spec), 44.1 kHz stereo,
