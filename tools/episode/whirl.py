@@ -82,6 +82,7 @@ p,dv=masks(); wm=np.maximum(np.asarray(p),np.asarray(dv)).astype(np.float32)/255
 halo=Image.fromarray((wm*255).astype(np.uint8)).filter(ImageFilter.MaxFilter(19))
 halo=np.asarray(halo)>128
 carve=halo.reshape(GR,GH,GC,GW).max((1,3))
+carve_px=np.repeat(np.repeat(carve,GH,0),GW,1)[...,None].astype(np.float32)   # the letters' clearing opens with the letters, not before
 # end state: flat paper — the swirl and the wordmark both dissolve into it
 GRID=np.broadcast_to(BG,(H,W,3)).astype(np.float32)   # flat paper
 proc=subprocess.Popen(["/usr/local/bin/ffmpeg","-nostdin","-v","error","-y","-f","rawvideo","-pix_fmt","rgba" if INTRO else "rgb24","-s",f"{W}x{H}","-r",str(FPS),"-i","-","-c:v","ffv1",OUTMKV],stdin=subprocess.PIPE)
@@ -98,7 +99,6 @@ for f in range(NF):
     for w,pp in zip((0.7,0.5,0.3),reversed(hist[-3:])): c=c+w*hits(pp)
     hist.append(pos.copy()); hist[:]=hist[-3:]
     cnt=np.select([c<0.5,c<1.3,c<2.4],[0,1,2],3)
-    if not INTRO: cnt[carve]=0
     tgt=T[np.minimum(cnt,3)].transpose(0,2,1,3,4).reshape(H,W,3)
     s=np.clip((f-act)/2.0,0,1); sp=np.repeat(np.repeat(s,CH,0),CW,1)[...,None]
     if INTRO:   # the whirlpool, uncarved, over whatever it hasn't handed to the ASCII yet
@@ -106,8 +106,9 @@ for f in range(NF):
         proc.stdin.write(frame.tobytes())
         if f in KEEP: Image.fromarray(frame).convert("RGB").resize((640,360),Image.LANCZOS).save(f"{FR}/f{f:03d}.png")
         continue
+    wf=float(sstep(WM0,WM1,f)); tgt=BG+(tgt-BG)*(1-wf*carve_px)
     out=last*(1-sp)+tgt*sp
-    wa=float(sstep(WM0,WM1,f))*wm[...,None]
+    wa=wf*wm[...,None]
     out=out*(1-wa)+INK*wa
     gf=float(sstep(FADE0,FADE1,f)); out=out*(1-gf)+GRID*gf
     frame=np.clip(out+0.5,0,255).astype(np.uint8)
