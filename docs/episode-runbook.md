@@ -54,11 +54,14 @@ the cut list is one piece, from the first word to the last.
 ```sh
 /usr/local/bin/ffmpeg -nostdin -hide_banner -i "$RAW" -vn -ac 1 \
   -af "silencedetect=noise=-37dB:d=0.15" -f null - 2>&1 | grep -o 'silence_.*' > $EP/silences.txt
-head -2 $EP/silences.txt; tail -2 $EP/silences.txt   # where the first word starts, where the last one ends
+head -2 $EP/silences.txt; tail -2 $EP/silences.txt   # candidates for the first word's start and the last word's end
 echo "[[HEAD, TAIL]]" > $EP/keep.json                 # ep 3: [[1.0, 1959.9]]
 ```
 
-`HEAD` and `TAIL` are raw seconds. Put `HEAD` just before the first word. Put
+`HEAD` and `TAIL` are raw seconds. The silences are only candidates: a recording
+that starts or stops mid-talk has no silence at that end, and one with chatter
+before the show has an earlier one. Listen at both points before choosing. Put
+`HEAD` just before the first word. Put
 `TAIL` at least 1.5 s after the last word ends: the edit fades the voice out
 over its last 1.5 s, and a `TAIL` right on the last word buries it (ep 2's
 first pick left "Why not?" 7–12 dB down). Everything after this reads
