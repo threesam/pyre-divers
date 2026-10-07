@@ -46,19 +46,26 @@ panels, **Steve on the left, Sam on the right**. The name tags and the
 renderer's crops assume that layout. Ep 2 came out the other way round; `SWAP=1` on
 assemble.py swaps the panels back (and the ASCII clips' halves, below), so Sam stays on the right.
 
-## 2. cut list: tighten the pauses
+## 2. cut list: the whole conversation
+
+The show is unedited: no pauses tightened, nothing taken out of the middle. So
+the cut list is one piece, from the first word to the last.
 
 ```sh
-python3 $T/tighten.py $EP "$RAW" HEAD TAIL   # ep 1: 2.5 2352.5, ~5 s
+/usr/local/bin/ffmpeg -nostdin -hide_banner -i "$RAW" -vn -ac 1 \
+  -af "silencedetect=noise=-37dB:d=0.15" -f null - 2>&1 | grep -o 'silence_.*' > $EP/silences.txt
+head -2 $EP/silences.txt; tail -2 $EP/silences.txt   # where the first word starts, where the last one ends
+echo "[[HEAD, TAIL]]" > $EP/keep.json                 # ep 3: [[1.0, 1959.9]]
 ```
 
-`HEAD` and `TAIL` are where the conversation starts and ends in the raw, in
-seconds. Every silence of 1.2 s or more is cut down to 0.6 s. Silence means
-below −37 dB on a 48 kHz mono downmix. Writes `keep.json`. Ep 1's list had 70
-cuts, removed 70.2 s, and left a 2279.82 s show; the script gets 69 cuts and
-69.4 s on the same file. If a new room is noisier, raise the threshold (−35)
-until the cut count looks like ep 1's. Don't use Whisper word gaps for this:
-its word timings stretch across the pauses.
+`HEAD` and `TAIL` are raw seconds. Put `HEAD` just before the first word. Put
+`TAIL` at least 1.5 s after the last word ends: the edit fades the voice out
+over its last 1.5 s, and a `TAIL` right on the last word buries it (ep 2's
+first pick left "Why not?" 7–12 dB down). Everything after this reads
+`keep.json` as it is.
+
+Eps 1 and 2 went out with their pauses tightened (70 and 31 cuts). From ep 3
+there are none, and the script that made them is gone.
 
 ## 3. custom video filtering: the ASCII head and tail
 
@@ -255,7 +262,6 @@ for the item and `https://pyredivers.com/episodes/<slug>`.
 
 | step                       | wall time                               | cost               |
 | -------------------------- | --------------------------------------- | ------------------ |
-| tighten                    | ~5 s                                    | —                  |
 | ASCII head + tail          | a few min (not timed)                   | —                  |
 | assemble (first run)       | ~20 min (the body re-encode; not timed) | —                  |
 | transcribe + clean (ep 2)  | ~7 min + ~6 min                         | $0.68              |
