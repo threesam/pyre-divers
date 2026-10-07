@@ -166,6 +166,25 @@ speed; at full speed it twinkled. The wordmark fades in black, holds 2 s, then
 everything fades to flat paper over 2 s. Look at `whirl-frames/` before moving
 on.
 
+When the music runs on after the conversation, `WM0` moves the wordmark's first
+frame later, and the hold, the fade and the length follow it. The whirlpool
+turns until then. Put it on a downbeat:
+
+```sh
+WM0=167 python3 $T/whirl.py $EP/ep$N-edit.mp4 $EP/whirl.mkv   # ep 3: 296 frames
+```
+
+`WM0` = (music-in + bars × bar) × 24 − the edit's frame count. Ep 3: the music
+came in 2.75 bars before the end (`SECTION_M=2.7672`, `mix.sh ... 77 mix.wav 2.75 -0.7`),
+so its second hit lands as the edit ends, and the wordmark starts on the downbeat
+of its last bar, bar 6.
+
+Measure the music per beat before choosing, and don't trust the file's length.
+Ep 3's `outro.wav` ran 28.9 s, but the music stopped at bar 7 (18.7 s); the rest
+was reverb, then silence. Left in, that silence is 8 s of dead air at the end of
+the mp3. Trim the file to the picture's last frame, with a 1 s fade, before
+mixing.
+
 ## 8. final + verify
 
 ```sh

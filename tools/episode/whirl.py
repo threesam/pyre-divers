@@ -3,7 +3,9 @@
 # flat paper. The vortex is a port of pyredivers.com's own algorithm (src/lib/page-fx.ts): 6000 bodies on 3
 # log-spiral lanes, r0 = R_IN + (R_START-R_IN)*frac^1.9, Rankine flow, tang = (-y, x) in screen space.
 # ep 1 timing at 24 fps: flips over frames 1-88, wordmark in 66-96, fade to paper 144-192, 195 frames (8.125 s).
-# usage: whirl.py EDIT.mp4 OUT.mkv [NF=195] [TS=0.4]   (TS = sim speed; 1.0 twinkled, 0.4 glides)
+# usage: [WM0=66] whirl.py EDIT.mp4 OUT.mkv [NF] [TS=0.4]   (TS = sim speed; 1.0 twinkled, 0.4 glides)
+#   WM0 moves the wordmark, and the hold, fade and length that follow it, later: a longer outro keeps the whirlpool turning
+#   until then. ep 3: WM0=167, the downbeat of the music's last bar, 296 frames.
 #   INTRO=1: the opening instead, no words: whirl.py HEAD-ASCII.mp4 OUT.mkv 116 -> whirlpool alone for 1 s, then
 #   it flips, darkest cell first, into the ASCII, which is ready by frame 112; OUT.mkv is RGBA whose alpha is
 #   the whirlpool's cover, laid over the moving ASCII by assemble.py (INTRO=OUT.mkv)
@@ -13,10 +15,12 @@ from PIL import Image, ImageDraw, ImageFilter
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from wordmark import masks
 EDIT,OUTMKV=sys.argv[1],sys.argv[2]; FR=os.path.splitext(OUTMKV)[0]+"-frames"; os.makedirs(FR,exist_ok=True)
-W,H=1920,1080; CW,CH=6,12; NC,NR=W//CW,H//CH; FPS=24; NF=int(sys.argv[3]) if len(sys.argv)>3 else 195
+W,H=1920,1080; CW,CH=6,12; NC,NR=W//CW,H//CH; FPS=24
+WM0=float(os.environ.get('WM0','66')); WM1=WM0+30   # wordmark fade-in. WM0 = the frame it starts on: put it on a downbeat of the outro music
+FADE0=WM1+48; FADE1=FADE0+48                        # 2 s hold, then 2 s to flat paper
+NF=int(sys.argv[3]) if len(sys.argv)>3 else int(FADE1)+3
 INTRO=os.environ.get('INTRO')=='1'
 F0,F1=(24.0,112.0) if INTRO else (1.0,88.0)   # darkest-first flips span these frames
-WM0,WM1=66.0,96.0                  # wordmark fade-in
 TAU=2*math.pi; R_START=0.72; K=0.02124; LANES=3; R_IN=0.002; FONT=268.8
 Scss=float(round(0.7*math.hypot(W,H)))            # 1542 — the site's S at 16:9, dpr 1
 W_CORE=TAU/24; V_RIM_W=(TAU/70)*R_START
@@ -80,7 +84,6 @@ halo=np.asarray(halo)>128
 carve=halo.reshape(GR,GH,GC,GW).max((1,3))
 # end state: flat paper — the swirl and the wordmark both dissolve into it
 GRID=np.broadcast_to(BG,(H,W,3)).astype(np.float32)   # flat paper
-FADE0,FADE1=144.0,192.0
 proc=subprocess.Popen(["/usr/local/bin/ffmpeg","-nostdin","-v","error","-y","-f","rawvideo","-pix_fmt","rgba" if INTRO else "rgb24","-s",f"{W}x{H}","-r",str(FPS),"-i","-","-c:v","ffv1",OUTMKV],stdin=subprocess.PIPE)
 hist=[]   # last two frames' positions: the trail that makes the rotation legible
 def hits(pp):
@@ -88,7 +91,7 @@ def hits(pp):
     ok=(cx_>=0)&(cx_<GC)&(cy_>=0)&(cy_<GR)
     return np.bincount(cy_[ok]*GC+cx_[ok],minlength=GC*GR).reshape(GR,GC).astype(np.float32)
 TS=float(sys.argv[4]) if len(sys.argv)>4 else 0.4
-KEEP={0,60,96,144,156,168,180,NF-1}
+KEEP={0,60,int(WM1),*(int(FADE0)+12*i for i in range(4)),NF-1}
 for f in range(NF):
     if f>0: pos,vel=step(pos,vel,f/FPS*TS,TS*60/FPS)
     c=hits(pos)
