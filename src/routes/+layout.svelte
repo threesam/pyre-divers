@@ -1,5 +1,8 @@
 <script>
   import '../app.css';
+  // scroll depth, time in view, media and off-site clicks, on every page.
+  // it starts itself. the same file runs threesam.com and sixtom.com.
+  import '$lib/engagement';
   let { children } = $props();
 </script>
 
