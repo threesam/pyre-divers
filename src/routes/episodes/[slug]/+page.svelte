@@ -134,7 +134,9 @@
   // A same-page #t= change is a native hash navigation that afterNavigate
   // never sees, so hashchange cues too. No t clears the cue: this component
   // is reused from one episode to the next.
-  function cue(url: URL) {
+  // Already playing: a new moment is a seek, not a cue. Back/forward keeps the
+  // router's restored scroll rather than jumping to the cue again.
+  function cue(url: URL, scroll = true) {
     const raw =
       /^#t=(\d+(?:\.\d+)?)$/.exec(url.hash)?.[1] ?? url.searchParams.get('t');
     const t = Number(raw);
@@ -142,17 +144,29 @@
       cueAt = -1;
       return;
     }
+    if (player && !player.paused) {
+      seek(t);
+      return;
+    }
     cueAt = t;
-    const i = segments.findLastIndex((s) => s.start <= t);
-    document
-      .querySelectorAll<HTMLElement>('.segment')
-      [i]?.scrollIntoView({ block: 'center' });
+    if (scroll) {
+      const i = segments.findLastIndex((s) => s.start <= t);
+      document
+        .querySelectorAll<HTMLElement>('.segment')
+        [i]?.scrollIntoView({ block: 'center' });
+    }
   }
-  afterNavigate(({ to }) => {
+  afterNavigate(({ to, type }) => {
     if (to) {
-      cue(to.url);
+      cue(to.url, type !== 'popstate');
     }
   });
+  // the scrubber is a seek too: a time picked by hand beats the clip's cue
+  // (seek() clears the cue before it moves the playhead, so its own seeking
+  // finds nothing to clear)
+  function onseeking() {
+    cueAt = -1;
+  }
 
   // escape `<` so stray episode text can't close the json-ld script element —
   // json never legitimately contains a raw `<`. (solve-for-x pattern.)
@@ -266,6 +280,7 @@
         bind:this={player}
         bind:currentTime={now}
         {onplay}
+        {onseeking}
       ></video>
     </div>
   {:else if episode.audioUrl}
@@ -280,6 +295,7 @@
       bind:this={player}
       bind:currentTime={now}
       {onplay}
+      {onseeking}
       {ontimeupdate}
     ></audio>
   {/if}
