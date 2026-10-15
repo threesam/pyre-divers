@@ -99,3 +99,13 @@ into the per-IP budget. The signup journey deliberately stops at validation.
 - go to /episodes/first-dive?test, set the hash to `#t=300`: expect it cued;
   set it to `#listen`: expect the cue gone (`audio` not docked)
 - expect no console errors
+
+## a quarter heard lights the bar once
+
+- go to /episodes/baby-claude?test (bar not dismissed, not joined)
+- play until a quarter is heard (speed it up; muted)
+- expect the bar's frame to glow gold for ~2.4s, its height unchanged, focus
+  not moved, one `seat-nudge` event
+- go back to the fire, open another episode, hear a quarter: expect no second
+  glow and no second `seat-nudge`
+- expect no console errors

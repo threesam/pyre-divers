@@ -1,3 +1,8 @@
+<script lang="ts" module>
+  // once per visit, not per mount: episode → home → episode remounts the bar
+  let nudged = false;
+</script>
+
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -23,7 +28,6 @@
   let expanded = $state(false);
   // the ember pulse when a listener crosses their first quarter (nudge)
   let lit = $state(false);
-  let nudged = false;
   // where focus came into the bar from: closing hands it back there
   let back: HTMLElement | null = null;
 
@@ -36,7 +40,8 @@
   // Once per visit, and only while the bar is still up (dismissed or joined,
   // it stays gone). A glow, nothing more: no size change, no focus taken.
   export function nudge() {
-    if (nudged || !open) {
+    // hasJoined too: after a signup the bar stays up for its thanks
+    if (nudged || !open || hasJoined()) {
       return;
     }
     nudged = true;
