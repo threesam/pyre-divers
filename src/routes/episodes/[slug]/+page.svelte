@@ -314,6 +314,10 @@
     min-height: 100svh;
   }
   .back {
+    /* 44px tall, so a thumb lands on it; the text stays small */
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
     color: #877d67;
     text-decoration: none;
     font-size: 0.85rem;
@@ -322,7 +326,7 @@
     color: #b7ad9d;
   }
   h1 {
-    margin: 1.2rem 0 0;
+    margin: 0.6rem 0 0;
     font-size: clamp(1.6rem, 5vw, 2.2rem);
     /* 400, not 700: this is Pyre Display, which ships a single weight, so 700
        would be engine-synthesised and thicken differently per browser. */
@@ -379,10 +383,13 @@
   .elsewhere {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.2rem;
-    margin: 1.2rem 0 0;
+    gap: 0 1.2rem;
+    margin: 0.6rem 0 0;
   }
   .watch {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
     color: #f5b942;
   }
   .transcript {
@@ -422,8 +429,10 @@
     color: #e7e2da;
     border-left-color: #e25822;
   }
-  /* a button dressed as the muted timestamp it replaced */
+  /* a button dressed as the muted timestamp it replaced. The ::after widens
+     the target to 44px without moving the text */
   .t {
+    position: relative;
     font: inherit;
     font-size: 0.78rem;
     color: #877d67;
@@ -432,6 +441,14 @@
     padding: 0.3rem 0.25rem;
     margin: 0 0.25rem 0 -0.25rem;
     cursor: pointer;
+  }
+  .t::after {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: max(100%, 2.75rem);
+    height: 2.75rem;
+    transform: translate(-50%, -50%);
   }
   .segment.now .t {
     color: #f5b942;
