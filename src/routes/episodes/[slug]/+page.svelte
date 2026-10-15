@@ -7,6 +7,7 @@
   import '@fontsource/epilogue/400-italic.css';
   import '@fontsource/epilogue/700.css';
   import '@fontsource/epilogue/700-italic.css';
+  import { tick } from 'svelte';
   import { afterNavigate } from '$app/navigation';
   import { resolve } from '$app/paths';
   import SubscribeBar from '$lib/components/SubscribeBar.svelte';
@@ -77,9 +78,9 @@
   // a moment a clip linked to (see the afterNavigate below); -1 = none
   let cueAt = $state(-1);
   // the segment under the playhead: the last one to start at or before it.
-  // Before anything plays, a cued moment stands in for the playhead
+  // A cued moment stands in for the playhead until it plays
   const current = $derived.by(() => {
-    const at = now > 0 ? now : cueAt;
+    const at = cueAt >= 0 ? cueAt : now > 0 ? now : -1;
     return at >= 0 ? segments.findLastIndex((s) => s.start <= at) : -1;
   });
   const minutes = $derived(
@@ -134,23 +135,48 @@
   // afterNavigate, not onMount: it runs on arrival too, but after the
   // router's own scroll, which would otherwise put a client-side arrival
   // back at the top (#t=600 is no element's id).
-  afterNavigate(({ to }) => {
-    if (!to) {
+  // A same-page #t= change is a native hash navigation that afterNavigate
+  // never sees, so hashchange cues too. No t clears the cue: this component
+  // is reused from one episode to the next.
+  // Already playing: a new moment is a seek, not a cue. A router back/forward
+  // keeps its restored scroll; a hash-only one can't be told from a fresh
+  // #t= link (both fire popstate), so it shows the moment its address names.
+  async function cue(url: URL, scroll = true) {
+    const raw =
+      /^#t=(\d+(?:\.\d+)?)$/.exec(url.hash)?.[1] ?? url.searchParams.get('t');
+    const t = Number(raw);
+    if (!raw || !Number.isFinite(t) || t < 0) {
+      cueAt = -1;
       return;
     }
-    const raw =
-      /^#t=(\d+(?:\.\d+)?)$/.exec(to.url.hash)?.[1] ??
-      to.url.searchParams.get('t');
-    const t = Number(raw);
-    if (!raw || !Number.isFinite(t)) {
+    if (player && !player.paused) {
+      seek(t);
       return;
     }
     cueAt = t;
-    const i = segments.findLastIndex((s) => s.start <= t);
-    document
-      .querySelectorAll<HTMLElement>('.segment')
-      [i]?.scrollIntoView({ block: 'center' });
+    if (scroll) {
+      // after the cue docks the player and the transcript's font is in:
+      // either one reflows the page, and a scroll begun before it centres
+      // the line in a layout that then shifts under it
+      await tick();
+      await document.fonts.ready;
+      const i = segments.findLastIndex((s) => s.start <= t);
+      document
+        .querySelectorAll<HTMLElement>('.segment')
+        [i]?.scrollIntoView({ block: 'center' });
+    }
+  }
+  afterNavigate(({ to, type }) => {
+    if (to) {
+      cue(to.url, type !== 'popstate');
+    }
   });
+  // the scrubber is a seek too: a time picked by hand beats the clip's cue
+  // (seek() clears the cue before it moves the playhead, so its own seeking
+  // finds nothing to clear)
+  function onseeking() {
+    cueAt = -1;
+  }
 
   // escape `<` so stray episode text can't close the json-ld script element —
   // json never legitimately contains a raw `<`. (solve-for-x pattern.)
@@ -192,6 +218,8 @@
     },
   });
 </script>
+
+<svelte:window onhashchange={() => cue(new URL(location.href))} />
 
 <svelte:head>
   <title>{episode.title} — pyre divers</title>
@@ -261,6 +289,8 @@
         preload="metadata"
         bind:this={player}
         bind:currentTime={now}
+        {onplay}
+        {onseeking}
       ></video>
     </div>
   {:else if episode.audioUrl}
@@ -275,6 +305,7 @@
       bind:this={player}
       bind:currentTime={now}
       {onplay}
+      {onseeking}
       {ontimeupdate}
     ></audio>
   {/if}
