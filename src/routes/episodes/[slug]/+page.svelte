@@ -135,8 +135,9 @@
   // A same-page #t= change is a native hash navigation that afterNavigate
   // never sees, so hashchange cues too. No t clears the cue: this component
   // is reused from one episode to the next.
-  // Already playing: a new moment is a seek, not a cue. Back/forward keeps the
-  // router's restored scroll rather than jumping to the cue again.
+  // Already playing: a new moment is a seek, not a cue. A router back/forward
+  // keeps its restored scroll; a hash-only one can't be told from a fresh
+  // #t= link (both fire popstate), so it shows the moment its address names.
   async function cue(url: URL, scroll = true) {
     const raw =
       /^#t=(\d+(?:\.\d+)?)$/.exec(url.hash)?.[1] ?? url.searchParams.get('t');
@@ -151,9 +152,11 @@
     }
     cueAt = t;
     if (scroll) {
-      // after the cue docks the player: scrolling first centres the line in
-      // a layout that then shifts under it
+      // after the cue docks the player and the transcript's font is in:
+      // either one reflows the page, and a scroll begun before it centres
+      // the line in a layout that then shifts under it
       await tick();
+      await document.fonts.ready;
       const i = segments.findLastIndex((s) => s.start <= t);
       document
         .querySelectorAll<HTMLElement>('.segment')
@@ -168,7 +171,6 @@
   // the scrubber is a seek too: a time picked by hand beats the clip's cue
   // (seek() clears the cue before it moves the playhead, so its own seeking
   // finds nothing to clear)
-  let popped = false;
   function onseeking() {
     cueAt = -1;
   }
@@ -214,15 +216,7 @@
   });
 </script>
 
-<!-- back/forward between hashes fires popstate, then hashchange: that one
-     restores its own scroll, so it cues without scrolling -->
-<svelte:window
-  onpopstate={() => (popped = true)}
-  onhashchange={() => {
-    cue(new URL(location.href), !popped);
-    popped = false;
-  }}
-/>
+<svelte:window onhashchange={() => cue(new URL(location.href))} />
 
 <svelte:head>
   <title>{episode.title} — pyre divers</title>
