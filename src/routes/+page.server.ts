@@ -13,6 +13,7 @@ export const load: PageServerLoad = async () => {
     slug: e.slug,
     title: e.title,
     number: e.number,
+    description: e.description,
     minutes: Math.round((e.durationSeconds ?? 0) / 60),
   }));
   return {
