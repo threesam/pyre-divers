@@ -141,8 +141,8 @@
       ></span
     >
   </div>
-  <!-- screen two: every dive. The newest is the big call-out, the rest are
-       smaller cards under it, newest first. -->
+  <!-- screen two: every dive. The newest is the big call-out, the rest a
+       compact list under it, newest first. -->
   <section id="dives" aria-labelledby="dives-h">
     <h2 id="dives-h" class="dives-h">the dives.</h2>
     {#if data.latest}
@@ -183,16 +183,14 @@
           {#each data.dives.slice(1) as d (d.slug)}
             <li>
               <a
-                class="ep"
+                class="row"
                 href={resolve('/episodes/[slug]', { slug: d.slug })}
                 data-umami-event="earlier-dive"
                 data-umami-event-episode={d.number}
               >
-                <span class="ep-kicker"
-                  >no. {d.number}{#if d.minutes}&nbsp;· {d.minutes} min{/if}</span
-                >
-                <span class="ep-title">{d.title}.</span>
-                <span class="ep-desc">{d.description}</span>
+                <span class="row-no">no. {d.number}</span>
+                <span class="row-title">{d.title}</span>
+                {#if d.minutes}<span class="row-len">{d.minutes} min</span>{/if}
               </a>
             </li>
           {/each}
@@ -213,10 +211,6 @@
       <h2 class="fire">
         <span class="fire-ink">come sit by the fire.</span>
       </h2>
-      <p>
-        two builders, live. no script. no polish. no edits. conversations with
-        the ones who jumped before they were ready.
-      </p>
       <form id="join-form" novalidate>
         <div class="fieldwrap">
           <input
@@ -239,10 +233,10 @@
 
 <style>
   /* screen two, every dive. app.css sizes each section as one clipped
-     screen (the scenes); this one is a list, so it grows past a screen */
+     screen (the scenes); this one is a list, so it sizes to its content 
+     and grows past a screen */
   #dives {
     height: auto;
-    min-height: 100svh;
     overflow: visible;
     max-width: 64rem;
     margin: 0 auto;
@@ -294,7 +288,7 @@
   }
   .featured-title a:focus-visible,
   .act:focus-visible,
-  .ep:focus-visible {
+  .row:focus-visible {
     outline: 2px solid #f5b942;
     outline-offset: 3px;
   }
@@ -336,48 +330,44 @@
     border-color: transparent;
     background: linear-gradient(100deg, #f8c75f, #ea6a35);
   }
-  /* the rest: smaller slabs, each one link */
+  /* the rest: one row each, the whole row the link, so forty dives are
+     still a short list */
   .earlier {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
-    gap: 1rem;
+    border-top: 1px solid #2c2a1f;
   }
-  .ep {
+  .row {
     display: grid;
-    align-content: start;
-    gap: 0.2rem;
-    height: 100%;
+    grid-template-columns: 3.2rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3rem;
     box-sizing: border-box;
-    padding: 0.9rem 1.2rem 1rem;
-    border: 1.5px solid #57492f;
-    border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
+    padding: 0.35rem 0.25rem;
+    border-bottom: 1px solid #2c2a1f;
     color: inherit;
     text-decoration: none;
-    transition: border-color 0.2s;
   }
-  .ep:hover,
-  .ep:focus-visible {
-    border-color: #e25822;
+  .row:hover .row-title {
+    text-decoration: underline;
   }
-  .ep-kicker {
-    font-size: 0.78rem;
+  .row-no,
+  .row-len {
+    font-size: 0.8rem;
     color: #b7ad9d;
+    font-variant-numeric: tabular-nums;
   }
-  .ep-title {
-    font-size: 1.35rem;
-    line-height: 1.2;
+  .row-title {
     color: #f5b942;
+    font-size: 1.1rem;
   }
-  .ep-desc {
-    color: #b7ad9d;
-    font-size: 0.92rem;
-    line-height: 1.5;
-  }
+  /* a full screen on desktop; on a phone the list is the height, so there
+     is no dead band between it and the fire */
   @media (min-width: 769px) {
     #dives {
+      min-height: 100svh;
       padding: 4.5rem 3.5rem;
     }
   }
