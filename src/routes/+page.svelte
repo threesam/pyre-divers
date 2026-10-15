@@ -211,6 +211,9 @@
       <h2 class="fire">
         <span class="fire-ink">come sit by the fire.</span>
       </h2>
+      <p>
+        we record live. save me a seat and you'll get the link to the next dive.
+      </p>
       <form id="join-form" novalidate>
         <div class="fieldwrap">
           <input
