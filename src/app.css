@@ -283,6 +283,8 @@ section {
        card, the row and the fire all sit that much lower as one piece */
     --b: 0.62;
     padding-top: calc(1rem + 6svh);
+    /* 20px sides, the episode page's gutter; 16 put the slabs at the glass */
+    padding-inline: 1.25rem;
     /* the scene is short here; a full flame swallows it */
     --flame: 0.6;
     /* pulls the logs in from the edge to the text's own margin (page-fx
@@ -635,6 +637,11 @@ button.join[aria-disabled='true'] {
     grid-row: 3;
     align-self: end;
   }
+  /* the same solve as .fire, aimed at ~90% of the card instead of 99%: on a
+     phone the full-width line read as edge to edge */
+  .fire {
+    font-size: clamp(0.85rem, calc(100cqw / 12.3), 4rem);
+  }
   /* the heading and the form carry it; the copy is the desktop's */
   .card > p {
     display: none;
@@ -645,6 +652,10 @@ button.join[aria-disabled='true'] {
   .dive {
     width: 100%;
     justify-content: space-between;
+  }
+  /* a thumb, not a cursor: 44px rows here (24 above 769px) */
+  .dive-links a {
+    line-height: 2.75rem;
   }
   /* below the stones, the row spreads to the card's edges. No `order`
      here — the row is just SOCIALS' own order (see SocialStones.svelte),
