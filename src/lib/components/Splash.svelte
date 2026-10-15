@@ -12,11 +12,15 @@
 
 <section id="splash" aria-label="pyre divers — the whirlpool">
   <canvas id="sea" aria-hidden="true"></canvas>
+  <!-- what this is, in two halves around the name: above and below the
+       wordmark, on its axis (see .hero-line in app.css) -->
+  <p class="hero-line above">two builders</p>
   <h1 class="wordmark">
     <span class="line"
       ><span class="w">pyre</span> <span class="k">divers</span></span
     >
   </h1>
+  <p class="hero-line below">live and unedited.</p>
   <!-- The only deliberate action on screen one, and until now the only one
        untracked: the two events tagged in #75 sit on a join submit nobody has
        made yet and an episode page that 404s, so 30d of traffic produced
@@ -25,8 +29,8 @@
        with no JS. -->
   <a
     class="down"
-    href="#join"
-    aria-label="scroll down — join the list"
+    href="#dives"
+    aria-label="scroll down — the dives"
     data-umami-event="chevron-down"
   >
     <svg

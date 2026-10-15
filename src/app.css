@@ -23,7 +23,7 @@
   src: url('/fonts/pyre-display-700.woff2') format('woff2');
 }
 /* no scroll snap: the page scrolls freely, native everywhere. The two
-     screens just stack. scroll-behavior stays for the chevron's #join
+     screens just stack. scroll-behavior stays for the chevron's #dives
      anchor glide (a deliberate click, not a scroll grab). */
 html {
   height: 100%;
@@ -62,6 +62,8 @@ section {
 /* The gradient is placed for the wordmark: the ink word has to sit on the light
    side, or it lands on the darkest corner and goes muddy. */
 #splash {
+  /* the wordmark's size, shared with the lines above and below it */
+  --wm: clamp(2.2rem, min(15vmax, 14vw), 17rem);
   background-color: #e25822;
   background-image:
     radial-gradient(circle at 84% 84%, #b91c1c 0%, rgba(185, 28, 28, 0) 72%),
@@ -120,7 +122,7 @@ section {
   user-select: none;
   font-family: 'Pyre Display', ui-rounded, system-ui, sans-serif;
   font-weight: 400;
-  font-size: clamp(2.2rem, min(15vmax, 14vw), 17rem);
+  font-size: var(--wm);
   /* Not taste — solved, with the .line translateX below. Two things have to
      hold at once: the d's counter sits on the vortex core, and "p" and "s" are
      equally inset from the edges. Only one gap satisfies both, because
@@ -178,6 +180,35 @@ section {
   line-height: 0;
   padding: 6px;
   transition: opacity 0.35s;
+}
+/* screen one's only words besides the wordmark, split around it: "two
+   builders" above, "live and unedited." below. Both hang off the wordmark's
+   own size (--wm) and centre, so they keep their distance from it at every
+   width; the x offset is the wordmark's ink correction (.wordmark .line).
+   White with a dark halo, like "divers": the orange runs from 3.6:1 to
+   about 6:1 against white, and the halo carries the light end. */
+.hero-line {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  margin: 0;
+  width: max-content;
+  max-width: calc(100% - 2.5rem);
+  transform: translateX(calc(-50% - 0.018 * var(--wm)));
+  pointer-events: none;
+  color: #ffffff;
+  font-size: clamp(1.05rem, calc(var(--wm) * 0.2), 2.4rem);
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-shadow:
+    0 0 0.6em rgba(16, 18, 10, 0.75),
+    0 1px 2px rgba(16, 18, 10, 0.85);
+}
+.hero-line.above {
+  bottom: calc(50% + 0.7 * var(--wm));
+}
+.hero-line.below {
+  top: calc(50% + 0.5 * var(--wm));
 }
 .down:focus-visible {
   outline: 2px solid #fff;
@@ -252,11 +283,27 @@ section {
     grid-template-rows: auto auto 1fr;
     align-content: stretch;
   }
-  .dives {
-    grid-row: 1;
-  }
   .socials {
     grid-row: 2;
+  }
+}
+/* portrait phones: shorter than a screen. The scene's unit comes from the
+   width here, so the flame is small, and a full screen of it was mostly
+   empty sky. The mouth (--b) is a share of THIS height, and page-fx sizes
+   the canvas off it, so they move together. Landscape keeps the full
+   screen: there the unit is the height, and a shorter scene clips it. */
+@media (max-width: 768px) and (orientation: portrait) {
+  #join {
+    height: 72vh;
+    height: 72svh;
+    --b: 0.45;
+    /* the sky over the fire is the risers'; the platform row sits down by
+       the logs, just over the signup, where nothing drifts across it */
+    grid-template-rows: 1fr auto auto;
+    /* the sitters' tags open upward and list every dive, so they outgrow
+       this shorter scene: let them rise over the dives above, still
+       clipped sideways so nothing scrolls the page horizontally */
+    overflow: clip visible;
   }
 }
 #fire {
@@ -275,10 +322,6 @@ section {
   #join {
     grid-template-columns: 1fr 1fr;
     padding: 3.5rem;
-  }
-  .dives {
-    grid-area: 1 / 1;
-    justify-self: start;
   }
   .card {
     grid-area: 1 / 2;
@@ -406,97 +449,6 @@ section {
 .pyre .ember {
   color: #f5b942;
 }
-.card p {
-  margin: 0;
-  color: #b7ad9d;
-  font-size: 0.95rem;
-  line-height: 1.55;
-}
-/* the latest-dive link — same ember as the episode page's links */
-.card a {
-  color: #f5b942;
-}
-/* the dives: the newest as its own hand-drawn slab, the rest a plain list */
-.dives {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 22rem;
-}
-.dive {
-  /* the text on the left, listen/read stacked on the right — two panes,
-     not one anchor: .dive-info and .dive-links each go their own way */
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: center;
-  gap: 0 1.5rem;
-  /* hugs the text — .dives can be wider than the title (mobile drops its
-     22rem cap), and a box that fills it anyway reads lopsided */
-  width: fit-content;
-  max-width: 100%;
-  box-sizing: border-box;
-  padding: 0.6rem 1.1rem 0.7rem;
-  border: 1.5px solid #e25822;
-  border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
-  background: rgba(16, 18, 10, 0.95);
-  transition: border-color 0.2s;
-}
-/* :has(), not :hover/:focus-visible ON .dive — .dive isn't interactive
-   itself any more, its two children are (same call as .sitters li) */
-.dive:has(a:hover),
-.dive:has(a:focus-visible) {
-  border-color: #f5b942;
-}
-.dive-info {
-  display: grid;
-  gap: 0.1rem;
-  color: inherit;
-  text-decoration: none;
-}
-.dive-links {
-  display: grid;
-  justify-items: end;
-}
-/* 24px rows (WCAG 2.5.8 target size), in rem so a bigger text size grows
-   them with the text. The rows butt up: the old gap lives in each line box */
-.dive-links a {
-  line-height: 1.5rem;
-  color: #f5b942;
-  font-size: 0.85rem;
-  white-space: nowrap;
-  text-decoration: none;
-}
-.dive-links a:hover {
-  color: #f5b942;
-  text-decoration: underline;
-}
-.dive-links a:focus-visible {
-  outline: 2px solid #f5b942;
-  outline-offset: 3px;
-}
-.dive-kicker,
-.dive-meta {
-  font-size: 0.78rem;
-  color: #b7ad9d;
-}
-.dive-title {
-  font-size: 1.6rem;
-  line-height: 1.15;
-  background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.dive-list {
-  margin: 0.5rem 0 0;
-  padding: 0 0 0 1.4rem;
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: #b7ad9d;
-}
-.dive-list a {
-  color: #f5b942;
-}
 .card form {
   display: grid;
   gap: 0.8rem;
@@ -577,26 +529,12 @@ button.join[aria-disabled='true'] {
   cursor: progress;
 }
 @media (max-width: 768px) {
-  /* the slabs fill the screen here; the heading tracks it via cqw either way.
+  /* the card fills the screen here; the heading tracks it via cqw either way.
      the signup sits at the bottom, over the scene */
-  .card,
-  .dives {
-    max-width: none;
-  }
   .card {
+    max-width: none;
     grid-row: 3;
     align-self: end;
-  }
-  /* the heading and the form carry it; the copy is the desktop's */
-  .card > p {
-    display: none;
-  }
-  /* full width here — the info block and the links now fill both ends
-     (fit-content, desktop's call, left the box lopsided again once one
-     side is just two short links) */
-  .dive {
-    width: 100%;
-    justify-content: space-between;
   }
   /* below the stones, the row spreads to the card's edges. No `order`
      here — the row is just SOCIALS' own order (see SocialStones.svelte),
@@ -652,6 +590,7 @@ html.diving #veil {
   }
 }
 html.diving .wordmark,
+html.diving .hero-line,
 html.diving .down {
   opacity: 0;
   animation: dive-restore 700ms ease 6.5s forwards; /* js-dead backstop */
@@ -662,6 +601,7 @@ html.diving .down {
   }
 }
 html.diving.dive-title .wordmark,
+html.diving.dive-title .hero-line,
 html.diving.dive-title .down {
   opacity: 1;
   transition: opacity 1s ease;
@@ -764,6 +704,7 @@ html.dive-go #veil::before {
     display: none;
   }
   html.diving .wordmark,
+  html.diving .hero-line,
   html.diving .down {
     opacity: 1;
     animation: none;

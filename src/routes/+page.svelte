@@ -141,6 +141,65 @@
       ></span
     >
   </div>
+  <!-- screen two: every dive. The newest is the big call-out, the rest a
+       compact list under it, newest first. -->
+  <section id="dives" aria-labelledby="dives-h">
+    <h2 id="dives-h" class="dives-h">the dives.</h2>
+    {#if data.latest}
+      <!-- eslint-disable svelte/no-navigation-without-resolve -- latestHref
+         IS a resolve() result (see the script); the rule wants the call
+         inline, but three of these share the one resolved base -->
+      <article class="featured">
+        <p class="kicker">
+          latest dive · no. {data.latest.number}{#if data.latest.minutes}
+            · {data.latest.minutes} min{/if}
+        </p>
+        <h3 class="featured-title">
+          <a
+            href={latestHref}
+            data-umami-event="latest-dive"
+            data-umami-event-to="episode">{data.latest.title}.</a
+          >
+        </h3>
+        <p class="featured-desc">{data.latest.description}</p>
+        <div class="actions">
+          <a
+            class="act listen"
+            href="{latestHref}#listen"
+            data-umami-event="latest-dive"
+            data-umami-event-to="listen">listen &rarr;</a
+          >
+          <a
+            class="act"
+            href="{latestHref}#transcript"
+            data-umami-event="latest-dive"
+            data-umami-event-to="read">read &rarr;</a
+          >
+        </div>
+      </article>
+      <!-- eslint-enable svelte/no-navigation-without-resolve -->
+      {#if data.dives.length > 1}
+        <ol class="earlier" reversed aria-label="earlier dives">
+          {#each data.dives.slice(1) as d (d.slug)}
+            <li>
+              <a
+                class="row"
+                href={resolve('/episodes/[slug]', { slug: d.slug })}
+                data-umami-event="earlier-dive"
+                data-umami-event-episode={d.number}
+              >
+                <span class="row-no">no. {d.number}</span>
+                <span class="row-title">{d.title}</span>
+                {#if d.minutes}<span class="row-len">{d.minutes} min</span>{/if}
+              </a>
+            </li>
+          {/each}
+        </ol>
+      {/if}
+    {:else}
+      <p class="featured-desc">first dive: {LAUNCH.text}.</p>
+    {/if}
+  </section>
   <!-- --u is the scene unit the canvas lays the fire out in (page-fx SCENE_W):
      a viewport height, or less where the viewport is narrower than the
      scene. This is the pre-script value; page-fx overwrites it with the unit
@@ -152,13 +211,6 @@
       <h2 class="fire">
         <span class="fire-ink">come sit by the fire.</span>
       </h2>
-      <p>
-        two builders, live. no script. no polish. no edits. conversations with
-        the ones who jumped before they were ready.
-      </p>
-      {#if !data.latest}
-        <p>first dive: {LAUNCH.text}.</p>
-      {/if}
       <form id="join-form" novalidate>
         <div class="fieldwrap">
           <input
@@ -174,53 +226,149 @@
         <button class="join" type="submit">save me a seat.</button>
       </form>
     </div>
-    {#if data.latest}
-      <!-- the dives: the newest as the call-out, the rest listed under it -->
-      <div class="dives">
-        <!-- eslint-disable svelte/no-navigation-without-resolve -- latestHref
-           IS a resolve() result (see the script); the rule wants the call
-           inline, but three of these share the one resolved base -->
-        <div class="dive">
-          <a
-            class="dive-info"
-            href={latestHref}
-            data-umami-event="latest-dive"
-            data-umami-event-to="episode"
-          >
-            <span class="dive-kicker"
-              >latest dive · no. {data.latest.number}</span
-            >
-            <span class="dive-title">{data.latest.title}.</span>
-            <span class="dive-meta">{data.latest.minutes} min</span>
-          </a>
-          <div class="dive-links">
-            <a
-              href="{latestHref}#listen"
-              data-umami-event="latest-dive"
-              data-umami-event-to="listen">listen &rarr;</a
-            >
-            <a
-              href="{latestHref}#transcript"
-              data-umami-event="latest-dive"
-              data-umami-event-to="read">read &rarr;</a
-            >
-          </div>
-        </div>
-        <!-- eslint-enable svelte/no-navigation-without-resolve -->
-        {#if data.dives.length > 1}
-          <ol class="dive-list" reversed>
-            {#each data.dives.slice(1) as d (d.slug)}
-              <li>
-                <a href={resolve('/episodes/[slug]', { slug: d.slug })}
-                  >{d.title}</a
-                >
-              </li>
-            {/each}
-          </ol>
-        {/if}
-      </div>
-    {/if}
     <SocialStones />
     <Sitters dives={data.dives} />
   </section>
 </main>
+
+<style>
+  /* screen two, every dive. app.css sizes each section as one clipped
+     screen (the scenes); this one is a list, so it sizes to its content 
+     and grows past a screen */
+  #dives {
+    height: auto;
+    overflow: visible;
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 3.5rem 1.25rem 4rem;
+    display: grid;
+    align-content: center;
+    gap: 1.5rem;
+  }
+  .dives-h {
+    margin: 0;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    letter-spacing: -0.01em;
+    width: fit-content;
+  }
+  /* the ember gradient, clipped to the text */
+  .dives-h,
+  .featured-title a {
+    background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #c31e1e 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  /* the newest dive: the landing's hand-drawn ember slab, a size up */
+  .featured {
+    display: grid;
+    gap: 0.6rem;
+    padding: 1.4rem 1.5rem 1.6rem;
+    border: 1.5px solid #e25822;
+    border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
+    background: rgba(16, 18, 10, 0.95);
+  }
+  .kicker {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #b7ad9d;
+  }
+  .featured-title {
+    margin: 0;
+    font-size: clamp(2.2rem, 9vw, 3.6rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+  .featured-title a {
+    text-decoration: none;
+  }
+  .featured-title a:hover {
+    text-decoration: underline;
+    text-decoration-color: #e25822;
+  }
+  .featured-title a:focus-visible,
+  .act:focus-visible,
+  .row:focus-visible {
+    outline: 2px solid #f5b942;
+    outline-offset: 3px;
+  }
+  .featured-desc {
+    margin: 0;
+    max-width: 38rem;
+    color: #b7ad9d;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.4rem;
+  }
+  /* 44px+ slabs: listen is the ember fill, read the outline */
+  .act {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 1.3rem;
+    border: 1.5px solid #e25822;
+    border-radius: 200px 14px 180px 14px / 14px 180px 14px 200px;
+    color: #f5b942;
+    font-size: 1.05rem;
+    text-decoration: none;
+  }
+  .act:hover {
+    border-color: #f5b942;
+  }
+  .listen {
+    border-color: transparent;
+    background: linear-gradient(100deg, #f5b942, #e25822);
+    color: #1c1917;
+    font-weight: 700;
+  }
+  .listen:hover {
+    border-color: transparent;
+    background: linear-gradient(100deg, #f8c75f, #ea6a35);
+  }
+  /* the rest: one row each, the whole row the link, so forty dives are
+     still a short list */
+  .earlier {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid #2c2a1f;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 3.2rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3rem;
+    box-sizing: border-box;
+    padding: 0.35rem 0.25rem;
+    border-bottom: 1px solid #2c2a1f;
+    color: inherit;
+    text-decoration: none;
+  }
+  .row:hover .row-title {
+    text-decoration: underline;
+  }
+  .row-no,
+  .row-len {
+    font-size: 0.8rem;
+    color: #b7ad9d;
+    font-variant-numeric: tabular-nums;
+  }
+  .row-title {
+    color: #f5b942;
+    font-size: 1.1rem;
+  }
+  /* a full screen on desktop; on a phone the list is the height, so there
+     is no dead band between it and the fire */
+  @media (min-width: 769px) {
+    #dives {
+      min-height: 100svh;
+      padding: 4.5rem 3.5rem;
+    }
+  }
+</style>
