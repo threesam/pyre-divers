@@ -23,7 +23,7 @@
   src: url('/fonts/pyre-display-700.woff2') format('woff2');
 }
 /* no scroll snap: the page scrolls freely, native everywhere. The two
-     screens just stack. scroll-behavior stays for the chevron's #join
+     screens just stack. scroll-behavior stays for the chevron's #dives
      anchor glide (a deliberate click, not a scroll grab). */
 html {
   height: 100%;

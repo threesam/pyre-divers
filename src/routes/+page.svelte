@@ -249,11 +249,15 @@
     margin: 0;
     font-size: clamp(1.6rem, 5vw, 2.2rem);
     letter-spacing: -0.01em;
+    width: fit-content;
+  }
+  /* the ember gradient, clipped to the text */
+  .dives-h,
+  .featured-title a {
     background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    width: fit-content;
   }
   /* the newest dive: the landing's hand-drawn ember slab, a size up */
   .featured {
@@ -276,10 +280,6 @@
     letter-spacing: -0.01em;
   }
   .featured-title a {
-    background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
     text-decoration: none;
   }
   .featured-title a:hover {
