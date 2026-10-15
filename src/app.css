@@ -179,10 +179,10 @@ section {
   padding: 6px;
   transition: opacity 0.35s;
 }
-/* screen one's only words besides the wordmark: what this is, and the newest
-   dive one tap away. On the dark slab, not the gradient — neither white nor
-   ink holds 4.5:1 across the orange-to-red the swirl sweeps under it. */
-.hero-play {
+/* screen one's only words besides the wordmark: what this is. On a dark
+   slab, not the gradient — neither white nor ink holds 4.5:1 across the
+   orange-to-red the swirl sweeps under it. */
+.hero-line {
   position: absolute;
   z-index: 3;
   left: 50%;
@@ -191,32 +191,13 @@ section {
   width: max-content;
   max-width: calc(100% - 2.5rem);
   box-sizing: border-box;
-  display: grid;
-  gap: 0.15rem;
-  justify-items: center;
-  text-align: center;
-  padding: 0.7rem 1.3rem 0.8rem;
-  border: 1.5px solid #e25822;
+  margin: 0;
+  padding: 0.45rem 1.1rem 0.5rem;
   border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
   background: #10120a;
-  text-decoration: none;
-  transition: border-color 0.2s;
-}
-.hero-play:hover,
-.hero-play:focus-visible {
-  border-color: #f5b942;
-}
-.hero-play:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 3px;
-}
-.hero-line {
-  font-size: 0.85rem;
-  color: #b7ad9d;
-}
-.hero-go {
-  font-size: 1.1rem;
-  color: #f5b942;
+  color: #e7e2da;
+  font-size: clamp(0.95rem, 1.3vw, 1.3rem);
+  text-align: center;
 }
 .down:focus-visible {
   outline: 2px solid #fff;
@@ -293,9 +274,6 @@ section {
     grid-template-rows: auto auto 1fr;
     align-content: stretch;
   }
-  .dives {
-    grid-row: 1;
-  }
   .socials {
     grid-row: 2;
   }
@@ -316,10 +294,6 @@ section {
   #join {
     grid-template-columns: 1fr 1fr;
     padding: 3.5rem;
-  }
-  .dives {
-    grid-area: 1 / 1;
-    justify-self: start;
   }
   .card {
     grid-area: 1 / 2;
@@ -457,96 +431,6 @@ section {
 .card a {
   color: #f5b942;
 }
-/* the dives: the newest as its own hand-drawn slab, the rest a plain list */
-.dives {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 22rem;
-}
-.dive {
-  /* the text on the left, listen/read stacked on the right — two panes,
-     not one anchor: .dive-info and .dive-links each go their own way */
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: center;
-  gap: 0 1.5rem;
-  /* hugs the text — .dives can be wider than the title (mobile drops its
-     22rem cap), and a box that fills it anyway reads lopsided */
-  width: fit-content;
-  max-width: 100%;
-  box-sizing: border-box;
-  padding: 0.6rem 1.1rem 0.7rem;
-  border: 1.5px solid #e25822;
-  border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
-  background: rgba(16, 18, 10, 0.95);
-  transition: border-color 0.2s;
-}
-/* :has(), not :hover/:focus-visible ON .dive — .dive isn't interactive
-   itself any more, its two children are (same call as .sitters li) */
-.dive:has(a:hover),
-.dive:has(a:focus-visible) {
-  border-color: #f5b942;
-}
-.dive-info {
-  display: grid;
-  gap: 0.1rem;
-  color: inherit;
-  text-decoration: none;
-}
-.dive-links {
-  display: grid;
-  justify-items: end;
-}
-/* 24px rows (WCAG 2.5.8 target size), in rem so a bigger text size grows
-   them with the text. The rows butt up: the old gap lives in each line box */
-.dive-links a {
-  line-height: 1.5rem;
-  color: #f5b942;
-  font-size: 0.85rem;
-  white-space: nowrap;
-  text-decoration: none;
-}
-.dive-links a:hover {
-  color: #f5b942;
-  text-decoration: underline;
-}
-.dive-links a:focus-visible {
-  outline: 2px solid #f5b942;
-  outline-offset: 3px;
-}
-.dive-kicker,
-.dive-meta {
-  font-size: 0.78rem;
-  color: #b7ad9d;
-}
-.dive-title {
-  font-size: 1.6rem;
-  line-height: 1.15;
-  background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-/* the rest of the dives live on /episodes; a 44px row, not a text-height
-   link, so a thumb can hit it */
-.all-dives {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  margin-top: 0.25rem;
-  padding: 0 0.25rem;
-  color: #f5b942;
-  font-size: 0.95rem;
-  text-decoration: none;
-}
-.all-dives:hover {
-  text-decoration: underline;
-}
-.all-dives:focus-visible {
-  outline: 2px solid #f5b942;
-  outline-offset: 2px;
-}
 .card form {
   display: grid;
   gap: 0.8rem;
@@ -627,13 +511,10 @@ button.join[aria-disabled='true'] {
   cursor: progress;
 }
 @media (max-width: 768px) {
-  /* the slabs fill the screen here; the heading tracks it via cqw either way.
+  /* the card fills the screen here; the heading tracks it via cqw either way.
      the signup sits at the bottom, over the scene */
-  .card,
-  .dives {
-    max-width: none;
-  }
   .card {
+    max-width: none;
     grid-row: 3;
     align-self: end;
   }
@@ -645,17 +526,6 @@ button.join[aria-disabled='true'] {
   /* the heading and the form carry it; the copy is the desktop's */
   .card > p {
     display: none;
-  }
-  /* full width here — the info block and the links now fill both ends
-     (fit-content, desktop's call, left the box lopsided again once one
-     side is just two short links) */
-  .dive {
-    width: 100%;
-    justify-content: space-between;
-  }
-  /* a thumb, not a cursor: 44px rows here (24 above 769px) */
-  .dive-links a {
-    line-height: 2.75rem;
   }
   /* below the stones, the row spreads to the card's edges. No `order`
      here — the row is just SOCIALS' own order (see SocialStones.svelte),
@@ -711,7 +581,7 @@ html.diving #veil {
   }
 }
 html.diving .wordmark,
-html.diving .hero-play,
+html.diving .hero-line,
 html.diving .down {
   opacity: 0;
   animation: dive-restore 700ms ease 6.5s forwards; /* js-dead backstop */
@@ -722,7 +592,7 @@ html.diving .down {
   }
 }
 html.diving.dive-title .wordmark,
-html.diving.dive-title .hero-play,
+html.diving.dive-title .hero-line,
 html.diving.dive-title .down {
   opacity: 1;
   transition: opacity 1s ease;
@@ -825,7 +695,7 @@ html.dive-go #veil::before {
     display: none;
   }
   html.diving .wordmark,
-  html.diving .hero-play,
+  html.diving .hero-line,
   html.diving .down {
     opacity: 1;
     animation: none;

@@ -2,13 +2,6 @@
   // Screen one: the whirlpool and the wordmark.
   import { initPageFx } from '$lib/page-fx';
 
-  // the newest dive, so a stranger landing here from a clip has one line on
-  // what this is and one tap to hear it, without scrolling past the swirl
-  let {
-    latest,
-  }: { latest: { href: string; number: number; title: string } | null } =
-    $props();
-
   $effect(() => {
     // detach the sim kickoff from the hydration flush — separate tasks
     // keep each under the long-task line on throttled cpus
@@ -24,22 +17,10 @@
       ><span class="w">pyre</span> <span class="k">divers</span></span
     >
   </h1>
-  {#if latest}
-    <!-- eslint-disable svelte/no-navigation-without-resolve -- href is a resolve() result from the page -->
-    <a
-      class="hero-play"
-      href={latest.href}
-      data-umami-event="hero-play"
-      data-umami-event-episode={latest.number}
-    >
-      <span class="hero-line">two builders, live and unedited.</span>
-      <span class="hero-go"
-        >play no. {latest.number}: {latest.title} &rarr;</span
-      >
-    </a>
-    <!-- eslint-enable svelte/no-navigation-without-resolve -->
-  {/if}
-  <!-- The chevron. Once the only deliberate action on screen one, and the only one
+  <!-- the one line on screen one besides the wordmark: what this is, for a
+       stranger who arrives from a clip. The latest dive is a scroll away. -->
+  <p class="hero-line">two builders, live and unedited.</p>
+  <!-- The only deliberate action on screen one, and until now the only one
        untracked: the two events tagged in #75 sit on a join submit nobody has
        made yet and an episode page that 404s, so 30d of traffic produced
        exactly zero events. `data-umami-event` rather than a handler — umami's
@@ -47,8 +28,8 @@
        with no JS. -->
   <a
     class="down"
-    href="#join"
-    aria-label="scroll down — join the list"
+    href="#dives"
+    aria-label="scroll down — the dives"
     data-umami-event="chevron-down"
   >
     <svg
