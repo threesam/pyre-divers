@@ -254,7 +254,7 @@
   /* the ember gradient, clipped to the text */
   .dives-h,
   .featured-title a {
-    background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #b91c1c 90%);
+    background: linear-gradient(100deg, #f5b942 10%, #e25822 50%, #c31e1e 90%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
