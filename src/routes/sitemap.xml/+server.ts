@@ -13,6 +13,7 @@ export const GET: RequestHandler = async () => {
   const episodes = await listPublishedEpisodes();
   const urls = [
     `  <url><loc>${SITE}/</loc>${day(episodes[0]?.publishedAt ?? null)}</url>`,
+    `  <url><loc>${SITE}/episodes</loc>${day(episodes[0]?.publishedAt ?? null)}</url>`,
     // slugs are [a-z0-9-] by construction, nothing to escape
     ...episodes.map(
       (e) =>

@@ -179,6 +179,45 @@ section {
   padding: 6px;
   transition: opacity 0.35s;
 }
+/* screen one's only words besides the wordmark: what this is, and the newest
+   dive one tap away. On the dark slab, not the gradient — neither white nor
+   ink holds 4.5:1 across the orange-to-red the swirl sweeps under it. */
+.hero-play {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: calc(max(20px, env(safe-area-inset-bottom)) + 4.5rem);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 2.5rem);
+  box-sizing: border-box;
+  display: grid;
+  gap: 0.15rem;
+  justify-items: center;
+  text-align: center;
+  padding: 0.7rem 1.3rem 0.8rem;
+  border: 1.5px solid #e25822;
+  border-radius: 60px 8px 50px 8px / 8px 50px 8px 60px;
+  background: #10120a;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+.hero-play:hover,
+.hero-play:focus-visible {
+  border-color: #f5b942;
+}
+.hero-play:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+.hero-line {
+  font-size: 0.85rem;
+  color: #b7ad9d;
+}
+.hero-go {
+  font-size: 1.1rem;
+  color: #f5b942;
+}
 .down:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
@@ -487,15 +526,24 @@ section {
   background-clip: text;
   color: transparent;
 }
-.dive-list {
-  margin: 0.5rem 0 0;
-  padding: 0 0 0 1.4rem;
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: #b7ad9d;
-}
-.dive-list a {
+/* the rest of the dives live on /episodes; a 44px row, not a text-height
+   link, so a thumb can hit it */
+.all-dives {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  margin-top: 0.25rem;
+  padding: 0 0.25rem;
   color: #f5b942;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+.all-dives:hover {
+  text-decoration: underline;
+}
+.all-dives:focus-visible {
+  outline: 2px solid #f5b942;
+  outline-offset: 2px;
 }
 .card form {
   display: grid;
@@ -652,6 +700,7 @@ html.diving #veil {
   }
 }
 html.diving .wordmark,
+html.diving .hero-play,
 html.diving .down {
   opacity: 0;
   animation: dive-restore 700ms ease 6.5s forwards; /* js-dead backstop */
@@ -662,6 +711,7 @@ html.diving .down {
   }
 }
 html.diving.dive-title .wordmark,
+html.diving.dive-title .hero-play,
 html.diving.dive-title .down {
   opacity: 1;
   transition: opacity 1s ease;
@@ -764,6 +814,7 @@ html.dive-go #veil::before {
     display: none;
   }
   html.diving .wordmark,
+  html.diving .hero-play,
   html.diving .down {
     opacity: 1;
     animation: none;

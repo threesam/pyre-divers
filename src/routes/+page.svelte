@@ -12,8 +12,8 @@
   // the planned first dive, shown only until an episode is published
   const LAUNCH = { iso: '2026-09-23', text: 'september 23' };
 
-  // the latest dive's own page — three links point there (title, listen,
-  // read), so it's computed once rather than resolved three times
+  // the latest dive's own page — four links point there (the splash's play,
+  // title, listen, read), so it's computed once rather than resolved four times
   const latestHref = $derived(
     data.latest ? resolve('/episodes/[slug]', { slug: data.latest.slug }) : '',
   );
@@ -93,7 +93,15 @@
 </svelte:head>
 
 <main>
-  <Splash />
+  <Splash
+    latest={data.latest
+      ? {
+          href: latestHref,
+          number: data.latest.number,
+          title: data.latest.title,
+        }
+      : null}
+  />
   <!-- dive arrival veil: shown only when the document arrived with ?dive
      (threesam.com hand-off — the `diving` class is set pre-paint in
      app.html). At handoff the garden shows only the little guy — no words —
@@ -175,7 +183,7 @@
       </form>
     </div>
     {#if data.latest}
-      <!-- the dives: the newest as the call-out, the rest listed under it -->
+      <!-- the newest dive as the call-out; the rest live on /episodes -->
       <div class="dives">
         <!-- eslint-disable svelte/no-navigation-without-resolve -- latestHref
            IS a resolve() result (see the script); the rule wants the call
@@ -208,15 +216,9 @@
         </div>
         <!-- eslint-enable svelte/no-navigation-without-resolve -->
         {#if data.dives.length > 1}
-          <ol class="dive-list" reversed>
-            {#each data.dives.slice(1) as d (d.slug)}
-              <li>
-                <a href={resolve('/episodes/[slug]', { slug: d.slug })}
-                  >{d.title}</a
-                >
-              </li>
-            {/each}
-          </ol>
+          <a class="all-dives" href={resolve('/episodes')}
+            >all episodes &rarr;</a
+          >
         {/if}
       </div>
     {/if}
