@@ -23,7 +23,7 @@
   src: url('/fonts/pyre-display-700.woff2') format('woff2');
 }
 /* no scroll snap: the page scrolls freely, native everywhere. The two
-     screens just stack. scroll-behavior stays for the chevron's #join
+     screens just stack. scroll-behavior stays for the chevron's #dives
      anchor glide (a deliberate click, not a scroll grab). */
 html {
   height: 100%;
@@ -302,6 +302,10 @@ section {
     /* the sky over the fire is the risers'; the platform row sits down by
        the logs, just over the signup, where nothing drifts across it */
     grid-template-rows: 1fr auto auto;
+    /* the sitters' tags open upward and list every dive, so they outgrow
+       this shorter scene: let them rise over the dives above, still
+       clipped sideways so nothing scrolls the page horizontally */
+    overflow: clip visible;
   }
 }
 #fire {

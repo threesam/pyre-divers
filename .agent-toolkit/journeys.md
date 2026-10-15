@@ -1,6 +1,6 @@
 # journeys
 
-Two screens and one form. Written for `/drive`.
+Three screens and one form. Written for `/drive`.
 
 **Do not submit a valid address.** The form posts to the live listmonk instance
 behind a rate limiter, so a passing drive would add a real subscriber and eat
@@ -16,10 +16,24 @@ into the per-IP budget. The signup journey deliberately stops at validation.
 - expect element `#splash::after` veil is present
 - expect no console errors
 
-## scroll to the fire
+## splash says what it is
+
+- go to /?test
+- expect text "two builders" above the wordmark
+- expect text "live and unedited." below the wordmark
+
+## chevron to the dives
 
 - go to /?test
 - click the chevron `.down`
+- expect the address ends in `#dives` and `#dives` at the top of the screen
+- expect heading "the dives."
+- expect a link "listen →" in `.featured`
+- expect one `.earlier .row` per earlier dive
+
+## scroll to the fire
+
+- go to /?test#join
 - expect element `#join`
 - expect heading "come sit by the fire."
 - expect element `#join-form`
