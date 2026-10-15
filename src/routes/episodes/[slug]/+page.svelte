@@ -7,6 +7,8 @@
   import '@fontsource/epilogue/400-italic.css';
   import '@fontsource/epilogue/700.css';
   import '@fontsource/epilogue/700-italic.css';
+  import { tick } from 'svelte';
+  import { afterNavigate } from '$app/navigation';
   import { resolve } from '$app/paths';
   import SubscribeBar from '$lib/components/SubscribeBar.svelte';
   import { FEED, HOSTS, SITE } from '$lib/links';
@@ -39,6 +41,9 @@
   let started = $state(false);
   let nextMark = 0;
   function onplay() {
+    if (cueAt >= 0) {
+      seek(cueAt);
+    }
     if (!started) {
       started = true;
       window.umami?.track('play', { episode: episode.slug });
@@ -67,12 +72,21 @@
   // `played` as 0 to there, and a cold jump to 18:05 would log a quarter heard.
   let player: HTMLMediaElement | undefined = $state();
   let now = $state(0);
-  // the segment under the playhead: the last one to start at or before it
-  const current = $derived(
-    now > 0 ? segments.findLastIndex((s) => s.start <= now) : -1,
+  // a moment a clip linked to (see the afterNavigate below); -1 = none
+  let cueAt = $state(-1);
+  // the segment under the playhead: the last one to start at or before it.
+  // A cued moment stands in for the playhead until it plays
+  const current = $derived.by(() => {
+    const at = cueAt >= 0 ? cueAt : now > 0 ? now : -1;
+    return at >= 0 ? segments.findLastIndex((s) => s.start <= at) : -1;
+  });
+  const minutes = $derived(
+    episode.durationSeconds ? Math.round(episode.durationSeconds / 60) : 0,
   );
 
   function seek(t: number) {
+    // a seek of any kind uses up the clip's cue
+    cueAt = -1;
     const media = player;
     if (!media) {
       return;
@@ -109,6 +123,56 @@
       return;
     }
     seek(Number(segment.dataset.start));
+  }
+
+  // a clip links to its moment: /episodes/x#t=600 (or ?t=600). Nothing can
+  // play without a tap, so the moment is cued: the player docks at the top,
+  // the line being said is marked and scrolled to, and the first play starts
+  // there, through seek() so the skipped part isn't logged as heard.
+  // afterNavigate, not onMount: it runs on arrival too, but after the
+  // router's own scroll, which would otherwise put a client-side arrival
+  // back at the top (#t=600 is no element's id).
+  // A same-page #t= change is a native hash navigation that afterNavigate
+  // never sees, so hashchange cues too. No t clears the cue: this component
+  // is reused from one episode to the next.
+  // Already playing: a new moment is a seek, not a cue. A router back/forward
+  // keeps its restored scroll; a hash-only one can't be told from a fresh
+  // #t= link (both fire popstate), so it shows the moment its address names.
+  async function cue(url: URL, scroll = true) {
+    const raw =
+      /^#t=(\d+(?:\.\d+)?)$/.exec(url.hash)?.[1] ?? url.searchParams.get('t');
+    const t = Number(raw);
+    if (!raw || !Number.isFinite(t) || t < 0) {
+      cueAt = -1;
+      return;
+    }
+    if (player && !player.paused) {
+      seek(t);
+      return;
+    }
+    cueAt = t;
+    if (scroll) {
+      // after the cue docks the player and the transcript's font is in:
+      // either one reflows the page, and a scroll begun before it centres
+      // the line in a layout that then shifts under it
+      await tick();
+      await document.fonts.ready;
+      const i = segments.findLastIndex((s) => s.start <= t);
+      document
+        .querySelectorAll<HTMLElement>('.segment')
+        [i]?.scrollIntoView({ block: 'center' });
+    }
+  }
+  afterNavigate(({ to, type }) => {
+    if (to) {
+      cue(to.url, type !== 'popstate');
+    }
+  });
+  // the scrubber is a seek too: a time picked by hand beats the clip's cue
+  // (seek() clears the cue before it moves the playhead, so its own seeking
+  // finds nothing to clear)
+  function onseeking() {
+    cueAt = -1;
   }
 
   // escape `<` so stray episode text can't close the json-ld script element —
@@ -151,6 +215,8 @@
     },
   });
 </script>
+
+<svelte:window onhashchange={() => cue(new URL(location.href))} />
 
 <svelte:head>
   <title>{episode.title} — pyre divers</title>
@@ -197,6 +263,11 @@
 <main class="episode">
   <a class="back" href={resolve('/')}>&larr; back to the fire</a>
 
+  <!-- the length up front: the native player reads 0:00 / 0:00 until it
+       loads, and preload stays none (the file is ~40MB) -->
+  <p class="kicker">
+    no. {data.number}{#if minutes}&nbsp;· {minutes} min{/if}
+  </p>
   <h1>{episode.title}</h1>
   <p class="desc">{episode.description}</p>
 
@@ -215,6 +286,8 @@
         preload="metadata"
         bind:this={player}
         bind:currentTime={now}
+        {onplay}
+        {onseeking}
       ></video>
     </div>
   {:else if episode.audioUrl}
@@ -222,13 +295,14 @@
     <audio
       id="listen"
       class="listen"
-      class:docked={started}
+      class:docked={started || cueAt >= 0}
       src={episode.audioUrl}
       controls
       preload="none"
       bind:this={player}
       bind:currentTime={now}
       {onplay}
+      {onseeking}
       {ontimeupdate}
     ></audio>
   {/if}
@@ -325,8 +399,13 @@
   .back:hover {
     color: #b7ad9d;
   }
-  h1 {
+  .kicker {
     margin: 0.6rem 0 0;
+    font-size: 0.78rem;
+    color: #b7ad9d;
+  }
+  h1 {
+    margin: 0.2rem 0 0;
     font-size: clamp(1.6rem, 5vw, 2.2rem);
     /* 400, not 700: this is Pyre Display, which ships a single weight, so 700
        would be engine-synthesised and thicken differently per browser. */

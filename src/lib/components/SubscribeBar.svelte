@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import {
     LISTMONK,
@@ -16,12 +16,31 @@
   let email = $state('');
   let message = $state('');
   let dock: HTMLElement | undefined = $state();
+  let input: HTMLInputElement | undefined = $state();
+  // phones get one line that opens into the form on a tap: the full bar was
+  // ~136px, a sixth of the screen, over the transcript. Wider screens fit the
+  // whole form on one line, so they get it straight away.
+  let expanded = $state(false);
   // where focus came into the bar from: closing hands it back there
   let back: HTMLElement | null = null;
 
   onMount(() => {
     open = !hasJoined();
+    expanded = matchMedia('(min-width: 37.5rem)').matches;
   });
+
+  async function expand() {
+    // the one-liner leaves with focus on it, so the field's focusin comes
+    // from nowhere and would wipe where focus first came from; keep it
+    const from = back;
+    expanded = true;
+    await tick();
+    // preventScroll: the bar is sticky and inside its own scroll-padding, so
+    // a plain focus scrolls the transcript to "reveal" a field already on
+    // screen
+    input?.focus({ preventScroll: true });
+    back = from;
+  }
 
   function onfocusin(e: FocusEvent) {
     const from = e.relatedTarget as HTMLElement | null;
@@ -77,30 +96,46 @@
     transition:fade={{ duration: 250 }}
   >
     <div class="bar">
-      <form novalidate onsubmit={join}>
-        <label for="subscribe-email">get the next dive by email.</label>
-        <div class="fieldwrap">
-          <input
-            id="subscribe-email"
-            name="email"
-            type="email"
-            inputmode="email"
-            autocomplete="email"
-            placeholder="your@email.com"
-            aria-describedby="subscribe-msg"
-            required
-            readonly={busy}
-            bind:value={email}
-          />
+      {#if !expanded}
+        <div class="peek">
+          <!-- replaced by the form on a tap, focus going to its field; the
+               field's own label is the same words -->
+          <button class="open" type="button" onclick={expand}
+            >get the next dive by email. <span aria-hidden="true">&rarr;</span
+            ></button
+          >
+          <button class="x" type="button" aria-label="close" onclick={close}
+            >×</button
+          >
         </div>
-        <button class="join" type="submit" aria-disabled={busy}>send</button>
-        <button class="x" type="button" aria-label="close" onclick={close}
-          >×</button
-        >
-      </form>
-      <!-- always in the page while the bar is: a live region has to exist
-           before its message does, or it isn't announced -->
-      <p id="subscribe-msg" class="msg" role="status">{message}</p>
+      {:else}
+        <form novalidate onsubmit={join}>
+          <label for="subscribe-email">get the next dive by email.</label>
+          <div class="fieldwrap">
+            <input
+              id="subscribe-email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="your@email.com"
+              aria-describedby="subscribe-msg"
+              required
+              readonly={busy}
+              bind:value={email}
+              bind:this={input}
+            />
+          </div>
+          <button class="join" type="submit" aria-disabled={busy}>send</button>
+          <button class="x" type="button" aria-label="close" onclick={close}
+            >×</button
+          >
+        </form>
+        <!-- in the page from the moment the form opens, before any send: a
+           live region has to exist before its message does, or it isn't
+           announced -->
+        <p id="subscribe-msg" class="msg" role="status">{message}</p>
+      {/if}
     </div>
   </aside>
 {/if}
@@ -157,8 +192,10 @@
   .x {
     grid-area: x;
     justify-self: end;
-    width: 2rem;
-    height: 2rem;
+    /* a 44px target; the negative margin keeps it from growing the bar */
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: -0.375rem -0.5rem -0.375rem 0;
     padding: 0;
     font: inherit;
     font-size: 1.4rem;
@@ -177,6 +214,36 @@
     outline: 2px solid #f5b942;
     outline-offset: 1px;
   }
+  /* collapsed, the 44px button is the height; the card's padding needn't add
+     to it */
+  .bar:has(.peek) {
+    padding-block: 0.15rem;
+  }
+  .peek {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  /* the label as a 44px button; the arrow says it opens */
+  .open {
+    flex: 1;
+    min-height: 2.75rem;
+    padding: 0;
+    text-align: left;
+    font: inherit;
+    font-size: 0.95rem;
+    color: #e7e2da;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .open span {
+    color: #f5b942;
+  }
+  .open:focus-visible {
+    outline: 2px solid #f5b942;
+    outline-offset: 2px;
+  }
   .msg {
     margin: 0;
     color: #f5b942;
@@ -193,6 +260,9 @@
      combination ever matters */
   :global(html:has(aside.dock)) {
     scroll-padding-bottom: calc(14rem + env(safe-area-inset-bottom));
+  }
+  :global(html:has(aside.dock .peek)) {
+    scroll-padding-bottom: calc(6rem + env(safe-area-inset-bottom));
   }
   /* laid out by the card's own width in rem, so a zoomed page or a bigger
      text size gets the roomier layout too. Too narrow for the field beside
