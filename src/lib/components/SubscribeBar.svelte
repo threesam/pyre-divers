@@ -1,3 +1,8 @@
+<script lang="ts" module>
+  // once per visit, not per mount: episode → home → episode remounts the bar
+  let nudged = false;
+</script>
+
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -21,6 +26,8 @@
   // ~136px, a sixth of the screen, over the transcript. Wider screens fit the
   // whole form on one line, so they get it straight away.
   let expanded = $state(false);
+  // the ember pulse when a listener crosses their first quarter (nudge)
+  let lit = $state(false);
   // where focus came into the bar from: closing hands it back there
   let back: HTMLElement | null = null;
 
@@ -28,6 +35,20 @@
     open = !hasJoined();
     expanded = matchMedia('(min-width: 37.5rem)').matches;
   });
+
+  // the high-intent moment: the page calls this when `listened` first fires.
+  // Once per visit, and only while the bar is still up (dismissed or joined,
+  // it stays gone). A glow, nothing more: no size change, no focus taken.
+  export function nudge() {
+    // hasJoined too: after a signup the bar stays up for its thanks
+    if (nudged || !open || hasJoined()) {
+      return;
+    }
+    nudged = true;
+    lit = true;
+    setTimeout(() => (lit = false), 2400);
+    window.umami?.track('seat-nudge');
+  }
 
   async function expand() {
     // the one-liner leaves with focus on it, so the field's focusin comes
@@ -95,7 +116,7 @@
     {onfocusin}
     transition:fade={{ duration: 250 }}
   >
-    <div class="bar">
+    <div class="bar" class:lit>
       {#if !expanded}
         <div class="peek">
           <!-- replaced by the form on a tap, focus going to its field; the
@@ -218,6 +239,26 @@
      to it */
   .bar:has(.peek) {
     padding-block: 0.15rem;
+  }
+  /* the nudge: the frame warms and breathes twice. Box-shadow and border
+     colour only, so nothing moves */
+  .bar.lit {
+    border-color: #f5b942;
+    animation: ember 1.2s ease-in-out 2;
+  }
+  @keyframes ember {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(245, 185, 66, 0);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(245, 185, 66, 0.45);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bar.lit {
+      animation: none;
+    }
   }
   .peek {
     display: flex;

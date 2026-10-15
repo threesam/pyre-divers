@@ -39,6 +39,7 @@
   // also docks the player at the top: once it's playing, its pause control
   // has to stay in reach of a reader deep in the transcript
   let started = $state(false);
+  let bar: SubscribeBar | undefined = $state();
   let nextMark = 0;
   function onplay() {
     if (cueAt >= 0) {
@@ -61,6 +62,8 @@
         episode: episode.slug,
         pct: MARKS[nextMark],
       });
+      // a quarter in is the moment to ask; the bar decides whether it can
+      bar?.nudge();
       nextMark++;
     }
   }
@@ -362,7 +365,7 @@
   {/if}
 
   <!-- last in main: it sticks to the bottom for as long as main is on screen -->
-  <SubscribeBar />
+  <SubscribeBar bind:this={bar} />
 </main>
 
 <style>
