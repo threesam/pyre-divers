@@ -7,6 +7,7 @@
   import '@fontsource/epilogue/400-italic.css';
   import '@fontsource/epilogue/700.css';
   import '@fontsource/epilogue/700-italic.css';
+  import { onMount } from 'svelte';
   import { resolve } from '$app/paths';
   import SubscribeBar from '$lib/components/SubscribeBar.svelte';
   import { FEED, HOSTS, SITE } from '$lib/links';
@@ -39,6 +40,9 @@
   let started = $state(false);
   let nextMark = 0;
   function onplay() {
+    if (cueAt >= 0) {
+      seek(cueAt);
+    }
     if (!started) {
       started = true;
       window.umami?.track('play', { episode: episode.slug });
@@ -67,12 +71,21 @@
   // `played` as 0 to there, and a cold jump to 18:05 would log a quarter heard.
   let player: HTMLMediaElement | undefined = $state();
   let now = $state(0);
-  // the segment under the playhead: the last one to start at or before it
-  const current = $derived(
-    now > 0 ? segments.findLastIndex((s) => s.start <= now) : -1,
+  // a moment a clip linked to (see the onMount below); -1 = none
+  let cueAt = $state(-1);
+  // the segment under the playhead: the last one to start at or before it.
+  // Before anything plays, a cued moment stands in for the playhead
+  const current = $derived.by(() => {
+    const at = now > 0 ? now : cueAt;
+    return at >= 0 ? segments.findLastIndex((s) => s.start <= at) : -1;
+  });
+  const minutes = $derived(
+    episode.durationSeconds ? Math.round(episode.durationSeconds / 60) : 0,
   );
 
   function seek(t: number) {
+    // a seek of any kind uses up the clip's cue
+    cueAt = -1;
     const media = player;
     if (!media) {
       return;
@@ -110,6 +123,26 @@
     }
     seek(Number(segment.dataset.start));
   }
+
+  // a clip links to its moment: /episodes/x#t=600 (or ?t=600). Nothing can
+  // play without a tap, so the moment is cued: the player docks at the top,
+  // the line being said is marked and scrolled to, and the first play starts
+  // there, through seek() so the skipped part isn't logged as heard. Read
+  // once on arrival: the address is the input, nothing here changes it.
+  onMount(() => {
+    const raw =
+      /^#t=(\d+(?:\.\d+)?)$/.exec(location.hash)?.[1] ??
+      new URLSearchParams(location.search).get('t');
+    const t = Number(raw);
+    if (!raw || !Number.isFinite(t)) {
+      return;
+    }
+    cueAt = t;
+    const i = segments.findLastIndex((s) => s.start <= t);
+    document
+      .querySelectorAll<HTMLElement>('.segment')
+      [i]?.scrollIntoView({ block: 'center' });
+  });
 
   // escape `<` so stray episode text can't close the json-ld script element —
   // json never legitimately contains a raw `<`. (solve-for-x pattern.)
@@ -197,6 +230,11 @@
 <main class="episode">
   <a class="back" href={resolve('/')}>&larr; back to the fire</a>
 
+  <!-- the length up front: the native player reads 0:00 / 0:00 until it
+       loads, and preload stays none (the file is ~40MB) -->
+  <p class="kicker">
+    no. {data.number}{#if minutes}&nbsp;· {minutes} min{/if}
+  </p>
   <h1>{episode.title}</h1>
   <p class="desc">{episode.description}</p>
 
@@ -222,7 +260,7 @@
     <audio
       id="listen"
       class="listen"
-      class:docked={started}
+      class:docked={started || cueAt >= 0}
       src={episode.audioUrl}
       controls
       preload="none"
@@ -325,8 +363,13 @@
   .back:hover {
     color: #b7ad9d;
   }
-  h1 {
+  .kicker {
     margin: 0.6rem 0 0;
+    font-size: 0.78rem;
+    color: #b7ad9d;
+  }
+  h1 {
+    margin: 0.2rem 0 0;
     font-size: clamp(1.6rem, 5vw, 2.2rem);
     /* 400, not 700: this is Pyre Display, which ships a single weight, so 700
        would be engine-synthesised and thicken differently per browser. */
