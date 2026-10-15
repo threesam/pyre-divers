@@ -30,12 +30,16 @@
   });
 
   async function expand() {
+    // the one-liner leaves with focus on it, so the field's focusin comes
+    // from nowhere and would wipe where focus first came from; keep it
+    const from = back;
     expanded = true;
     await tick();
     // preventScroll: the bar is sticky and inside its own scroll-padding, so
     // a plain focus scrolls the transcript to "reveal" a field already on
     // screen
     input?.focus({ preventScroll: true });
+    back = from;
   }
 
   function onfocusin(e: FocusEvent) {

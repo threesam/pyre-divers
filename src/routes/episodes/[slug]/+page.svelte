@@ -7,7 +7,7 @@
   import '@fontsource/epilogue/400-italic.css';
   import '@fontsource/epilogue/700.css';
   import '@fontsource/epilogue/700-italic.css';
-  import { onMount } from 'svelte';
+  import { afterNavigate } from '$app/navigation';
   import { resolve } from '$app/paths';
   import SubscribeBar from '$lib/components/SubscribeBar.svelte';
   import { FEED, HOSTS, SITE } from '$lib/links';
@@ -71,7 +71,7 @@
   // `played` as 0 to there, and a cold jump to 18:05 would log a quarter heard.
   let player: HTMLMediaElement | undefined = $state();
   let now = $state(0);
-  // a moment a clip linked to (see the onMount below); -1 = none
+  // a moment a clip linked to (see the afterNavigate below); -1 = none
   let cueAt = $state(-1);
   // the segment under the playhead: the last one to start at or before it.
   // Before anything plays, a cued moment stands in for the playhead
@@ -127,12 +127,17 @@
   // a clip links to its moment: /episodes/x#t=600 (or ?t=600). Nothing can
   // play without a tap, so the moment is cued: the player docks at the top,
   // the line being said is marked and scrolled to, and the first play starts
-  // there, through seek() so the skipped part isn't logged as heard. Read
-  // once on arrival: the address is the input, nothing here changes it.
-  onMount(() => {
+  // there, through seek() so the skipped part isn't logged as heard.
+  // afterNavigate, not onMount: it runs on arrival too, but after the
+  // router's own scroll, which would otherwise put a client-side arrival
+  // back at the top (#t=600 is no element's id).
+  afterNavigate(({ to }) => {
+    if (!to) {
+      return;
+    }
     const raw =
-      /^#t=(\d+(?:\.\d+)?)$/.exec(location.hash)?.[1] ??
-      new URLSearchParams(location.search).get('t');
+      /^#t=(\d+(?:\.\d+)?)$/.exec(to.url.hash)?.[1] ??
+      to.url.searchParams.get('t');
     const t = Number(raw);
     if (!raw || !Number.isFinite(t)) {
       return;
