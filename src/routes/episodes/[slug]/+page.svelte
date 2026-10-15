@@ -131,15 +131,15 @@
   // afterNavigate, not onMount: it runs on arrival too, but after the
   // router's own scroll, which would otherwise put a client-side arrival
   // back at the top (#t=600 is no element's id).
-  afterNavigate(({ to }) => {
-    if (!to) {
-      return;
-    }
+  // A same-page #t= change is a native hash navigation that afterNavigate
+  // never sees, so hashchange cues too. No t clears the cue: this component
+  // is reused from one episode to the next.
+  function cue(url: URL) {
     const raw =
-      /^#t=(\d+(?:\.\d+)?)$/.exec(to.url.hash)?.[1] ??
-      to.url.searchParams.get('t');
+      /^#t=(\d+(?:\.\d+)?)$/.exec(url.hash)?.[1] ?? url.searchParams.get('t');
     const t = Number(raw);
-    if (!raw || !Number.isFinite(t)) {
+    if (!raw || !Number.isFinite(t) || t < 0) {
+      cueAt = -1;
       return;
     }
     cueAt = t;
@@ -147,6 +147,11 @@
     document
       .querySelectorAll<HTMLElement>('.segment')
       [i]?.scrollIntoView({ block: 'center' });
+  }
+  afterNavigate(({ to }) => {
+    if (to) {
+      cue(to.url);
+    }
   });
 
   // escape `<` so stray episode text can't close the json-ld script element —
@@ -189,6 +194,8 @@
     },
   });
 </script>
+
+<svelte:window onhashchange={() => cue(new URL(location.href))} />
 
 <svelte:head>
   <title>{episode.title} — pyre divers</title>
@@ -258,6 +265,7 @@
         preload="metadata"
         bind:this={player}
         bind:currentTime={now}
+        {onplay}
       ></video>
     </div>
   {:else if episode.audioUrl}

@@ -67,6 +67,8 @@ into the per-IP budget. The signup journey deliberately stops at validation.
 
 - go to /episodes/first-dive?test
 - expect a landmark "subscribe" stuck to the bottom of the screen
+- on a phone (390 wide): expect the one line "get the next dive by email. →";
+  click it; expect focus in `#subscribe-email`
 - fill `#subscribe-email` with "not-an-email"
 - click "send"
 - expect text "needs a real email."
@@ -78,9 +80,22 @@ into the per-IP budget. The signup journey deliberately stops at validation.
 
 - go to /episodes/first-dive?test
 - focus the button "play from 37:39" (the transcript's last)
-- press Tab: expect focus in `#subscribe-email`
+- press Tab: expect focus in `#subscribe-email` (on a phone: on the one line
+  "get the next dive by email. →"; press Enter, expect focus in
+  `#subscribe-email`)
 - press Tab twice: expect focus on the button "close"
 - press Enter
 - expect the landmark "subscribe" is gone
 - expect focus on the button "play from 37:39"
+- expect no console errors
+
+## a clip link cues its moment
+
+- go to /episodes/mix-your-labor?test#t=600
+- expect `audio.docked` at the top of the screen before any play
+- expect a `.segment.now` on screen, the one under 10:00
+- play: expect playback from about 10:00 and `played` starting there (the
+  skipped part isn't counted as heard)
+- go to /episodes/first-dive?test, set the hash to `#t=300`: expect it cued;
+  set it to `#listen`: expect the cue gone (`audio` not docked)
 - expect no console errors
