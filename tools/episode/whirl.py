@@ -104,7 +104,7 @@ for f in range(NF):
     if INTRO:   # the whirlpool, uncarved, over whatever it hasn't handed to the ASCII yet
         frame=np.dstack([np.clip(tgt+0.5,0,255),(1-sp)*255+0.5]).astype(np.uint8)
         proc.stdin.write(frame.tobytes())
-        if f in KEEP: Image.fromarray(frame).convert("RGB").resize((640,360),Image.LANCZOS).save(f"{FR}/f{f:03d}.png")
+        if f in KEEP: Image.fromarray(frame).resize((640,360),Image.LANCZOS).save(f"{FR}/f{f:03d}.png")
         continue
     wf=float(sstep(WM0,WM1,f)); tgt=BG+(tgt-BG)*(1-wf*carve_px)
     out=last*(1-sp)+tgt*sp
