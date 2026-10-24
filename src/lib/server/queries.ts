@@ -1,18 +1,18 @@
 // build-time reads of the podcast db. no DATABASE_URL = the site prerenders
 // with zero episodes and a valid empty feed; publishing an episode flips its
 // row and fires the deploy hook, and the rebuild picks it up.
+import { DATABASE_URL, PREVIEW_DRAFTS } from '$app/env/private';
 import { asc, desc, eq } from 'drizzle-orm';
 import { episodes, segments } from './schema';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { env } from '$env/dynamic/private';
 import postgres from 'postgres';
 
 let client: ReturnType<typeof drizzle> | null | undefined;
 
 function getDb() {
   if (client === undefined) {
-    client = env.DATABASE_URL
-      ? drizzle(postgres(env.DATABASE_URL, { max: 1, prepare: false }))
+    client = DATABASE_URL
+      ? drizzle(postgres(DATABASE_URL, { max: 1, prepare: false }))
       : null;
   }
   return client;
@@ -21,7 +21,7 @@ function getDb() {
 // PREVIEW_DRAFTS=1 builds unpublished rows too, so an episode page and its
 // feed item can be read locally before the row flips. never set on vercel —
 // there, only published rows exist as far as the site is concerned.
-const preview = () => env.PREVIEW_DRAFTS === '1';
+const preview = () => PREVIEW_DRAFTS === '1';
 
 // newest first. `number` counts from the oldest — the feed's <itunes:episode>
 // and the page's json-ld episodeNumber both read it here, so they agree.

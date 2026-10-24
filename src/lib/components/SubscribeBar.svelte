@@ -11,7 +11,7 @@
     hasJoined,
     rememberJoined,
     subscribeFlow,
-  } from '$lib/subscribe';
+  } from '#lib/subscribe.js';
 
   // the episode page's ask, for readers who came for one episode and aren't
   // on the list. Client-side only: whether this browser already joined lives

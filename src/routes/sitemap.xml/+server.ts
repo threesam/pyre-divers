@@ -1,8 +1,8 @@
 // prerendered from the db like feed.xml, so each episode page — the one with
 // the crawlable transcript — is listed by the same build that publishes it.
 import type { RequestHandler } from './$types';
-import { SITE } from '$lib/links';
-import { listPublishedEpisodes } from '$lib/server/queries';
+import { SITE } from '#lib/links.js';
+import { listPublishedEpisodes } from '#lib/server/queries.js';
 
 export const prerender = true;
 

@@ -36,7 +36,10 @@ test('reports early when no listmonk is configured', async () => {
 
 test('posts the trimmed email and list uuid as json to the public api', async () => {
   assert.ok(subscribeFlow, 'subscribeFlow not found in index.html');
+  /** @typedef {{ method: string, headers: Record<string, string>, body: string, mode?: string }} Init */
+  /** @type {{ url: string, opts: Init }[]} */
   const calls = [];
+  /** @param {string} url @param {Init} opts */
   const fetchFn = (url, opts) => {
     calls.push({ url, opts });
     return Promise.resolve({ ok: true });

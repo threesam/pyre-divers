@@ -1,5 +1,8 @@
 import type { EntryGenerator, PageServerLoad } from './$types';
-import { getEpisodeBySlug, listPublishedEpisodes } from '$lib/server/queries';
+import {
+  getEpisodeBySlug,
+  listPublishedEpisodes,
+} from '#lib/server/queries.js';
 import { error } from '@sveltejs/kit';
 
 export const prerender = true;

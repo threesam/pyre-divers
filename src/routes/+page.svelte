@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Splash from '$lib/components/Splash.svelte';
-  import SocialStones from '$lib/components/SocialStones.svelte';
-  import Sitters from '$lib/components/Sitters.svelte';
+  import Splash from '#lib/components/Splash.svelte';
+  import SocialStones from '#lib/components/SocialStones.svelte';
+  import Sitters from '#lib/components/Sitters.svelte';
   import { resolve } from '$app/paths';
-  import { FEED, HOSTS, SAME_AS } from '$lib/links';
-  import { SCENE_W } from '$lib/page-fx';
+  import { FEED, HOSTS, SAME_AS } from '#lib/links.js';
+  import { SCENE_W } from '#lib/page-fx.js';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();

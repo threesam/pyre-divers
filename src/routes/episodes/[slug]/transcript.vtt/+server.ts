@@ -3,7 +3,10 @@
 // pocket casts and the rest can show the words in sync without generating
 // their own. prerendered from the same rows as the page.
 import type { EntryGenerator, RequestHandler } from './$types';
-import { getEpisodeBySlug, listPublishedEpisodes } from '$lib/server/queries';
+import {
+  getEpisodeBySlug,
+  listPublishedEpisodes,
+} from '#lib/server/queries.js';
 import { error } from '@sveltejs/kit';
 
 export const prerender = true;

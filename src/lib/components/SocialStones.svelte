@@ -5,8 +5,8 @@
     ROCKS,
     emberAt,
     setRockLit,
-  } from '$lib/page-fx';
-  import { SHOW } from '$lib/links';
+  } from '#lib/page-fx.js';
+  import { SHOW } from '#lib/links.js';
 
   // The social and listening links, stamped on the five stones ringing the
   // flame's mouth: the places to listen in the middle, the socials outside.
