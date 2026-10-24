@@ -60,7 +60,12 @@ if (cmd === 'draft') {
   });
 } else if (cmd === 'publish') {
   const path = fileFor(arg);
-  write(path, { ...read(path), publishedAt: new Date().toISOString() });
+  const ep = read(path);
+  // a live episode's date is its feed pubDate: moving it reorders the feed
+  if (isLive(ep)) {
+    throw new Error(`${arg} is already live since ${ep.publishedAt}`);
+  }
+  write(path, { ...ep, publishedAt: new Date().toISOString() });
 } else {
   throw new Error(`unknown command ${cmd}`);
 }
