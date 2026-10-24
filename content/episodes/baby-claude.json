@@ -1,0 +1,631 @@
+{
+  "slug": "baby-claude",
+  "title": "baby claude",
+  "description": "baby claude. Sam and Steve on why zero to one is the hardest step, advice that changes weekly, the friction worth keeping, and where we all are on the curve: mostly vibing with baby claudes.",
+  "audioUrl": "https://media.pyredivers.com/pyre-divers-003.mp3",
+  "durationSeconds": 1971,
+  "youtubeUrl": "https://www.youtube.com/watch?v=6ihoEfDXDok",
+  "spotifyUrl": null,
+  "applePodcastsUrl": null,
+  "publishedAt": "2026-10-07T11:00:00Z",
+  "segments": [
+    {
+      "start": 1.076,
+      "end": 2.376,
+      "speaker": "Steve",
+      "text": "All right, what's up Sam?"
+    },
+    {
+      "start": 2.726,
+      "end": 10.538,
+      "speaker": "Sam",
+      "text": "Hey, hey. I believe we talked about show and tell last week."
+    },
+    {
+      "start": 11.188,
+      "end": 15.288,
+      "speaker": "Steve",
+      "text": "We did I remember that and I was like, oh man did I actually do the thing?"
+    },
+    {
+      "start": 17.138,
+      "end": 55.331,
+      "speaker": "Sam",
+      "text": "I think I ended up running through it that day. The results weren't as groundbreaking as I thought they'd be. At the same time it just kind of did the job that it said it was going to do. I took that model Jev and kind of poked around looking for nails for the hammer and the one that I found that seemed like a pretty good fit was we had a bunch of data from customer service, you know, Reddit threads."
+    },
+    {
+      "start": 56.917,
+      "end": 83.385,
+      "speaker": null,
+      "text": "I kind of just wanted to classify all these conversations on like a frustration score of like are people pissed off or are they not pissed off like and that's the reason they're writing and it was interesting because I ran it through maybe a couple thousand conversations scored them all and then I put those scores in like"
+    },
+    {
+      "start": 84.153,
+      "end": 127.729,
+      "speaker": null,
+      "text": "you know like sort of behind door number one and then I ran it through Opus 4.5 or Sonnet I can't remember to sort of get like a baseline like how would you score this if you were to throw some additional reasoning at it and they converged on the same thing I think 94% of the time, which I thought was really interesting considering it was like 100th of the cost. And then the times that it diverged, it was actually more of a issue with how I phrased the questioning and the buckets that they would get put into."
+    },
+    {
+      "start": 128.697,
+      "end": 165.496,
+      "speaker": null,
+      "text": "So after I updated that, it was somewhere between 97 to 99% accurate, which I thought was really interesting considering it costs maybe a few dollars to run it if I were to run the same experiment fully with, and I didn't run the experiment through the whole catalog, I took like a subset, and we got Yeah, it would have been a couple dollars of Jev and then like 80 bucks on Sonnet and then 200 something dollars if I ran it through Opus 5.5. So with, you know, very,"
+    },
+    {
+      "start": 165.646,
+      "end": 210.07,
+      "speaker": null,
+      "text": "you know, like if I want the most accurate detailed analysis, I'm probably not going to reach for Jev, but I don't think that that's the problem it's actually solving. It's more like... You know a frustration score would be does someone need do we need human eyes on this thing and it's just a yes no after that point so I think for that I mean sure there might be some false positives but directionally you're going to get way better insights for significantly less money at scale which I mean, it's this whole field is just diverging into so many different camps. We're getting more into the optimization phase."
+    },
+    {
+      "start": 210.17,
+      "end": 236.273,
+      "speaker": null,
+      "text": "It's not just like, oh, cool, like you're having a human-like conversation that's solving real business problems now in a pretty predictable way, it seems. So I don't know. I thought the experiment was fun. and also informative but yeah I would I would suggest figuring out other areas where it might fit because I'm sure there's a bunch for you Steve"
+    },
+    {
+      "start": 237.473,
+      "end": 281.091,
+      "speaker": "Steve",
+      "text": "Yeah, that's cool. I mean, what I love about it is just, you know, diving in and experimenting and testing and seeing and trying new things. I remember when you and others were trying to just get me on claude code and at first it was like that. fear of moving from ChatGPT over to claude and it was so easy right you know now that those fears have gone away now like even like when you mentioned Jev a couple weeks ago i tried it like that night i think um and the barriers are down i remember i couldn't get in because all the uh You know, I couldn't get in if I tried as a human to get in. Do you remember this? I tried to get in as a human."
+    },
+    {
+      "start": 281.441,
+      "end": 300.391,
+      "speaker": null,
+      "text": "I hope this doesn't get you in trouble or anything, but I tried to get in as a human, but there were no more spots available. And then, like, this is a great tool for anyone out there who isn't as smart as you or know these things, right? Because I didn't know. You just told me to, what did you tell me to do? I can't remember."
+    },
+    {
+      "start": 301.267,
+      "end": 303.417,
+      "speaker": "Sam",
+      "text": "so um and"
+    },
+    {
+      "start": 303.417,
+      "end": 303.517,
+      "speaker": "Steve",
+      "text": "Yeah."
+    },
+    {
+      "start": 303.517,
+      "end": 329.061,
+      "speaker": "Sam",
+      "text": "this is exactly what i did too right like uh i didn't even go down the other route because if you try to sign up for typesafe right it says like they're out of spots but if you are on Vercel already not an advertisement you just like using it and it seems like the de facto thing that ai pushes you towards nowadays anyway which was great for them um But their Vercel AI Gateway."
+    },
+    {
+      "start": 331.091,
+      "end": 365.447,
+      "speaker": null,
+      "text": "is just this wrapper that allows you to put in a model number so I mean you're going to be able to test new models when they drop there you get to run comparisons between you know anthropic or open AI like wherever it is and it's just you get to try stuff out so yeah you just tell claude I mean you're already hooked up through Vercel so just run the experiment there That's exactly what I did too. And if you're already on Vercel, it's an obvious, obvious pairing. Yeah, it just makes it really easy."
+    },
+    {
+      "start": 365.597,
+      "end": 385.775,
+      "speaker": null,
+      "text": "But you know, the point that you brought up, I think is interesting because this came up for me today. I was talking to a friend who is going through the AI enablement process. Going from zero to one, which is easily the most friction you will experience."
+    },
+    {
+      "start": 386.803,
+      "end": 417.205,
+      "speaker": null,
+      "text": "and it's like oh i you know i have to download claude code you're like all right i don't know what that is you you start going and it's like oh you need to download node and you're like what's node it's what runs javascript on your computer you're like why do i care and then it's like i have to download git and you're like what's git why do i can't you just run down this whole tree of things and you're like is it okay that all these things are downloading on my computer and for me uh It's weird to see that because I've had those tools downloaded for years and years. First"
+    },
+    {
+      "start": 417.205,
+      "end": 417.455,
+      "speaker": "Steve",
+      "text": "Great."
+    },
+    {
+      "start": 417.455,
+      "end": 448.963,
+      "speaker": "Sam",
+      "text": "step, I get a new computer, I'm spending that day downloading that whole suite of tools because it's basically the foundation of web development at least. that whole getting onboarded thing like i feel like the as soon as you get one of these agentic systems whether it's claude code or Codex or whatever it may be cursor like just functioning fully functioning on your computer then you're like okay go do all this stuff right that's like the the"
+    },
+    {
+      "start": 449.587,
+      "end": 466.287,
+      "speaker": null,
+      "text": "I've realized rather than worrying about all that if I can just get one of them set up then I'll tell it to go download node and get and all of these different things that it's going to eventually need because it just mainlines it directly into the infrastructure as opposed to you having to like reason about these things."
+    },
+    {
+      "start": 466.587,
+      "end": 475.687,
+      "speaker": "Steve",
+      "text": "Question for you. Have you developed a skill for other people like to so it just runs and does all these things for people so they don't have to think about it?"
+    },
+    {
+      "start": 477.523,
+      "end": 519.485,
+      "speaker": "Sam",
+      "text": "kind of the so like the closest I got and it's still pretty painful because it's going to involve a terminal and some folks are on Mac some folks are on Windows the homies are on Linux but It kind of runs a little bit differently in each environment and then people are on different versions of that app So like I've given like a script that you just for Windows which is the toughest one in my opinion like you you drop it into PowerShell and then it kind of gets claude code running and all of the requisite, you know parts required to get it where it needs to be"
+    },
+    {
+      "start": 521.747,
+      "end": 565.645,
+      "speaker": null,
+      "text": "but then it doesn't work every time and the problem is the whole skill thing implies that you already have it running on your system so that's why that zero to one becomes the most difficult hurdle for most people and if you're trying to do it in a vacuum by yourself like you could you can get most of it the way there but i think What scares people the most is when they actually are in a terminal right like if you just download a desktop app like in a lot of ways It works basically the same for most people but You know when you're running directly through the terminal I found it's you know you"
+    },
+    {
+      "start": 565.645,
+      "end": 565.845,
+      "speaker": "Steve",
+      "text": "Yeah,"
+    },
+    {
+      "start": 565.845,
+      "end": 566.145,
+      "speaker": "Sam",
+      "text": "can hide"
+    },
+    {
+      "start": 566.145,
+      "end": 566.295,
+      "speaker": "Steve",
+      "text": "I hate"
+    },
+    {
+      "start": 566.295,
+      "end": 566.745,
+      "speaker": "Sam",
+      "text": "a lot of"
+    },
+    {
+      "start": 566.745,
+      "end": 566.795,
+      "speaker": "Steve",
+      "text": "the"
+    },
+    {
+      "start": 566.795,
+      "end": 567.895,
+      "speaker": "Sam",
+      "text": "inside of the sound box"
+    },
+    {
+      "start": 567.895,
+      "end": 596.215,
+      "speaker": "Steve",
+      "text": "terminal. The terminal, like I have no idea what that is. It's way too complicated. So I use VS Code, right? And what is it? Is that what's called? Visual, you know, using every day. Yeah, Visual Studio Code. Because it's, that's familiar. And even to a lot of people that would not look familiar at first. uh you know what would be really neat sam is you know you have these really cool stick figures that of you and i on uh pyre"
+    },
+    {
+      "start": 597.315,
+      "end": 634.729,
+      "speaker": null,
+      "text": "divers.com what if you made little videos like you just and then walk people like showed them like animation like and just give them a picture a map of what does each of these things do and um i think so something i did really Just recently, I'm building a whole new operating system for my company, but it's also for our members and I need to, you know, walkthrough videos. And it's like, oh, well, I've already had, you know, claude making some cool videos for me. I'm like, could it make walkthrough videos where it, and it."
+    },
+    {
+      "start": 634.803,
+      "end": 646.603,
+      "speaker": null,
+      "text": "It made some amazing walkthrough videos like it's so wild like I don't have to do any of that anymore something that would have taken so long now walk all the walkthrough videos and in my app now so"
+    },
+    {
+      "start": 647.203,
+      "end": 677.459,
+      "speaker": "Sam",
+      "text": "it's so interesting i i think like so for me part of the issue that i'm running into is that people are expecting like a deterministic way to do this where it's like oh if you just do this then this works The problem is like my advice is changing weekly and I would make that video and then it would be mostly right but it wouldn't fully capture capability of everything that's available like"
+    },
+    {
+      "start": 678.579,
+      "end": 704.962,
+      "speaker": null,
+      "text": "because the features just keep dropping we're like yesterday last week we were talking about Jev and if i'm like in that time frame since last week open ai has released their or at least i don't a beta of their decisions api which is effectively the same thing there's open source modeling for it it's kind of it had its moment and now it's already been absorbed into this wider mainstream apparatus"
+    },
+    {
+      "start": 704.962,
+      "end": 705.062,
+      "speaker": "Steve",
+      "text": "yeah"
+    },
+    {
+      "start": 705.062,
+      "end": 711.562,
+      "speaker": "Sam",
+      "text": "and this just keeps happening over and over and over again where a thing comes out and then just gets absorbed by every company"
+    },
+    {
+      "start": 711.562,
+      "end": 711.612,
+      "speaker": "Steve",
+      "text": "yeah"
+    },
+    {
+      "start": 711.612,
+      "end": 712.062,
+      "speaker": "Sam",
+      "text": "because"
+    },
+    {
+      "start": 712.062,
+      "end": 712.212,
+      "speaker": "Steve",
+      "text": "they"
+    },
+    {
+      "start": 712.212,
+      "end": 712.762,
+      "speaker": "Sam",
+      "text": "you can build it"
+    },
+    {
+      "start": 712.762,
+      "end": 724.612,
+      "speaker": "Steve",
+      "text": "all they have to do is say hey take a look at Jev what are they doing and build it for us right I mean is that basic I mean I know I know I do stuff like that all the time why wouldn't they"
+    },
+    {
+      "start": 725.418,
+      "end": 740.918,
+      "speaker": "Sam",
+      "text": "Everyone does it. It's like that and that's why speed is becoming the main differentiator and it's like who gets their first who captures the mindshare knowing that people aren't universally going to be on that clock where they're like, I'm going to learn this new thing every day."
+    },
+    {
+      "start": 741.418,
+      "end": 770.897,
+      "speaker": "Steve",
+      "text": "I think that's why it goes back to belief and branding, you know, and also some degree sales, right? But I like to go higher than sales, like to go to. belief that branding is what's going to where everyone's going to have to really go and focus on mission and vision and purpose like that's what I love about it right now is it it's allowing me to focus on journey and story and relationships so much more than in the past too"
+    },
+    {
+      "start": 772.097,
+      "end": 800.204,
+      "speaker": "Sam",
+      "text": "Yeah, the brand thing, it's like, because I was just talking about this too where you're building you're building all of this stuff iteratively like you can move really fast but the way people experience whatever you've built is pretty slow like they come in and they read the snapshot they're not going to read the new version that you push every day it's just going to be what you get so you know iteratively like you keep"
+    },
+    {
+      "start": 801.448,
+      "end": 842.074,
+      "speaker": null,
+      "text": "you know one layer of paint over and eventually you get something that maybe resembles a structure that's more stable and I think that's when you've hit like a brand threshold when you kind of have that identity and then that becomes reinforcing because you get to use that to help inform you could have your landing page that you've been tuning for however long and you're like okay okay have this pretty stable I haven't touched in a while but then you get to use that as part of your corpus to craft ad placement like whatever messaging that you're doing downstream or upstream so"
+    },
+    {
+      "start": 843.77,
+      "end": 863.67,
+      "speaker": null,
+      "text": "it's totally an iterative thing you're not going to have it figured out at once and i think the differentiation is the speed like how quickly can you update things but if you're constantly putting effort in and working and tinkering you will just naturally be able to differentiate yourself over time"
+    },
+    {
+      "start": 864.42,
+      "end": 908,
+      "speaker": "Steve",
+      "text": "Yeah, absolutely. And I think, you know, You know, you touched on this, like getting your brand and your corpus down. Once you have that, things, now you have, you can take off. And I think a lot of people don't look at it from that perspective because they don't put so much emphasis on brand and mission, vision, purpose, core values. And so they want to get to the end result, right, which is the sales of all the other stuff. And I can attest that once, and it took a lot of time, and fortunately I had a lot of long form content, lots of, you know, hundreds and hundreds of hours of coaching content and member training videos, all this stuff."
+    },
+    {
+      "start": 908.05,
+      "end": 929.648,
+      "speaker": null,
+      "text": "So once I figured out that I could actually do it right, that this data was available, and plus all my pre-AI writings too, which was helpful, just gathering the data. And that's when things really took off because now I could really build the thing and it had purpose and meaning and it wasn't so disjointed and fragmented."
+    },
+    {
+      "start": 930.598,
+      "end": 947.09,
+      "speaker": "Sam",
+      "text": "It's interesting too. I mean, I envy you having an entire library of things because, I mean, it's weird. It's like you'd been building this thing up. And in a way, you couldn't have utilized it until now, right?"
+    },
+    {
+      "start": 947.29,
+      "end": 947.49,
+      "speaker": "Steve",
+      "text": "No."
+    },
+    {
+      "start": 947.49,
+      "end": 987.128,
+      "speaker": "Sam",
+      "text": "Like the people have all of this, you know, content that they've been producing and just now in the past year or two, you get to point an AI agent at it and it can sift through everything there. It can pull out seeds. It can, you know. congregate ideas across different sessions see things in ways that you wouldn't necessarily look at it unless you've made it your job to sift through everything you know that's sort of just sitting dormant and that as the foundation right"
+    },
+    {
+      "start": 987.994,
+      "end": 1031.714,
+      "speaker": null,
+      "text": "It means you get to focus on what are you bringing that new into the world? What gaps are you filling in your business? The way AI helps people once enabled is totally different depending on what stage you're at. For me in a lot of ways, I'm definitely starting out with a lot of the positioning. What do I even think? It's mostly just vibes floating around in my head and I'm trying to get pen to paper. So I have this weird shifting that keeps happening as I keep dumping ideas as context into my content engine."
+    },
+    {
+      "start": 1033.364,
+      "end": 1054.143,
+      "speaker": null,
+      "text": "It kind of doesn't have my voice down yet. or doesn't really know who I am right so anything can like tip the scale in a different direction depending on how heavily I over index it and then you also have recency bias where the most recent thing seems to be weighted more heavily so then how do you solve that problem"
+    },
+    {
+      "start": 1055.743,
+      "end": 1094.043,
+      "speaker": "Steve",
+      "text": "Well, I wonder if that's a, you know, we were talking about this the other day, I wonder if that's a problem because. I mean, recency could mean that, you know, it's a thought, idea not fully formed, right? Or it could be the evolution and growth that you moved into. And I, like, I look at my trainings and I think they're really bad, even though some members tell me they're good, but I know how much better it's become. And I'm just chopping at the bit to actually build a new training ecosystem and everything."
+    },
+    {
+      "start": 1096.093,
+      "end": 1113.101,
+      "speaker": null,
+      "text": "I feel like I think I feel like recency is going to I wonder how you maybe you just ask it say, hey, is this what do you think? Is this is this really like my new idea? Is it or has it evolved or is this, you know, not ready for the next thing?"
+    },
+    {
+      "start": 1114.813,
+      "end": 1151.709,
+      "speaker": "Sam",
+      "text": "Yeah, and then identity is weird, right? Because you look at a lot of this stuff and I'm like, oh, you know, it's over indexing on recent content. And then you remember my identity is not a real corporeal thing. It's just. Something that I've decided matters to me and it changes every day whether I like to admit that or not. There's not these huge swings necessarily outside of major events causing fractures and identity into different trees on a path there."
+    },
+    {
+      "start": 1153.063,
+      "end": 1194.255,
+      "speaker": null,
+      "text": "Yeah, I mean, when you can go this fast, you kind of look at what is even important to you in a totally different way, right? Because the clarity problem still persists where it's like, well, actually, I realize that I've been procrastinating a lot. and not doing the high impact stuff that I thought I should be doing so I like I would probably have an identity that doesn't match my action and that comes into very obvious tension when you can move quickly enough to action on the things that you should be doing so yeah I've had a I've had a lot of"
+    },
+    {
+      "start": 1195.043,
+      "end": 1219.993,
+      "speaker": null,
+      "text": "identity crises over the last year and it just keeps coming up over and over and over again where you know I've fired myself from my job and I'm doing a totally different job now even though externally it wouldn't look like that to other people but to me I'm like I don't every single week I'm doing something different I'm telling people different things I'm having different different thoughts I'm going deeper I'm trying to find ways to"
+    },
+    {
+      "start": 1221.123,
+      "end": 1245.973,
+      "speaker": null,
+      "text": "force friction in the learning funnel like using Socratic reasoning which funny like I you know I saw that on the LinkedIn post maybe six months it like early early this year and I don't think I really started actually using it like conceptually I knew it was a thing but then I started applying it and realized oh I've been skipping out on a lot of the necessary friction here that would"
+    },
+    {
+      "start": 1246.563,
+      "end": 1267.763,
+      "speaker": null,
+      "text": "help me become more aligned with with the ideal identity that I have in my head which is someone who knows things deeply so no I think I think whatever's happening is shifting shifting priorities around and that can be really uncomfortable for folks myself included"
+    },
+    {
+      "start": 1268.579,
+      "end": 1308.561,
+      "speaker": "Steve",
+      "text": "yeah yeah for sure i uh yet i mean people i think people that really love this right now are people who are on a path of evolution and growth like personal development spiritual development all these things and they they want like it's it's addictive too like they're and they're enjoying the process um i was on a call with a client today and We were talking about a principle and this principle became like more fully developed. I realized, okay, that's it. And it was from, it was actually just through talking, right? In the usual way, like one-on-one with people."
+    },
+    {
+      "start": 1310.467,
+      "end": 1352.779,
+      "speaker": null,
+      "text": "It doesn't mean that that development of thought can't happen with AI like you're talking about the Socratic, you know, the Socratic questioning. So I actually did that today. I recognize, okay. And I asked claude, I said, with every transcript, because it goes through every transcript, I said, identify the coaching moments, the social media moments, the, all these different moments, there's like seven different moments it's looking for. And if it's a. It's a if it's an idea that one of our principles, but it's shifting I asked it to identify that now To put it aside for me to talk with claude about it and it for it to further develop it So we'll see what happens."
+    },
+    {
+      "start": 1352.879,
+      "end": 1377.271,
+      "speaker": null,
+      "text": "I feel like that's going to because what I've found is that typically it only it happens just in the moment through the conversation But what if is like what you're talking goes back to what you're talking about like well what if that training is different tomorrow and the next day and the next day which is happening so what if I could accelerate it to a place where okay I feel really good about this and it's going to take maybe a year for that thing to change"
+    },
+    {
+      "start": 1378.221,
+      "end": 1405.028,
+      "speaker": "Sam",
+      "text": "And then and then you wonder other things because like when you when you would run through that right like There are certain ideas that have persisted for thousands of years and you're like, well, if there's something I'm talking about that's changing weekly, is that just trendy jargon that actually isn't important? So then how do you filter out the signal from the noise?"
+    },
+    {
+      "start": 1405.378,
+      "end": 1405.878,
+      "speaker": "Steve",
+      "text": "Sure."
+    },
+    {
+      "start": 1406.178,
+      "end": 1445.845,
+      "speaker": "Sam",
+      "text": "And the amount of content that's being thrown our way now, the fact that it can just be generated on demand. There's a ton of good stuff in there, but it is absolutely drowning in slop, which like and I mean, even before AI was generating it, there was people that were low effort posting just, you know, oh, someone else made this successful thing. Let me just distill it into my own. brand my own way of saying it without actually confronting the idea or actually doing anything original or at least effortful under the hood."
+    },
+    {
+      "start": 1446.345,
+      "end": 1480.607,
+      "speaker": "Steve",
+      "text": "so to address that i haven't asked if is there what other principles are out there like this like what who else has has anyone called it this thing too because i i don't want to just be saying this thing is mine you know when it wasn't and and there's you know one of the core principles I think it goes back to core principles right there's nothing new under the sun right that's that's one that I share and believe and that way it's like no this isn't mine this is this has already been it's a culmination it's it's something that developed throughout humanity kind of thing."
+    },
+    {
+      "start": 1482.357,
+      "end": 1523.516,
+      "speaker": "Sam",
+      "text": "Yeah, we're pulling on a lot of threads in this conversation that could go. very deep no I yeah it's just part of part of everything I studied when I was growing which had nothing to do with computer science or anything was just in the realm of philosophy and I feel like the folks who are like trying to push In those spaces can use AI as a really intuitive and adversarial thought partner."
+    },
+    {
+      "start": 1523.816,
+      "end": 1561.139,
+      "speaker": null,
+      "text": "I've been seeing that play out and then you're seeing it play out in math. You're seeing it play out in science. It's happening in relationships where, you know, you have a friend drama and you go. you go to your chat and sort of unload your most raw anger everything everything into it and then it just accepts that and you look at what it just repeats back to you what you just said and you look at it you're like wow I actually feel better I feel like I've progressed in some type of way"
+    },
+    {
+      "start": 1561.819,
+      "end": 1601.348,
+      "speaker": null,
+      "text": "And as this plays out over time, I think that it being an expert in all of these different areas is ultimately going to make us more generalist. Us is just going to raise the average of how humans interact in all of these different ponds. So like how does, you know, a deeper understanding of your value system affect the type of, you know. marketing you would do, the way you present yourself in sales calls. How do all of these different concepts cross-pollinate knowing that AI is the ultimate generalist system?"
+    },
+    {
+      "start": 1601.598,
+      "end": 1646.44,
+      "speaker": "Steve",
+      "text": "Yeah. What I love is that it just keeps bringing us, I feel like it is going to keep bringing us back to relationships and connections and journeys like that's at least for me right now. That's the thing I got. That's making it. usable too like instead of and different because everyone's journey and everyone's like for your your business versus mine versus someone else's that that journey is going to be different and now like today i mean and it's coming up in uh coaching calls right it's where mission vision purpose for me for for my members for And I wouldn't have had the bandwidth,"
+    },
+    {
+      "start": 1646.59,
+      "end": 1681.768,
+      "speaker": null,
+      "text": "like, to even be there if, you know, the computers weren't helping me throughout the day do all the other stuff. It's pretty amazing. So I'm curious, you mentioned, like, the different levels people are at in their AI journey. Have you, like, identified the different ones? I was almost thinking like kindergarten and first grade, elementary. And if so, if you like that metaphor, where do you think we are in that journey right now?"
+    },
+    {
+      "start": 1682.068,
+      "end": 1686.37,
+      "speaker": "Sam",
+      "text": "You and me or just like humanity it's"
+    },
+    {
+      "start": 1686.37,
+      "end": 1691.87,
+      "speaker": "Steve",
+      "text": "I mean, yeah, humanity, where would you place us?"
+    },
+    {
+      "start": 1693.07,
+      "end": 1736.495,
+      "speaker": "Sam",
+      "text": "rough because like you can't So technically AI has been in the works for decades, right? Like they did the whole neural network or crafted that theory decades ago and then it didn't become useful, I don't think, until GPUs when you could sort of run these if this then that patterning at scale. It's kind of hard to say because to me it feels like the rate of acceleration just keeps going up, right? So when I was learning web development, it would always joke there's like a new framework every month or something like that,"
+    },
+    {
+      "start": 1736.645,
+      "end": 1766.161,
+      "speaker": null,
+      "text": "which would just be a better way to make websites, a better way to make apps, a better way to connect systems. And. the whiplash that you get for there truly being you know the dozens of actually significant advances every single week like i don't know what that looks like over time do we just stop caring right and you're just like"
+    },
+    {
+      "start": 1766.955,
+      "end": 1808.726,
+      "speaker": null,
+      "text": "it goes it cycles back to actually we have to wait for some enormous development to actually care and then most of the stuff is just for the machines behind the scenes uh but i don't know i think if you were to step back we're like Like it depends how far you step back if you look at the internet being around for 30 years I think we're probably still at the beginning of that logarithm The log curve where it's like going up like we've just I think we just started I I don't think we have any idea how high this is gonna get considering the rate of change right now so from that level you know"
+    },
+    {
+      "start": 1809.092,
+      "end": 1825.292,
+      "speaker": null,
+      "text": "were babies i think i think we all have a bunch of baby claudes that doesn't you know they don't really know anything about anything and we're trying to do our best impart whatever knowledge we have and it's trying to do its best to pull from the collective history that we've built"
+    },
+    {
+      "start": 1825.792,
+      "end": 1844.392,
+      "speaker": "Steve",
+      "text": "Isn't that cool? I mean, it's like, so it's evolving consciousness, you know, because of that too, right? the man machine uh which you know i was going to other places than where the transhumanism and where that's going too and as you're talking"
+    },
+    {
+      "start": 1844.392,
+      "end": 1844.792,
+      "speaker": "Sam",
+      "text": "Yeah, i'm doing cyborgs"
+    },
+    {
+      "start": 1844.792,
+      "end": 1876.112,
+      "speaker": "Steve",
+      "text": "thinking yeah we're let's let's go there on the next one maybe uh yeah but what okay what are we going to do what are we going to do in this week i'm i'm going to commit to i've been working on this uh member side member sided app for a real long time several months now I've been I've already committed to my members up for some that we're going to test with at least several members so that's my commitment by next week I'll be able to report back on it how that experiment has been going"
+    },
+    {
+      "start": 1876.512,
+      "end": 1890.762,
+      "speaker": "Sam",
+      "text": "Well, now I feel like I have to apply Socratic reasoning to something. philosophical which is completely unrelated to technology but but"
+    },
+    {
+      "start": 1890.762,
+      "end": 1891.462,
+      "speaker": "Steve",
+      "text": "But is it?"
+    },
+    {
+      "start": 1891.462,
+      "end": 1892.112,
+      "speaker": "Sam",
+      "text": "is it yeah"
+    },
+    {
+      "start": 1892.112,
+      "end": 1894.712,
+      "speaker": "Steve",
+      "text": "I mean, what is this conversation about?"
+    },
+    {
+      "start": 1895.562,
+      "end": 1915.303,
+      "speaker": "Sam",
+      "text": "yeah i think there's it's gonna it's gonna lead to some weird some weirdness um and that's like the fun part you know you you never actually know because these systems are non-deterministic and it's just a probability of what's going to come back you never actually know what"
+    },
+    {
+      "start": 1915.303,
+      "end": 1915.853,
+      "speaker": "Steve",
+      "text": "Yeah, that's"
+    },
+    {
+      "start": 1915.853,
+      "end": 1926.203,
+      "speaker": "Sam",
+      "text": "it's going to say to you which is what makes it exciting and scary and yeah we'll see we'll see what happens by next week who knows there's"
+    },
+    {
+      "start": 1926.203,
+      "end": 1943.565,
+      "speaker": "Steve",
+      "text": "cool. You just gave me you just gave me an idea. I'm going to ask claude what it like to analyze everything I've shared with it. since we gained into based upon my prompts and what philosophical lens I see the world through what"
+    },
+    {
+      "start": 1943.565,
+      "end": 1943.765,
+      "speaker": "Sam",
+      "text": "Oh"
+    },
+    {
+      "start": 1943.765,
+      "end": 1943.965,
+      "speaker": "Steve",
+      "text": "it thinks"
+    },
+    {
+      "start": 1943.965,
+      "end": 1945.165,
+      "speaker": "Sam",
+      "text": "yeah, that's good. That's good."
+    },
+    {
+      "start": 1945.215,
+      "end": 1945.915,
+      "speaker": "Steve",
+      "text": "Deep. they make"
+    },
+    {
+      "start": 1945.915,
+      "end": 1946.065,
+      "speaker": "Sam",
+      "text": "Yeah,"
+    },
+    {
+      "start": 1946.065,
+      "end": 1946.315,
+      "speaker": "Steve",
+      "text": "it exciting"
+    },
+    {
+      "start": 1946.315,
+      "end": 1946.415,
+      "speaker": "Sam",
+      "text": "we"
+    },
+    {
+      "start": 1946.415,
+      "end": 1946.565,
+      "speaker": "Steve",
+      "text": "I"
+    },
+    {
+      "start": 1946.565,
+      "end": 1946.815,
+      "speaker": "Sam",
+      "text": "are."
+    },
+    {
+      "start": 1946.815,
+      "end": 1949.365,
+      "speaker": "Steve",
+      "text": "get to psychoanalyze us too well"
+    },
+    {
+      "start": 1949.365,
+      "end": 1951.815,
+      "speaker": "Sam",
+      "text": "There you go. Awesome."
+    },
+    {
+      "start": 1953.215,
+      "end": 1955.765,
+      "speaker": "Steve",
+      "text": "hey thanks Sam good talking see"
+    },
+    {
+      "start": 1955.765,
+      "end": 1956.565,
+      "speaker": "Sam",
+      "text": "See you, Steve."
+    },
+    {
+      "start": 1956.565,
+      "end": 1957.215,
+      "speaker": "Steve",
+      "text": "ya"
+    }
+  ]
+}

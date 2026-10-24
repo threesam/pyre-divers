@@ -311,7 +311,7 @@
   {/if}
 
   {#if episode.youtubeUrl || episode.spotifyUrl || episode.applePodcastsUrl}
-    <!-- eslint-disable svelte/no-navigation-without-resolve -- external urls from the db -->
+    <!-- eslint-disable svelte/no-navigation-without-resolve -- external urls from the episode file -->
     <!-- block form: prettier splits these tags' attributes, so a
          disable-next-line would no longer cover the href lines -->
     <p class="elsewhere">

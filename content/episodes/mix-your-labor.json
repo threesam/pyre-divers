@@ -1,0 +1,475 @@
+{
+  "slug": "mix-your-labor",
+  "title": "mix your labor",
+  "description": "mix your labor. Sam and Steve on agents that know you're the boss, the admin that just went to zero, running a team on mission instead of tasks, and why low effort with AI gets you the average version of yourself.",
+  "audioUrl": "https://media.pyredivers.com/pyre-divers-004-v2.mp3",
+  "durationSeconds": 2482,
+  "youtubeUrl": "https://www.youtube.com/watch?v=N4fJaKxARYw",
+  "spotifyUrl": null,
+  "applePodcastsUrl": null,
+  "publishedAt": "2026-10-14T11:00:00Z",
+  "segments": [
+    {
+      "start": 0.46,
+      "end": 3.469,
+      "speaker": "Sam",
+      "text": "All right. Hey, Steve. Tell me what's going on."
+    },
+    {
+      "start": 4.793,
+      "end": 36.027,
+      "speaker": "Steve",
+      "text": "Man, I'm on a GrokBot high. You were telling me about it, and I didn't do it. And then another friend told me, like, yeah, you got to do it. I did it last night. Abby was out with some friends, so I was just doing it all night a little bit. But then today, it's, like, all coming together, like how to use GrokBot in conjunction with claude code. And, yeah, just things are all coming together, and things are getting launched and shipped."
+    },
+    {
+      "start": 39.027,
+      "end": 58.432,
+      "speaker": null,
+      "text": "the internal app we decided to pull the bandaid off and just launch the pieces that are ready to go instead of like being worried about all the you know extra features and stuff that we can develop and ship after so I don't know it's kind of fun"
+    },
+    {
+      "start": 58.472,
+      "end": 92.677,
+      "speaker": "Sam",
+      "text": "so like my my usage of GrokBot the thing that I thought was cool is that like it kind of just doesn't tell you what it's doing under the hood. It's just, I'm going to make this as easy for you as possible to run on stuff. It felt like it was targeted at knowledge workers in general, but yeah, can also play in the agentic coding sandbox with you. But yeah, I was wondering, what were you actually having it do? What were you excited about?"
+    },
+    {
+      "start": 93.877,
+      "end": 138.242,
+      "speaker": "Steve",
+      "text": "So, You know, the thing about, and maybe I just need to get there to making the like really functional use like agents that work like team members. And this is what you said before, like, like fresh out of the box, these will work as team members. If you tell it what you want it to do, whereas claude code, you make the thing, but it's kind of abstract, at least for me, like, you know, visually and, um, You know, it's just claude code. I have to keep asking it to do certain things. And maybe that's just because I have to create the higher level instructions for everything. I have to keep telling it, okay, go into a browser and you do it."
+    },
+    {
+      "start": 139.242,
+      "end": 175.067,
+      "speaker": null,
+      "text": "Instead of telling me to do something, it's like, hey, wait, I'm the boss. Whereas GrokBot is like it's set up, it knows you're the boss and that it's just here to make you happy. So I have Texty, which texted you a little while ago. Texty goes through and And I like that it allows you to name them and have a cool little fun animation. Texty goes through my text messages and looks for any messages I haven't responded to. And it will respond. It also now, because it's connected to Google, or to my..."
+    },
+    {
+      "start": 176.663,
+      "end": 213.73,
+      "speaker": null,
+      "text": "calendar it will it will if i want to schedule a call with someone and we agree on it then it will actually schedule it first it will you know check to see if it's available um then there's uh emilia who's my email person or bot right who goes through my emails what haven't responded to what's the highest priority today Um, Fred is supposed to go into high level and, um, and start a whole social media campaign through the social planner and go high level. Um, haven't connected that fully yet. Um, because I'm just, I'm in both, you know, I got GrokBot here."
+    },
+    {
+      "start": 213.75,
+      "end": 229.174,
+      "speaker": null,
+      "text": "I got claude code here and things are just baking everywhere, but it feels like now the, the missing piece was the tasks and the, um, Like all those things are all taken care of."
+    },
+    {
+      "start": 229.214,
+      "end": 253.891,
+      "speaker": "Sam",
+      "text": "Does it feel like the thing that GrokBot solved for was some level of autonomy, right? Where before you're in the driver's seat, claude's the force multiplication of whatever creative thing is going through your head, whereas this is like, I have a thing that I do all the time and I know what it is. Can you just go figure it out?"
+    },
+    {
+      "start": 254.739,
+      "end": 287.746,
+      "speaker": "Steve",
+      "text": "Yeah. Yeah, and things that I've been putting off. For example, I have two old websites, two old blogs, WordPress sites that got compromised years ago. I never know exactly what to do to get them back up and running. I didn't want them back up and running. I just wanted the blogs and the pictures. And so I said, hey, can you get these back? And not only that, it recreated the blogs and put on for sale so I could visualize it, right? so yeah so yeah"
+    },
+    {
+      "start": 287.766,
+      "end": 294.73,
+      "speaker": "Sam",
+      "text": "are you planning on bringing those together uh and like housing it all under one roof or something"
+    },
+    {
+      "start": 295.071,
+      "end": 296.852,
+      "speaker": "Steve",
+      "text": "what do you mean by that"
+    },
+    {
+      "start": 296.872,
+      "end": 331.261,
+      "speaker": "Sam",
+      "text": "so like you have all these these blogs probably blog posts right with like a ton of content because like one of the things that i'm But it's like it used to be easier to spin up like a net new WordPress site or custom, like whatever you were doing is like, okay, here's this isolated project, here's this, where now it's almost like easier to monorepo everything. So to say like, let me take all these projects, shove them in one place so you have that shared context, and then you can decide how some of these different things present, right? Because you could..."
+    },
+    {
+      "start": 333.287,
+      "end": 365.384,
+      "speaker": null,
+      "text": "play in a single sandbox with all these things and it's like you come in from different URLs, maybe even like the top level domains different. It's running the same infrastructure under the hood and you just present different pieces. But then like you can decide where those pieces are. Maybe they live in two domains. But yeah, I was like wondering how that connects. And then also, I guess how you're using GrokBot with claude. How are they crossing streams?"
+    },
+    {
+      "start": 366.47,
+      "end": 408.952,
+      "speaker": "Steve",
+      "text": "Sure. So the, the blinds are one is personal. Like when, when I was traveling around the world years ago and I, that's just, I just want to see it, read it, experience it. Um, and then share it with my son too. So he has it. Um, so that I'm not going to do much more with that. Right. Um, the other one was an old blog when I used to write on chiropractic and philosophy and things like that. I don't know if I'll republish them. I think what I'll do is just kind of understand where I was. And I'll read through it myself, but I'll ask AI to analyze it to look for the evolution in thought."
+    },
+    {
+      "start": 409.152,
+      "end": 451.522,
+      "speaker": null,
+      "text": "And practice, like just because these were ten years ago or fifteen years ago, some of them. So I don't I don't necessarily want those republished. That's because some of them are pretty aggressive at the time, you know, and yeah, let's just let's leave it at that. But in terms of GrokBot to me with claude, I'm still figuring that out. I found there was a bottleneck in the email because the email, the task needed to communicate with claude.ai. So I was like, wait, this is all in claude.ai. Can you connect? And it's like, yeah."
+    },
+    {
+      "start": 451.722,
+      "end": 492.217,
+      "speaker": null,
+      "text": "So what I love about GrokBot is easy integration. It gives me a magic link for claude and then a code. It can check my email to get the code. It can do the autonomy. It can do it all on its own pretty much. It might need an initial first step, but then once it's all connected, with claude code, I'm not sure yet. I have this thing called Cortex I was telling you about, which is like my... Where I was trying to centralize everything already. So, and have a visualization of all the projects and everything."
+    },
+    {
+      "start": 492.838,
+      "end": 514.028,
+      "speaker": null,
+      "text": "So now I think I just need to, and I gave it a API key. So now it understands Cortex. So what I want to, what I think I'm gonna do is have GrokBot, uh, have, have different bots for different pro like project manager for this domain, for this domain. And your job is to complete all these things."
+    },
+    {
+      "start": 516.683,
+      "end": 557.931,
+      "speaker": "Sam",
+      "text": "It feels similar to the command center idea you had, but now you just get to sort of delegate a lot of these things out. The first thing that I used GrokBot for, I scheduled Deana to be able to go to the DMV. What do you need? Because we have to switch over licenses to Texas licenses. And I'm like, I don't want to do that. So it went through. It did hit roadblocks, right? So because you have to put in form information, like your name, socials, like, ooh, that's sensitive. Where claude would be like, oh, I can't do that. GrokBot was like..."
+    },
+    {
+      "start": 558.711,
+      "end": 599.323,
+      "speaker": null,
+      "text": "Okay, here is a secure form that you can put these fields into, and then I will sort of black box pass them over, and I'll never actually see what you type. Whether you want to believe that or not, okay. But the fact that it went through that whole process and just did it... was really weird. There were certain parts where it got tripped up. And then what it did is it said, do you want to take over my computer? So I was able to virtually jump into the cloud computer that it was using and put the fields in myself that I needed to. And then it went and found some schedule things."
+    },
+    {
+      "start": 600.885,
+      "end": 633.006,
+      "speaker": null,
+      "text": "It was crazy that we're at a point now where you have this autonomy to just send off an agent that is more or less a virtual employee, assistant, whatever it is. I don't know, it feels wrong to call them employees or assistants or something like that. I don't know what it is yet. That's probably a philosophical conversation I'll have to get into at some point. But yeah, I think a lot of things are changing."
+    },
+    {
+      "start": 633.924,
+      "end": 675.9,
+      "speaker": null,
+      "text": "very fast what how does work get done what things are going to zero there's there's a whole portion of admin that you're describing that just got wiped out now and it's not something you have to worry about so what do you get to worry about where does a human belong in the loop I think last week we were talking about how this is going to, you know, push people into different roles, into, you know, like how does creativity sort of like play out in an environment where a lot of, like you can generate,"
+    },
+    {
+      "start": 681.06,
+      "end": 709.808,
+      "speaker": null,
+      "text": "creative. So then, like, what is the net new creative for them to be working on? It's probably not something GrokBot's going to be able to do, right? But at the same time, all these tools are coming up. We were looking today. What was it called? Something craft. Basically, some dude created the entire Adobe ecosystem."
+    },
+    {
+      "start": 711.077,
+      "end": 748.018,
+      "speaker": null,
+      "text": "like photoshop after effects like all of them uh and he did it open source and uh he wrote it in rust which is a super fast language and not a how it's normally done as a rapper so it's like normally the issue with the gobi is okay you have all these features and you're editing video and it's syncing up to the cloud and then it comes, it's so slow, right? You're trying to render stuff. It's slow because it's a JavaScript and an electron app, which is like wrapped JavaScript. It's crazy inefficient."
+    },
+    {
+      "start": 748.999,
+      "end": 758.643,
+      "speaker": null,
+      "text": "And then some guy is just going to be like, well, how about I just recreate all of Adobe and who knows how long it took him, but you know, it wouldn't have taken that long. It was probably a busier project."
+    },
+    {
+      "start": 759.083,
+      "end": 759.784,
+      "speaker": "Steve",
+      "text": "Yeah."
+    },
+    {
+      "start": 760.224,
+      "end": 809.563,
+      "speaker": "Sam",
+      "text": "Um, so now these new tools exist and you're like okay like they're they're recreating these commercial sas products i'm sure people are going to start creating bespoke software that's specifically the exact workflow that they want so then you get to just be the most creative version of yourself and solve the problems that only you can solve but it does it does create a ton of tension globally like what are what are people doing now that they're not going to be doing and what are their net new bottlenecks challenges whatever that are coming down the pipe like I don't I don't know how my workflow is changing already this is like a week to week problem I can't imagine how it's going to affect the industry writ large"
+    },
+    {
+      "start": 809.583,
+      "end": 846.514,
+      "speaker": "Steve",
+      "text": "yeah I mean I today on my team meeting I I um Introduced the team to the to the new member app and the and the development of this internal app and I let them know like we're we're completely evolving our our organizational structure and We're now able to focus on the entire focus is on mission vision purpose and journey Right. And micro journeys, you know, the entire journey and then micro journeys."
+    },
+    {
+      "start": 847.154,
+      "end": 886.569,
+      "speaker": null,
+      "text": "And then and so now I'm the way I'm seeing it is as team members, if they're going to thrive and survive in our company, at least they they need to be obsessed with. the uh with both of those things with um with experience right with mission vision purpose which is how it should be anyway like every every company that you know company culture you gotta be you gotta really buy into that Instead of being a task-based person and a task-based job, things are moving to mission, vision, purpose, and experience."
+    },
+    {
+      "start": 887.65,
+      "end": 924.459,
+      "speaker": null,
+      "text": "How do we obsess over the transformation And that's at least where we are. And we're a human potential company already. So that's already what we were built upon. So I think companies that are built upon human potential and blue ocean philosophy and abundance and there, I think those are the ones that are going to really thrive because I don't like, I'm not afraid of, uh, someone taking my software. Like it's big."
+    },
+    {
+      "start": 924.479,
+      "end": 950.062,
+      "speaker": null,
+      "text": "In fact, like it was the chiropractic clinics and the EHR I'm considering as, as I build that side of things, just giving it away, maybe, right. You know, talk about, you know, why not? Like if you're, because no, one's going to have my vision, mission, purpose. and no one's going to have my brand. I think it's all going to go to that, hopefully. That's what I see happening. The"
+    },
+    {
+      "start": 950.082,
+      "end": 995.054,
+      "speaker": "Sam",
+      "text": "brand feels like definitely, I don't know, it's probably always the vote. But yeah, sort of what you're saying, I mean, kind of applies to what I've been doing at Made In because hospitality first, right? Is this the type of products we're making, but also the type of experiences. Like, how inviting is our website? How easy is the user journey? Can people understand what the benefits are of the products compared to a competitor?"
+    },
+    {
+      "start": 995.094,
+      "end": 1026.295,
+      "speaker": null,
+      "text": "Like, why would they choose us? You know, our cookware is used in the best kitchens in the world. gets to a point where you know we should be building things that only we can do only we can say these types of experiences and you know the hospitality first thing was typically like you know an external function where you're like okay like how do we present these"
+    },
+    {
+      "start": 1032.613,
+      "end": 1073.907,
+      "speaker": null,
+      "text": "But now, this year, we've been flipping that internal as well where it's like, okay, well, how do I build the best version of a business so that I'm enabling everyone who works there to remove the drudgery, go faster in ways that they actually get to focus on their zone of genius, the things that are interesting for them. We're already seeing insane improvements where it's like, and then they magically get unstuck when you start showing them some stuff."
+    },
+    {
+      "start": 1077.189,
+      "end": 1119.051,
+      "speaker": null,
+      "text": "And it's remarkable, this speed, like, because you would think, like, okay, they're, you know, a slower-moving team, but as soon as they get, like, a little, oh, you can have a transcriber going, you have this builder operating system, which is basically we're having meetings now that end in a deliverable or some And you take that transcript and you just go build the thing immediately. It's leading to in the areas that people actually want to grow or didn't realize that they were blocked."
+    },
+    {
+      "start": 1119.091,
+      "end": 1151.656,
+      "speaker": null,
+      "text": "So this force multiplication thing is playing out. People are becoming more creative if they choose to engage with the tools. Again, there's always a dark side to all this stuff, because it's like, okay, well, if you lean too hard into it, you do fall victim to the, you know, you've just made, like, a thirty, you know, thirty slides in the deck, and you, like, didn't actually look that half of what was spit out of, like,"
+    },
+    {
+      "start": 1154.25,
+      "end": 1198.505,
+      "speaker": "Steve",
+      "text": "Yeah. I've experienced that. I've experienced that in rooms where, yeah, it hurts your credibility, right? It hurts your credibility and your certainty goes, you know, when you look at a deck that you hadn't looked at and then it said this thing that is not what you meant. And yeah, it's... You know, done is better than perfect is the philosophy I'm going with, though, because of the force multiplier. Like, I can do so much more. And now it's all coming together, too. And we're starting to cut from it coming together, right, with, like, GrokBot and these other tools. And right now we're still having to link everything."
+    },
+    {
+      "start": 1198.545,
+      "end": 1214.57,
+      "speaker": null,
+      "text": "Pretty soon it's going to be even easier. I just I'm in a chat group with some friends of mine. They're all a minimum of ten years older than me or close. And so they're using AI."
+    },
+    {
+      "start": 1215.841,
+      "end": 1243.565,
+      "speaker": null,
+      "text": "uh some of them uh but more like really in a rudimentary way and i said hey guys go get crockbot right now like spend the twenty bucks um and start playing just start playing with it because i do i think this has really made this new this new iteration here and then maybe views you know from meta that's what i'm hearing also uh that it's it's for the the everyday consumer you know kind of thing"
+    },
+    {
+      "start": 1244.16,
+      "end": 1284.231,
+      "speaker": "Sam",
+      "text": "which is a huge market, obviously, and the one that will probably lead to the fastest adoption of AI overall. You're always going to have the power users, which is probably nice from a job security perspective. They're like, oh, if you decide to lean in and learn a tool of things you can do to not only go faster, but make sure you've installed bumpers so you can just like bowl without ever hitting a gutter. And yeah, like again, these are these new challenges that are coming up, right?"
+    },
+    {
+      "start": 1294.857,
+      "end": 1331.978,
+      "speaker": null,
+      "text": "lot of this where I'm sitting there optimizing the harness and it's very similar to like changing the background on your computer or the theme. You know there are versions of this when you're in a terminal where you would like edit your shell so like it which is a bit like magic, right? We're casting spells. So I don't know. This is the part that I'm trying to figure out."
+    },
+    {
+      "start": 1332.218,
+      "end": 1374.356,
+      "speaker": null,
+      "text": "I feel like I'm underwater with it, but what are the things that deserve the deep custom claude code treatment, and what is something that I should just ask GrokBot to figure out for me? or something like it. I think GrokBot does a really good job of obfuscating all the tech speak behind it, which is why I think it's going to be one of the more revolutionary Can I connect to my email? And it's like, oh, click this button. And then it just takes you right over to Gmail. Game changer, right?"
+    },
+    {
+      "start": 1374.856,
+      "end": 1392.725,
+      "speaker": null,
+      "text": "I got so used to telling people, click your name in the bottom left. Click Settings. OK, look at the left rail. Go down. It's the second one from the bottom. Click Connectors. OK, let's see what you got. Don't have to do that in a world where it just tells you what's available and you just opt in as you please."
+    },
+    {
+      "start": 1394.818,
+      "end": 1408.169,
+      "speaker": "Steve",
+      "text": "Yeah, I think it's people like yourself and me, the early adopters of using all this are the ones developing the use cases and how to help others use it."
+    },
+    {
+      "start": 1409.084,
+      "end": 1460.092,
+      "speaker": null,
+      "text": "course the companies are going to keep making it easier but for example i you know this um this organization i'm a part of you know we we have we started to invest in personal assistance for our leadership our leadership for volunteers so we started investing in uh these personal assistants but i'm finding that there's actually more friction there right especially you know the onboarding process the um getting the context um the how to do things whereas this now as i'm understanding this i see how i'm going to build the sop for okay you don't need a the person uh this is actually going to work much better and then we can connect them all on one central brain too right so now"
+    },
+    {
+      "start": 1462.794,
+      "end": 1488.686,
+      "speaker": null,
+      "text": "This was a small thing. It's not anything major, but it changed my view. I saw an ad from someone talking about setting up your org structure for your agents. I'm super visual. I'm a visual person. That's why I love what claude and all the AI does. If you want it to be visual, it can be very visual."
+    },
+    {
+      "start": 1489.837,
+      "end": 1521.139,
+      "speaker": null,
+      "text": "Well, now, you know, that ad was talking about know humans having agents that work for them right and having a visual org chart where now the human manages this agent or this agent is giving doing all the tasks and now the human is now responsible for the output there making sure it's all running working i love that and that's what i'm that's what i'm working that's the new iteration of what i'm working on for my org chart"
+    },
+    {
+      "start": 1523.418,
+      "end": 1557.245,
+      "speaker": "Sam",
+      "text": "The whole org chart thing, I ran this exercise recently where I pulled down the org chart as it currently encoded directly from our HR software. And once you have that, everything's context, right? So you get to do stuff where you say, all right, these departments should have for them, and you get to start mapping things."
+    },
+    {
+      "start": 1557.605,
+      "end": 1600.915,
+      "speaker": null,
+      "text": "I haven't mapped anything with autonomous agents yet, and I do think that probably is an interesting opportunity to be like, oh, this guy over here is running like twenty agents, what is the output of all of that? This is a question that keeps coming up over and over and over again. You get more information, you see how people are using it, getting things over the hump, you know, pushing past that last ten percent. I know that we've talked about how difficult it is to get there. So then it just becomes like visibility, right?"
+    },
+    {
+      "start": 1600.935,
+      "end": 1613.003,
+      "speaker": null,
+      "text": "So if you have a chart, you have, you know, progress timelines where you're not even the one filling it out, you get to see how things are moving along."
+    },
+    {
+      "start": 1613.243,
+      "end": 1648.374,
+      "speaker": null,
+      "text": "So I think like, you know, there's a lot of parallel swim lanes that are visibility in a way because visibility has always been if you're at any company it's the number one thing like people don't know what you're doing unless you tell them which is a very hard thing for people who skew introvert like i have for most of my life so you know if you can make the visibility aspect of what you're doing automatic i feel like that compounds i mean it could also compound negatively because they're like you're not doing stuff you're focusing on the wrong things but you know at the next of that is probably positive"
+    },
+    {
+      "start": 1649.618,
+      "end": 1693.909,
+      "speaker": "Steve",
+      "text": "Yeah, I think at the end of the day, if we focus on outcomes, we focus on results, we focus on transformation, end in mind, right? E-Myth, Michael Gerber. You start with all that and then just let it know. That's what I'm letting my AI know. Here's the mission, vision, purpose. Imagine if you're a human and your job is on the line, if you don't have that thing happen, what would you do? Now, I think probably part of the next piece is, for me, it's just like my life. This has all been around work, right? It's like really all my, and I did that thing."
+    },
+    {
+      "start": 1693.989,
+      "end": 1731.2,
+      "speaker": null,
+      "text": "I mentioned last time we asked claude, what is it? based upon all my inputs and everything, what are my belief systems, my philosophies, all that kind of stuff. And also I asked it, what blind spots might I have? And it's actually, it was pretty good. And I forget exactly where it was, but that's the kind of stuff I wanna like load in at the top, especially like for my own personal ones, right? That are working with me. because I think we could do that for everybody."
+    },
+    {
+      "start": 1732.181,
+      "end": 1758.837,
+      "speaker": null,
+      "text": "It could really, uh, help everyone be way more like one, one really go after what they truly want, not just business wise, but like, what is a balanced lifestyle look like? Right. I haven't worked out today. Um, you know, like let's make sure that's your, Hey, uh, lifestyle, but you know, your job is to make sure that I have it, my like this schedule, like once a week or whatever, you know? So,"
+    },
+    {
+      "start": 1761.342,
+      "end": 1803.605,
+      "speaker": "Sam",
+      "text": "was really good with that too and we're gonna keep coming back to the rockbox because it's like i scheduled the the thing for the dmv and then it just starts blasting notifications it's like hey your thing's tomorrow you're like um i forgot and and you start compounding that where you say like you give it metrics and lifestyle choices and then it's probably going to be like hey you you should probably take a walk, you know, or you should do these number of things to improve. And then it's just this self-fulfilling, you know, the system gets better because you start engaging with it. You're giving it more context. It knows more about you. I ran the same exercise and was just shocked how"
+    },
+    {
+      "start": 1826.952,
+      "end": 1870.055,
+      "speaker": null,
+      "text": "like that's I think where humans are really good you know if you give me three options I'm going to be really good at picking what I think is the best one based on whatever parameters I'm focused on if you give me a first draft of something I'm going to have a really good time destroying it but step one instead of step ten just means that the compounding effect of this over time is that maybe you are going to fix those personal issues that are totally solvable, but you just haven't started and you just get to a starting point that's like,"
+    },
+    {
+      "start": 1878.631,
+      "end": 1923.038,
+      "speaker": null,
+      "text": "actually his philosophy is this idea that, you know, your thoughts, like what you say, what you think, what you do should all be in alignment. And if you do, you live a pretty content life. And that's, you know, him coming from Soviet Russia, coming to America where he has access to all of these things and realizes that you can be pulled in many different directions, but if you can focus in that way, get when you start using these tools more often and you're giving it more context."
+    },
+    {
+      "start": 1923.058,
+      "end": 1941.703,
+      "speaker": null,
+      "text": "Like you're saying things that are technically what you think. It helps give you things to do and you start to see how maybe you aren't in alignment in a lot of these ways. And you realize, oh, actually maybe I am causing a lot of internal strife here and the problem is me. And I haven't realized that until I've confronted it. And you might have had to, you know,"
+    },
+    {
+      "start": 1956.703,
+      "end": 1976.009,
+      "speaker": null,
+      "text": "they're willing to listen and it like patience level a thousand right like you're gonna sit there uh and talk for three hours straight it's gonna be like yeah thanks for sharing all that i'm gonna analyze it for you immediately it's just really changing the way that we as humans human through life"
+    },
+    {
+      "start": 1976.029,
+      "end": 2013.772,
+      "speaker": "Steve",
+      "text": "yeah yeah i mean um and we i think we touched on this last time or time before it a lot of it, I think will, I think the potential is there for what exactly what you're sharing. But if, if people, if critical thinking, and you know, if it has, I think a lot of it has to do with your core values coming in, right? So if your core value is not, or you're, or you don't have skills around, you know, critical thinking, um, that's going to be a big issue. Um, if you, um, If authenticity and vulnerability aren't a core value,"
+    },
+    {
+      "start": 2016.353,
+      "end": 2059.821,
+      "speaker": null,
+      "text": "then you're going to hide from it and get angry, right? Emotional intelligence, like all these things. So it depends on where you're coming in. And I'm not suggesting that, you know, you know that all those things are refined in me but there's certain things that i my authenticity and vulnerability are things that i've practiced for a long time in human settings in group settings um and i'm not saying i do it in every setting but To your point, what's safer than a robot, except for one that maybe has a higher level designed to harm you, which hopefully never happens. But"
+    },
+    {
+      "start": 2061.903,
+      "end": 2064.966,
+      "speaker": null,
+      "text": "anyway, that's kind of the way I look at it."
+    },
+    {
+      "start": 2065.086,
+      "end": 2103.114,
+      "speaker": "Sam",
+      "text": "And then it's also a lot of, like all of those things, right? Like vulnerability, like it all requires effort. But like, because it was talking about this idea that you have to mix your labor with things, right? So I was like, oh, well, I went and ate the apple. So I can eat that apple because I mixed my labor with it. And I think to the effort piece, it's like the low effort usage of AI is going to it's going to lead to mediocre results, right? Because you're getting the average."
+    },
+    {
+      "start": 2105.155,
+      "end": 2147.493,
+      "speaker": null,
+      "text": "So you're going to get like the average, authentic version of yourself, which on a long timeline is probably going to be probably destructive in certain ways. But then if you mix high effort with the machine, you go deeper, you probably challenge actually have a stable foundation to stand on. You keep putting yourself in uncomfortable situations. You keep giving yourself opportunities to collaborate outside of this with other people. I think it's interesting us being able to talk about our experiences."
+    },
+    {
+      "start": 2147.714,
+      "end": 2191.321,
+      "speaker": null,
+      "text": "We're doing the same thing, but in totally different ways, but also similar ways. that also influences it. So I feel like, you know, we're starting to experience the return to community because if you are, like, you can high effort in the echo chamber of AI and, like, even if you're spending a ton of time with it, there's no reason for it to confront you unless you specifically tell it to. Humans, other humans, just does."
+    },
+    {
+      "start": 2192.641,
+      "end": 2233.978,
+      "speaker": null,
+      "text": "And I think the collaborative effect of all this is where it's getting really interesting. And I actually heard this at work. I was like talking to a colleague and she was kind of saying something effective like, hey, is there a way for us to share a chat so that multiple people can just sort of jam on the same thing? It's almost like a group chat. I was like, I'm Good question. Because I do feel like we are going to want more and more of that where the AI becomes a partner, but in group settings too, not just me and machines."
+    },
+    {
+      "start": 2235.903,
+      "end": 2253.669,
+      "speaker": null,
+      "text": "And I wonder how that starts to influence things, knowing that people typically provide friction and processes and limitations that lead to more interesting creative solutions downstream."
+    },
+    {
+      "start": 2256.23,
+      "end": 2293.338,
+      "speaker": "Steve",
+      "text": "That's so awesome. In terms of what you said about the collaboration, the chatting, You sharing that idea just got my mind going on an idea I hadn't thought of. The ideas just build on each other. I was on a call with a friend yesterday, and then in the middle of it, we're talking about AI and what we're building. And then he said, hey, can I get another friend in on this? Because I think this would be really good for him to hear. And then the whole experience, right?"
+    },
+    {
+      "start": 2293.398,
+      "end": 2303.846,
+      "speaker": null,
+      "text": "That's what leads to the new creation through community. So I agree a hundred percent."
+    },
+    {
+      "start": 2309.671,
+      "end": 2311.232,
+      "speaker": "Sam",
+      "text": "Do we have any homework for next week?"
+    },
+    {
+      "start": 2313.765,
+      "end": 2347.258,
+      "speaker": "Steve",
+      "text": "For me, it's application. I'd say it's been a year and a half. Even though I've created and built lots of things and it's helped me to multiply the efforts, all those things, now it's actually where the rubber hits the road and shipping it to our members, shipping it to our team. application and test you know and then refinement so yeah for me it's that's what it is for me"
+    },
+    {
+      "start": 2354.368,
+      "end": 2391.283,
+      "speaker": "Sam",
+      "text": "you build the thing, but then put it in front of real people, then you're like, well, where does this break? What do I actually need to focus on? What's high impact people are going to tell you? It's like a really fun place to be in. Well, fun, terrifying, really depends. But okay. for you next week, especially knowing the speed that development can take place now. Yeah, very curious."
+    },
+    {
+      "start": 2391.383,
+      "end": 2426.291,
+      "speaker": null,
+      "text": "I think for me, I am probably going to be test-driving a ton of these new tools that are just popping up to see, like, am I over-indexing? the feature set, if this happens, do this."
+    },
+    {
+      "start": 2426.311,
+      "end": 2457.538,
+      "speaker": null,
+      "text": "So you have a fine-grained hook into the actual harness, and then also the terminal UI for claude code, which will be interesting to dive into. But I also want to check out, OK, someone built an open-source version of Photoshop. What does that even mean? Is it good? Is it fast? So, yeah, I want to do a little bit of research, a little bit of experimentation and see what comes out on the other end."
+    },
+    {
+      "start": 2458.578,
+      "end": 2467.221,
+      "speaker": "Steve",
+      "text": "Cool, cool. I can't wait to see it. You're always bringing really cool stuff. Awesome. Well, all right, Sam. I'll see you next time."
+    },
+    {
+      "start": 2467.241,
+      "end": 2467.842,
+      "speaker": "Sam",
+      "text": "See you."
+    },
+    {
+      "start": 2467.882,
+      "end": 2470.823,
+      "speaker": "Steve",
+      "text": "See you, buddy."
+    }
+  ]
+}

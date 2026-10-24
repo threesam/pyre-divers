@@ -1,4 +1,4 @@
-// prerendered from the db like feed.xml, so each episode page — the one with
+// prerendered from the episode files like feed.xml, so each episode page — the one with
 // the crawlable transcript — is listed by the same build that publishes it.
 import type { RequestHandler } from './$types';
 import { SITE } from '$lib/links';
@@ -9,8 +9,8 @@ export const prerender = true;
 const day = (date: Date | null) =>
   date ? `<lastmod>${date.toISOString().slice(0, 10)}</lastmod>` : '';
 
-export const GET: RequestHandler = async () => {
-  const episodes = await listPublishedEpisodes();
+export const GET: RequestHandler = () => {
+  const episodes = listPublishedEpisodes();
   const urls = [
     `  <url><loc>${SITE}/</loc>${day(episodes[0]?.publishedAt ?? null)}</url>`,
     // slugs are [a-z0-9-] by construction, nothing to escape

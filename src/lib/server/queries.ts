@@ -1,53 +1,83 @@
-// build-time reads of the podcast db. no DATABASE_URL = the site prerenders
-// with zero episodes and a valid empty feed; publishing an episode flips its
-// row and fires the deploy hook, and the rebuild picks it up.
-import { asc, desc, eq } from 'drizzle-orm';
-import { episodes, segments } from './schema';
-import { drizzle } from 'drizzle-orm/postgres-js';
+// build-time reads of the episodes, one committed file each
+// (content/episodes/<slug>.json, written by tools/episode/content.mjs). an
+// episode is live once its publishedAt has passed when the site builds, so a
+// scheduled one goes out with the first build after its time: the box fires the
+// deploy hook daily at 11:01 UTC, right after the usual Wednesday slot.
 import { env } from '$env/dynamic/private';
-import postgres from 'postgres';
 
-let client: ReturnType<typeof drizzle> | null | undefined;
-
-function getDb() {
-  if (client === undefined) {
-    client = env.DATABASE_URL
-      ? drizzle(postgres(env.DATABASE_URL, { max: 1, prepare: false }))
-      : null;
-  }
-  return client;
+interface Segment {
+  start: number;
+  end: number;
+  speaker: string | null;
+  text: string;
 }
 
-// PREVIEW_DRAFTS=1 builds unpublished rows too, so an episode page and its
-// feed item can be read locally before the row flips. never set on vercel —
-// there, only published rows exist as far as the site is concerned.
+interface EpisodeFile {
+  slug: string;
+  title: string;
+  description: string;
+  audioUrl: string | null;
+  durationSeconds: number | null;
+  youtubeUrl: string | null;
+  spotifyUrl: string | null;
+  applePodcastsUrl: string | null;
+  // ponytail: no episode has one yet; the page shows a player when it does
+  videoUrl?: string | null;
+  publishedAt: string | null;
+  segments: Segment[];
+}
+
+const files = Object.values(
+  import.meta.glob<EpisodeFile>('/content/episodes/*.json', {
+    eager: true,
+    import: 'default',
+  }),
+);
+
+// PREVIEW_DRAFTS=1 builds unscheduled and future episodes too, so a page and
+// its feed item can be read locally before they go out. never set on vercel.
 const preview = () => env.PREVIEW_DRAFTS === '1';
 
-// newest first. `number` counts from the oldest — the feed's <itunes:episode>
-// and the page's json-ld episodeNumber both read it here, so they agree.
-export async function listPublishedEpisodes() {
-  const db = getDb();
-  if (!db) {
-    return [];
-  }
-  const rows = await db
-    .select()
-    .from(episodes)
-    .where(preview() ? undefined : eq(episodes.published, true))
-    .orderBy(desc(episodes.publishedAt));
+// newest first, undated drafts on top. `number` counts from the oldest — the
+// feed's <itunes:episode> and the page's json-ld episodeNumber both read it
+// here, so they agree.
+export function listPublishedEpisodes() {
+  const now = Date.now();
+  const rows = files
+    // every field but the transcript, which only the episode page loads
+    .map((file) => ({
+      slug: file.slug,
+      title: file.title,
+      description: file.description,
+      audioUrl: file.audioUrl,
+      durationSeconds: file.durationSeconds,
+      youtubeUrl: file.youtubeUrl,
+      spotifyUrl: file.spotifyUrl,
+      applePodcastsUrl: file.applePodcastsUrl,
+      videoUrl: file.videoUrl ?? null,
+      publishedAt:
+        file.publishedAt === null ? null : new Date(file.publishedAt),
+    }))
+    .filter(
+      (e) =>
+        preview() || (e.publishedAt !== null && e.publishedAt.getTime() <= now),
+    )
+    .sort(
+      (a, b) =>
+        (b.publishedAt?.getTime() ?? Infinity) -
+        (a.publishedAt?.getTime() ?? Infinity),
+    );
   return rows.map((row, i) => ({ ...row, number: rows.length - i }));
 }
 
-export async function getEpisodeBySlug(slug: string) {
-  const db = getDb();
-  const episode = (await listPublishedEpisodes()).find((e) => e.slug === slug);
-  if (!db || !episode) {
+export function getEpisodeBySlug(slug: string) {
+  const episode = listPublishedEpisodes().find((e) => e.slug === slug);
+  const file = files.find((f) => f.slug === slug);
+  if (!episode || !file) {
     return null;
   }
-  const episodeSegments = await db
-    .select()
-    .from(segments)
-    .where(eq(segments.episodeId, episode.id))
-    .orderBy(asc(segments.start));
-  return { episode, segments: episodeSegments };
+  const segments = file.segments
+    .map((s, id) => ({ ...s, id }))
+    .sort((a, b) => a.start - b.start);
+  return { episode, segments };
 }

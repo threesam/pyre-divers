@@ -17,8 +17,6 @@ description. Everything else is a default.
   (`~/Code/Me/voicepipe/.venv`) for faster-whisper. Node 24 with `npm ci`.
   For the clean: a venv with `pip install pedalboard==0.9.25 numpy`, and FabFilter
   Pro-Q 4, Pro-DS, Pro-C 3 and Pro-L 2 installed as VST3. FL Studio for the outro music.
-- **db access**: `vercel env pull .env.local --environment=production` gives you
-  `DATABASE_URL` for `db.mjs`. The file is gitignored.
 - **speaker references**: 2–10 s of each host talking alone, as
   `assets/speakers/<Name>.wav` (16 kHz mono), named as the transcript shows the
   speaker: `Sam.wav`, `Steve.wav`. They're gitignored, because voices
@@ -222,30 +220,35 @@ Then write `$EP/publish/episode.json` (ep 1's is the template: `slug`, `title`,
 `description`, `audioUrl`, `durationSeconds`, `publishAt`, `transcript`), and:
 
 ```sh
-node --env-file=.env.local $T/db.mjs draft $EP/publish/episode.json
-set -a; . ./.env.local; set +a; PREVIEW_DRAFTS=1 npm run build
+node $T/content.mjs draft $EP/publish/episode.json   # writes content/episodes/<slug>.json
+PREVIEW_DRAFTS=1 npm run build
 # read .svelte-kit/output/prerendered/pages/episodes/<slug>.html, feed.xml, sitemap.xml
 ```
 
-The draft is invisible to every real deploy until it's published. **The slug is
-permanent once published**: it's the feed guid and the URL.
+A build only shows an episode once its `publishedAt` has passed, so a scheduled
+one stays off the site until then. **The file itself is public from the moment
+it's pushed** (this repo is public): title, description and transcript. Push it
+the night before, not the week before. **The slug is permanent once
+published**: it's the feed guid and the URL.
 
 ## 10. publish
 
-Nothing to run: the draft's `publishAt` is the schedule. A cron on the box
-(`/opt/infra/pyre-publish.sh`, every 5 min, in the infra repo) flips any draft
-whose time has passed and fires the deploy hook. It logs to
-`/var/log/pyre-publish.log`. To go live right now instead:
+Commit the file and merge it to master (a PR, like every change). That's all:
+the `publishAt` time is the schedule. A merge before that time builds the site
+without the episode. The box fires the deploy hook every day at 11:01 UTC
+(`/opt/infra/pyre-publish.sh` in the infra repo, log in
+`/var/log/pyre-publish.log`), so an episode set for the usual Wednesday 11:00
+UTC slot goes out a minute after it. Any other time waits for the next 11:01
+build, unless you fire the hook yourself. To go live right now instead:
 
 ```sh
-node --env-file=.env.local $T/db.mjs publish <slug>
-ssh $BOX 'set -a; . /opt/infra/.env; curl -fsS -X POST "$PYRE_DEPLOY_HOOK"'
+node $T/content.mjs publish <slug>   # publishedAt = now; commit and merge it
 ```
 
-About a minute later the episode page, the homepage's "latest dive" link, the
-feed item (numbered, with `<podcast:transcript>` pointing at
+About a minute after the build the episode page, the homepage's "latest dive"
+link, the feed item (numbered, with `<podcast:transcript>` pointing at
 `/episodes/<slug>/transcript.vtt`), the sitemap entry and the `llms.txt` line
-are live — all of it from the row, nothing per-episode to add. Check `https://pyredivers.com/feed.xml`
+are live — all of it from the file, nothing per-episode to add. Check `https://pyredivers.com/feed.xml`
 for the item and `https://pyredivers.com/episodes/<slug>`.
 
 ## 11. distribution
@@ -266,8 +269,8 @@ for the item and `https://pyredivers.com/episodes/<slug>`.
   4. Add a thumbnail and schedule it. The thumbnail is the wordmark on paper
      from the episode's own ending, about 5 s after the conversation stops:
      `ffmpeg -ss $(echo "$SHOW + 5" | bc) -i $EP/ep$N-final.mp4 -frames:v 1 -vf scale=1280:720 -q:v 2 $EP/publish/thumbnail-paper.jpg`
-  5. Then put `youtubeUrl` in the manifest, run `db.mjs draft`, and fire the
-     deploy hook.
+  5. Then put `youtubeUrl` in the manifest, run `content.mjs draft`, and merge
+     the change.
 - **email**: in listmonk (`mail.sixtom.com`), the list is "pyre divers" and mail
   goes from `fire@pyredivers.com` through Resend. Draft it, Sam approves, send.
 - **LinkedIn**: Wednesday is the drop (the best clip plus the link). Clips fill

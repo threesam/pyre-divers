@@ -1,4 +1,4 @@
-// llms.txt, prerendered from the db so every published episode is listed with
+// llms.txt, prerendered from the episode files so every published episode is listed with
 // its page, audio and transcript — the static file only knew the show existed.
 import { FEED, SHOW, SITE } from '$lib/links';
 import type { RequestHandler } from './$types';
@@ -6,8 +6,8 @@ import { listPublishedEpisodes } from '$lib/server/queries';
 
 export const prerender = true;
 
-export const GET: RequestHandler = async () => {
-  const episodes = await listPublishedEpisodes();
+export const GET: RequestHandler = () => {
+  const episodes = listPublishedEpisodes();
   const lines = episodes.map((e) => {
     const page = `${SITE}/episodes/${e.slug}`;
     const day = e.publishedAt?.toISOString().slice(0, 10) ?? 'unpublished';

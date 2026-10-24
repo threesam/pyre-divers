@@ -37,7 +37,7 @@ async function byteLength(url: string) {
 }
 
 export const GET: RequestHandler = async () => {
-  const published = await listPublishedEpisodes();
+  const published = listPublishedEpisodes();
 
   const feed = new Feed({
     title: 'pyre divers',
