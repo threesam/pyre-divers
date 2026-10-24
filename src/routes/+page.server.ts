@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { listPublishedEpisodes } from '$lib/server/queries';
+import { listPublishedEpisodes } from '#lib/server/queries.js';
 
 // read at prerender. publishing an episode fires the deploy hook, and that
 // rebuild is what swaps the pre-launch line on the card for a link to the

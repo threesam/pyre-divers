@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
-  import Flame from '$lib/components/Flame.svelte';
+  import Flame from '#lib/components/Flame.svelte';
 
   const lost = $derived(page.status === 404);
 </script>

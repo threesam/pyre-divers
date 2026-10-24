@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
-  import Flame from '$lib/components/Flame.svelte';
-  import { forgetJoined } from '$lib/subscribe';
+  import Flame from '#lib/components/Flame.svelte';
+  import { forgetJoined } from '#lib/subscribe.js';
   import type { ActionData } from './$types';
 
   let { form }: { form: ActionData } = $props();

@@ -10,8 +10,8 @@
   import { tick } from 'svelte';
   import { afterNavigate } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import SubscribeBar from '$lib/components/SubscribeBar.svelte';
-  import { FEED, HOSTS, SITE } from '$lib/links';
+  import SubscribeBar from '#lib/components/SubscribeBar.svelte';
+  import { FEED, HOSTS, SITE } from '#lib/links.js';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();

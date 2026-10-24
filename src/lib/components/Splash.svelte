@@ -1,6 +1,6 @@
 <script lang="ts">
   // Screen one: the whirlpool and the wordmark.
-  import { initPageFx } from '$lib/page-fx';
+  import { initPageFx } from '#lib/page-fx.js';
 
   $effect(() => {
     // detach the sim kickoff from the hydration flush — separate tasks

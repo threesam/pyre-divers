@@ -1,10 +1,10 @@
 // the podcast feed, prerendered at build. ported from solve-for-x
 // podcast.xml — episodes without audioUrl are skipped (enclosures are
 // mandatory), so the feed stays valid-but-empty until real audio exists.
-import { FEED, SITE } from '$lib/links';
+import { FEED, SITE } from '#lib/links.js';
 import { Feed } from 'feed';
 import type { RequestHandler } from './$types';
-import { listPublishedEpisodes } from '$lib/server/queries';
+import { listPublishedEpisodes } from '#lib/server/queries.js';
 
 export const prerender = true;
 
