@@ -6,8 +6,8 @@ import { listPublishedEpisodes } from '$lib/server/queries';
 // newest dive, and pins the series' json-ld startDate to the first one.
 export const prerender = true;
 
-export const load: PageServerLoad = async () => {
-  const episodes = await listPublishedEpisodes();
+export const load: PageServerLoad = () => {
+  const episodes = listPublishedEpisodes();
   const first = episodes.at(-1);
   const dives = episodes.map((e) => ({
     slug: e.slug,

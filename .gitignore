@@ -7,7 +7,7 @@ __pycache__/
 # the REGULAR ttf stays tracked: solve-wordmark.py reads it as a separate tool.
 tools/pyre-display-700.ttf
 
-# secrets: `vercel env pull` writes DATABASE_URL here for draft previews
+# secrets (the site itself needs none)
 .env*
 !.env.example
 .DS_Store

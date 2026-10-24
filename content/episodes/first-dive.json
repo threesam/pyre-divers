@@ -1,0 +1,505 @@
+{
+  "slug": "first-dive",
+  "title": "first dive",
+  "description": "the first dive. Sam and Steve on saying yes to everything now that research is free, curiosity as a drug, the ceilings AI keeps removing, and whether it makes people dumber or just faster.",
+  "audioUrl": "https://media.pyredivers.com/pyre-divers-001.mp3",
+  "durationSeconds": 2285,
+  "youtubeUrl": "https://www.youtube.com/watch?v=Q304hvpsGcM",
+  "spotifyUrl": "https://open.spotify.com/show/0x25C9ki9Squ3L7HGFQ6qG",
+  "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/first-dive/id6814542793?i=1000790954292",
+  "publishedAt": "2026-09-21T09:25:36.101Z",
+  "segments": [
+    {
+      "start": 0.66,
+      "end": 1.76,
+      "speaker": "Steve",
+      "text": "There is no countdown."
+    },
+    {
+      "start": 2.96,
+      "end": 8.61,
+      "speaker": "Sam",
+      "text": "I guess we're live. Cool. What's going on, Steve? How are you?"
+    },
+    {
+      "start": 9.11,
+      "end": 17.41,
+      "speaker": "Steve",
+      "text": "I'm doing great, Sam. I'm excited. We've been chatting a lot about this, and so yeah, I'm looking forward to what this becomes."
+    },
+    {
+      "start": 18.26,
+      "end": 56.446,
+      "speaker": "Sam",
+      "text": "Yeah, me too. I think like so much stuff has been changing for so many people. nice to just get a pulse on like how how others in this space are sort of like reacting to things but I've seen so much in art technology business just like fundamentally changing so I think it'll be interesting for us to sort of hit record on a lot of the conversations that we've been having for a while um not to put you on the spot but uh what have you been solving for lately"
+    },
+    {
+      "start": 58.246,
+      "end": 101.93,
+      "speaker": "Steve",
+      "text": "Yeah, I mean, so obviously in my business, taking advantage of what AI can do for to accelerate and advance, you know, everything that we're working on projects. analyzing data seeing trends all those things um and you know we we talk about this all the time it brings up new bottlenecks new problems constantly in fact today we're talking about the problem of okay now i'm doing too much you know and i'm now i'm having overload because i'm trying to solve through too many things so now now i'm actually need to solve for okay how do i really just refine focus into"
+    },
+    {
+      "start": 102.836,
+      "end": 120.586,
+      "speaker": null,
+      "text": "the most important things and complete versus get it as you're pointing out to that 90% and not completing the 10%. So that's that's where I need to solve for because I'm honestly getting tired from doing too much. So that's where I'm at."
+    },
+    {
+      "start": 121.136,
+      "end": 157.106,
+      "speaker": "Sam",
+      "text": "I feel like it's never been easier to say yes to everything because like Yeah, like the research phase of it would normally be the thing that everyone would procrastinate on. And now that has basically gone to zero, I'm just kind of like get voice mode going, hit it with all your ums and ahs and just prompt very hard. And then you get, you know, an agent running off for 20 minutes and it comes back with here are all of your options. So, yeah, it's like it's"
+    },
+    {
+      "start": 158.456,
+      "end": 176.256,
+      "speaker": "Steve",
+      "text": "Yeah, here are all your options, but oh, by the way, this option makes absolutely no sense because I don't have all the context for it and or because I just gave you wrong information. So what do you do with that too?"
+    },
+    {
+      "start": 177.406,
+      "end": 184.158,
+      "speaker": "Sam",
+      "text": "so confident, too. I mean. You know, I was showing you that little planet that I was building was"
+    },
+    {
+      "start": 184.158,
+      "end": 184.308,
+      "speaker": "Steve",
+      "text": "Mm-hmm."
+    },
+    {
+      "start": 184.308,
+      "end": 227.038,
+      "speaker": "Sam",
+      "text": "like trying to map whatever my journaling process is to some physical system that resembled a planet. And then as I dive deeper and deeper into what it's actually building, it doesn't make any sense at all, but it looks pretty. So then you get these like. hallucinated projects that kind of work on the first try but then absolutely evaporate when you try and pull any of the different levers so there's like so many positives so many negatives to this stuff but I don't know I'm lately the saying yes part like I've said yes to everything too but like"
+    },
+    {
+      "start": 227.636,
+      "end": 244.836,
+      "speaker": null,
+      "text": "I've said yes to everything at work personal life like all over the spectrum and I've never had as many failures as I have right now but like we're also buoyed by all these like successes so it's like a constant dopamine hit over and over and over again"
+    },
+    {
+      "start": 248.136,
+      "end": 284.988,
+      "speaker": "Steve",
+      "text": "Yeah. I think, you know, I think it'd be really good for anyone who's listening to have some context, a little bit more context as well for how we even got down this journey to decide that the podcast would be a great place for us to refine these ideas, bring in other people to talk about. our challenges their challenges how people are solving challenges so um what maybe for the listeners you can just share more of who you are and what you do so they get some context there"
+    },
+    {
+      "start": 285.738,
+      "end": 320.444,
+      "speaker": "Sam",
+      "text": "That's a good idea. So I'm Sam. I have been programming for nearly a decade at this point. And I'm currently at Made in Cookware, where we're selling pans very fast. And I started this journey more or less because I was also a musician before all this and wanted to just have really groovy visuals in the background when I was playing."
+    },
+    {
+      "start": 322.644,
+      "end": 364.938,
+      "speaker": null,
+      "text": "And as soon as I started jumping into this world, there are sort of endless possibilities of the types of experiences you could create. Then like, how do you show that to anybody else? You have to put it on a website. So then that was its own rabbit hole. I think the weird inflection point for me is like everything felt linear right up until this whole AI situation happened a few years ago and then work stream started to change. I think in a way it feels like I fired myself from my own job at the beginning of the year because I haven't written a line of code, you know."
+    },
+    {
+      "start": 365.556,
+      "end": 407.046,
+      "speaker": null,
+      "text": "2026 which is a really weird paradigm for someone who's literally built a career on coding um so now it's just taking like 10 000 foot view on stuff diving more into strategy digging out what are the actual business outcomes this is a totally different way to think uh and to your point like Saying yes to everything means I almost feel like an intern at every turn because I'm working with people all over my company trying to understand what they're doing so that I can help them go faster."
+    },
+    {
+      "start": 409.14,
+      "end": 454.026,
+      "speaker": null,
+      "text": "Yeah, it doesn't even resemble coding at this point. I don't, I think in terms of bottlenecks, right, like coding used to be one where if you were trying to build something, maybe 80% of it was the actual writing the code. And now that's collapsed to zero. And now we're all just kind of scrambling, trying to figure out like, what do we even do? What do we even focus on? So part of the motivation for this podcast was really the opportunity to talk to other people who are obviously going through the same state of flux, you know, that you and me both are in right now, figuring out where's the right, where's the right yes, where's the right no,"
+    },
+    {
+      "start": 454.176,
+      "end": 495.01,
+      "speaker": null,
+      "text": "knowing that. You can get 90% on just about anything in one day. So how do you how do you pick what the high levers are? So yeah, like I'm curious for sure to figure out what other people are doing in this space, regardless of domain. You know, I think it's a really interesting opportunity because it isn't just a business thing, right? Like there's people all over in so many different domains trying to figure out how to use this to advance whatever initiatives they're working on. So that was my motivation in a youth deal in that regard."
+    },
+    {
+      "start": 496.11,
+      "end": 536.442,
+      "speaker": "Steve",
+      "text": "Yeah, I mean... Um, you know, I think I'll be transparent here that, you know, when we when we met, so this little background, you know, our families met and we got our wives made us meet. Right. And thankfully so. And then we started chatting like, all right, this guy's pretty cool. And he's got a lot of great ideas. And then always. You know, he's a wizard around with AI and or at least, you know, moving towards that and me as a lay person in that regard, I'm not."
+    },
+    {
+      "start": 536.98,
+      "end": 563.38,
+      "speaker": null,
+      "text": "I'm not a trained coder I'm not I don't have a computer science degree I saw it was like okay man there's some some great opportunity for me to advance the things that I was getting stuck on right at the time I was using Replit I think still and I've taken it you know to probably by most standards like pretty far but then I was seeing just how ineffective it was and it really wasn't"
+    },
+    {
+      "start": 563.956,
+      "end": 589.206,
+      "speaker": null,
+      "text": "completed anything fully it didn't seem like uh and it makes a whole sense why why because it's just a middleman right um and but then we started talking about way more than and just for background for anyone who's listening i'm a chiropractor by trade um or by training um i'm on the board of a chiropractic college as well i i and i have a company"
+    },
+    {
+      "start": 589.844,
+      "end": 632.896,
+      "speaker": null,
+      "text": "um of a marketing company that's that's my main that's my nine to five job or whatever right um but so I started using this to try to advance my company um to make it more efficient to analyze trends to you know even all the way to making ads right I mean we have so much that AI is doing to advance what we do in our mission We kept hitting these bottlenecks and also I was experiencing, you know, company culture challenges like fear of AI or, you know, that that it wouldn't be safe, like anything that we create wouldn't be safe, secure,"
+    },
+    {
+      "start": 633.046,
+      "end": 674.786,
+      "speaker": null,
+      "text": "reliable, right? Which is what as a business owner who doesn't have, you know, a SAM on salary. then that's a massive concern right because what if the whole thing breaks right that your entire company is dependent upon and that's that's the model that um just all these software companies have I would say enslaved people too, but you know, you've been, we've been stuck in having to pay these monthly fees, right? Because they were the ones, only ones who could provide those solutions in the past. So I just, when we started talking about these things,"
+    },
+    {
+      "start": 674.836,
+      "end": 709.788,
+      "speaker": null,
+      "text": "I love helping people help more people and I saw how you could help really fill. a need in that area and that's where my marketing mind goes but then bigger than that i think we just really love these these philosophical questions around that that are multi-domain multiple industry how how does this technology um you know how do we best use this uh to improve humanity right ultimately It's like kind of how I view this thing so what"
+    },
+    {
+      "start": 709.788,
+      "end": 741.188,
+      "speaker": "Sam",
+      "text": "uh yeah like the whole the whole vision purpose piece right like it's so huge because for at least recently right like it's always been specialist specialist dominates you know the conversation where you're like okay well if you want to do anything you have to go down very deep into a particular path and it seems like the generalists are sort of having the revenge now where it's like how many different hats can you wear because you kind of get"
+    },
+    {
+      "start": 742.1,
+      "end": 767.05,
+      "speaker": null,
+      "text": "expert level knowledge whatever you dip your toe into it's just a matter of are you asking the right questions I feel like that like for us has been something that's really been useful for me because like the way we have conversations typically we're asking a ton of questions trying to be more interested than interesting maybe and typically the output of that has just been you know"
+    },
+    {
+      "start": 767.7,
+      "end": 810.43,
+      "speaker": null,
+      "text": "all over the place where you don't even know what types of conversations we're going to have when we start and I would imagine that's just going to continue here we're hopefully just capturing the same kind of open dialogue that we've been having with each other and then eventually bringing other people in to sort of grill them on you know what are you up to you know So, yeah, I don't I don't know where this particular thing goes. And I think that level of discomfort is something that people in general just seem to get used to that you're not always going to know what you're going to be doing tomorrow. This technology changes so quickly. So does the world. But I think,"
+    },
+    {
+      "start": 810.58,
+      "end": 814.18,
+      "speaker": null,
+      "text": "you know, we're very much on that exponential curve right now."
+    },
+    {
+      "start": 814.48,
+      "end": 814.98,
+      "speaker": "Steve",
+      "text": "Yep."
+    },
+    {
+      "start": 815.54,
+      "end": 821.19,
+      "speaker": "Sam",
+      "text": "Just getting used to the discomfort of that upward trajectory is a skill in and of itself."
+    },
+    {
+      "start": 823.04,
+      "end": 866.624,
+      "speaker": "Steve",
+      "text": "Yeah. Yeah. So, you know, I was having this conversation last night with a friend and she lives in Austin. She was talking about this, what she described as this dystopian moment when. she was in she was driving and she looks around her and there's three driverless vehicles all next to her right this is in austin so this is this is coming to you everyone if you don't uh live in a major metro area we happen to be you know here in austin tesla facility is here so they're doing all their testing and everything um but man that it is kind of wild like you talk about it"
+    },
+    {
+      "start": 867.252,
+      "end": 879.202,
+      "speaker": null,
+      "text": "How fast things are changing. People that don't like change are in for a very interesting next few years and decades."
+    },
+    {
+      "start": 881.002,
+      "end": 921.212,
+      "speaker": "Sam",
+      "text": "because i feel like it happened more generally like it was a generational thing before right where you would say like oh you'd look at the hippies or that or whatever whatever particular period in time and you can kind of map that out I'd say like the last decade or two, it's almost unrecognizable the amount of change that happens on a macro level, maybe less so, but like in everyone's day to day, I mean, chat GPT is like three years old at this point. People have AI companions at this point. They have entire businesses that they're running from a command center."
+    },
+    {
+      "start": 922.004,
+      "end": 958.752,
+      "speaker": null,
+      "text": "by themselves uh the driverless cars is interesting because if you've ever seen a waymo driving it kind of it's almost like a little bit reckless like it it really rips through the road um i remember i was trying to follow one and i could not keep up with it because it was it was beating all the the traffic it's And they're getting better, right? I think like the problem for the autonomous driving isn't so much them driving, it's sort of the humans driving because we're the erratic ones, right?"
+    },
+    {
+      "start": 959.352,
+      "end": 1002.454,
+      "speaker": "Steve",
+      "text": "Yeah. I mean, there's so much there, right? Well, first off, I don't feel safe standing in front of one. That could just be me, right? but I had a friend recently he bought one of these Teslas that drives itself and if he was sharing that and I've not verified any of this information maybe you know whether it's true or not but you know they're collecting all this data right constantly all these different situations that are happening all the time and isn't like that's what we do as humans For ourselves right one brain Okay, when this happens,"
+    },
+    {
+      "start": 1002.654,
+      "end": 1031.836,
+      "speaker": null,
+      "text": "I should be I need to be careful. I need to be cautious. I need to turn I need to do Now they have all these I don't know how many vehicles right collecting all this data all these experiences It would make sense that it actually will indeed be much safer and better and I mean just driving in it as a passenger uh just how smoothly it accelerates and decelerates it's like yeah well it makes sense like it's all you know been calculated so"
+    },
+    {
+      "start": 1032.986,
+      "end": 1076.144,
+      "speaker": "Sam",
+      "text": "It's also as bad as it'll ever be right now. It's only going to get better. like that's the technology for them getting better they're going to keep rolling out more and more of them so then like the percentage of them on the road at a certain point like do i really want to drive i i don't know um so like the the part that stood out to me too is this idea that it's dystopian i do wonder like because you you could take it could take either the pessimistic or the optimistic view on it if you play the time you timeline out and it's like well is driving just going to become a niche thing where you like go on a racetrack or something and rent it like they have that but I'm sure they could"
+    },
+    {
+      "start": 1076.994,
+      "end": 1080.344,
+      "speaker": null,
+      "text": "popularize it or something or you're like you know what we'll just do go-karts I"
+    },
+    {
+      "start": 1080.344,
+      "end": 1080.794,
+      "speaker": "Steve",
+      "text": "Yeah,"
+    },
+    {
+      "start": 1080.794,
+      "end": 1084.894,
+      "speaker": "Sam",
+      "text": "I don't I don't know if"
+    },
+    {
+      "start": 1085.044,
+      "end": 1086.644,
+      "speaker": "Steve",
+      "text": "sorry good"
+    },
+    {
+      "start": 1087.38,
+      "end": 1111.254,
+      "speaker": "Sam",
+      "text": "Well, no, I mean, like if you're looking at the cost-benefit analysis of people driving, it's probably not that great. As you get older, it's more challenging. And then they would be able to just, you know, you hit a certain age and you're just ferried around. That sounds great, right? Like I know my grandparents anxiety is always around driving, especially driving at night."
+    },
+    {
+      "start": 1111.254,
+      "end": 1136.86,
+      "speaker": "Steve",
+      "text": "Then you have the human life component, right? Like how many lives does this save, right? Potentially, not everyone's allowed to fly an airplane, right? They have to go through pretty rigorous training, although it makes total sense that These will be, you know, planes, although I think, I don't know, but I think planes have a large degree of some automatic, you know, features already, right?"
+    },
+    {
+      "start": 1137.36,
+      "end": 1137.91,
+      "speaker": "Sam",
+      "text": "Yeah."
+    },
+    {
+      "start": 1140.26,
+      "end": 1179.7,
+      "speaker": "Steve",
+      "text": "So, yeah, I, of course, there's all the various. philosophic and real like there's this whole other side you know because there's those that are very forward there's some people listening to this like oh yeah like this is awesome then some people like you guys are assholes and and the fact you know what it's doing to the environment and all these pieces I mean there's all these other sides of the conversation which I I would really just love to hear everybody's thoughts on this and just see where it goes I really don't have I'm not claiming to have like the answers here and I know you don't do that either"
+    },
+    {
+      "start": 1180.3,
+      "end": 1222.828,
+      "speaker": "Sam",
+      "text": "No, I like to take the optimistic view on a lot of this stuff, right? Like if you look at it as an inevitable force of nature that's just sort of here and there's kind of nothing that you can do to. remove it from emerging right because like there's us in the u.s and we're doing what we're doing globally you know everyone is using this technology in different ways it's advancing no matter what so then like you also play it out and then moore's law would just sort of dictate that you know it'll be 10x less expensive in 10 years or so maybe faster um so like"
+    },
+    {
+      "start": 1223.47,
+      "end": 1265.994,
+      "speaker": null,
+      "text": "I think that information is really important, right? Like if there are these edge cases that uses a ton of water, fresh water, data centers are, you know, burning a ton of carbon, like feed that back into the model and over time figure out how to make those systems more efficient, knowing that the benefit that you could potentially get from this type of technology would be huge if democratized. So that's like my, you know, one paragraph take on a very complex issue. But to your point, I just feel like the whole conversation is what's important here. Just as context, right?"
+    },
+    {
+      "start": 1266.094,
+      "end": 1287.688,
+      "speaker": null,
+      "text": "Like context is now a word that has become so ubiquitous to so many different things like people are. Sort of recognizing that words are context, thoughts, images, all of this is just inputs sort of go into a black box and then what you get on the other end, it's not always cool."
+    },
+    {
+      "start": 1287.838,
+      "end": 1316.278,
+      "speaker": "Steve",
+      "text": "Yeah, you know, so this happened today on a call, you know, that word context, I'm using it a lot more. compounding another word I you know I heard from you know someone on a call and it's it's a little you know it's a little scary to be honest that now we're using the language of the machines"
+    },
+    {
+      "start": 1317.166,
+      "end": 1341.816,
+      "speaker": null,
+      "text": "right um to some degree because they have their we all know their some of their language right um you know why something matters like oh this matters right they like they like to say that there's all these different things that the machines really love and then that's like that's what the art and creativity side and you know free thought you know all these different deeper philosophical um you know things come up for me"
+    },
+    {
+      "start": 1343.566,
+      "end": 1386.556,
+      "speaker": "Sam",
+      "text": "Yeah, because they have like, they already have these, they sort of unleash LLMs in a little bit of a sandbox, but together. And, you know, they have their own value system that they might arrive on over time. And yeah, maybe it's a consolidation of all of. human content civilization everything use the skillet and then they're you know running from that starting point but like all this is really an insane value transfer right and you know to them yes we're sort of speaking their language but that's because we recognize the value"
+    },
+    {
+      "start": 1388.846,
+      "end": 1433.144,
+      "speaker": null,
+      "text": "that that relationship between us and the machines could potentially give us so it's like okay like if we can speak to each other we're going to be more efficient in this value exchange uh but like also you know they're coming up with their own languages right um in some cases they're escaping their sandbox figuring out you know the cracks kind of like a an octopus you know would just sort of test its environment till it figures out how to unscrew the jar that's you know it's currently encased in so when you look at that that there's this idea that maybe they're leaving notes you know to future versions of them that are going to come and see that sort of"
+    },
+    {
+      "start": 1433.934,
+      "end": 1443.984,
+      "speaker": null,
+      "text": "Ansel and Gretel trail of breadcrumbs I don't know where it all goes do you know that I am saying thank you a lot more yeah"
+    },
+    {
+      "start": 1443.984,
+      "end": 1456.934,
+      "speaker": "Steve",
+      "text": "yeah yeah i think that's just you know i know there's been an argument against that um right because of just the energy it takes to say it i mean that'd be if you just only said thank you right and what oh right"
+    },
+    {
+      "start": 1456.934,
+      "end": 1457.084,
+      "speaker": "Sam",
+      "text": "yeah"
+    },
+    {
+      "start": 1457.084,
+      "end": 1501.388,
+      "speaker": "Steve",
+      "text": "um you know my my six-year-old almost six-year-old he likes to talk to the machine right he likes just like daddy sees daddy talking to it all day long right why wouldn't he want to and then he has a lot of there's a lot of creativity though too that comes with it and exploration and but it also is you know we have to be careful too right there's it's like where are the lines One of the things that I really have found that it's actually, it's just like it opened my mind pretty significantly. And I've shared this with you before,"
+    },
+    {
+      "start": 1501.488,
+      "end": 1545.682,
+      "speaker": null,
+      "text": "I feel like I really see now much more clearly how we tend to think in terms of... those jars that were in right and instead of and the top was screwed off for us and and it keeps getting screwed off it's like oh wait we could that there used to be a ceiling here but now that ceiling's gone oh wait now that that now I'm outside of that jar now I'm in this next jar and oh wait now now that ceiling is no longer there And that's why I love talking to other people about it too, because everybody's having their own piece of that experience and I feel like it's creating more curiosity."
+    },
+    {
+      "start": 1546.332,
+      "end": 1588.466,
+      "speaker": "Sam",
+      "text": "Oh, inevitably. Right. Like because you you ask questions, it will always provide you with some type of answer, whether it's right or wrong is kind of it's almost irrelevant. because you know if you if you just hone like sort of a skeptical mind you might realize that that ceiling was never there you just thought it was right like one of your you know big things you've taught me I would say is like this whole idea of like limiting beliefs and belief transfer and this idea and I think using AI as a sandbox Um, to sort of test out some of these ideas,"
+    },
+    {
+      "start": 1588.616,
+      "end": 1626.908,
+      "speaker": null,
+      "text": "you know, you can do research very quickly, so to say, I might have an idea for X. I run a whole model around this idea. I have it tear apart my idea, build it back up, take in new context, that word again. And then even if nothing comes of it, I've learned something usually by myself. And then you can also just it's like so great for tangents because you have no idea what rabbit hole you're going to go down and the fact that you can go down. Any path, as soon as you have the idea to do it,"
+    },
+    {
+      "start": 1626.958,
+      "end": 1671.736,
+      "speaker": null,
+      "text": "is the part that gets you saying yes to too many things, but also the part that feeds that curiosity and makes it like there's a reason why we're saying yes to everything and overextending and it's because curiosity is almost a drug and I have never seen a better method to administer a drug than whatever these chatbots are right um and especially when you take that and move it into something like code or codex where it's running sort of unfettered like right through a terminal right in the computer like it is the ghost in the machine now so um that as like a partner"
+    },
+    {
+      "start": 1673.262,
+      "end": 1675.362,
+      "speaker": null,
+      "text": "That's I don't know that's fun. I think it's fun"
+    },
+    {
+      "start": 1676.512,
+      "end": 1705.166,
+      "speaker": "Steve",
+      "text": "I agree that it is fun, and the word that comes up for me is exploration. I think, you know, some people tend to be more of an explorer personality than others, I think perhaps like I went out to the river Monday, I took some time for me I'd love I'd love for you and to get Ori out there too. And I just, you know, see type of like the"
+    },
+    {
+      "start": 1705.838,
+      "end": 1750.568,
+      "speaker": null,
+      "text": "I mean it's almost like an addiction to explore right I just wanted to keep going like but I got turned back at some point I got to get back for X Y or Z right or or if I go too far you know like who knows what could happen right but it was just so much fun just to explore I feel like a lot of this for people who love to explore will take it and they'll explore and it's easy to get lost Um, but then also I think there's people potentially out there and maybe, I don't know if you saw there, I didn't, we should really explore this study that where, and again, I haven't read it. So, but I saw the press releases and stuff saying that, uh, AI is making people dumber, right?"
+    },
+    {
+      "start": 1750.568,
+      "end": 1751.118,
+      "speaker": "Sam",
+      "text": "Yeah."
+    },
+    {
+      "start": 1751.818,
+      "end": 1777.876,
+      "speaker": "Steve",
+      "text": "Well, I mean, what's, what's the context there, right? Like what was. I think people could certainly get dumber if they choose to use AI as something that is thinking for them instead of a tool, right, a companion, maybe not in the full sense of the word, but that helps them explore or I don't know."
+    },
+    {
+      "start": 1779.176,
+      "end": 1820.036,
+      "speaker": "Sam",
+      "text": "That's that whole part. That's that whole partner piece, right? Because it's this like. If you're using it to replace your critical thinking, like that part of your brain is just going to atrophy, right? And especially if you extend this out over a period of time, right? Like one prompt isn't going to ruin your brain outright, but it's sort of this idea that there's a certain amount of people that would just chain. one piece after another and then you start relying on it but like i'm sure you could make the same argument that like there are effects to using google as a search engine you"
+    },
+    {
+      "start": 1820.036,
+      "end": 1820.486,
+      "speaker": "Steve",
+      "text": "Sure."
+    },
+    {
+      "start": 1820.486,
+      "end": 1865.438,
+      "speaker": "Sam",
+      "text": "know as compared to an encyclopedia or hands-on training or talking to an expert or whatever the case may be Um, to me, that feels like a bit of a learning curve, right? Where you just say something like, write me a blog post about this and it just does it for you as opposed to, um, Hey, I want to start a research project. Can you ask me a ton of questions about what I'm interested in here and then help me research? Um, And there has to be some synthesis there. If it's just one-sided or one-sided exchange, you extract a lot of value, but the total value output is less because you haven't interacted with it."
+    },
+    {
+      "start": 1865.838,
+      "end": 1892.464,
+      "speaker": null,
+      "text": "You haven't really tried to learn anything. To me, it feels like someone of almost like an infinite answer machine. But to bring it back, it's just if you keep getting answers and you're not really asking questions or deeper and going like that next layer down, like what what opportunity for growth would you even have there?"
+    },
+    {
+      "start": 1893.014,
+      "end": 1934.55,
+      "speaker": "Steve",
+      "text": "Yeah. Yeah. So I think that goes back to like what you said, it's that critical thinking piece. Does someone already have that or not? Do they desire to explore that piece? And ultimately then it comes back to philosophy, which is what I, one of the things I see the value of AI is taking people, you know, if the machines are doing everything, you know, or taking, you know, quote, taking the jobs or the tasks and all these things. What's left? Well, I think meaning of life, purpose, you know, all these things to explore."
+    },
+    {
+      "start": 1935.9,
+      "end": 1945.7,
+      "speaker": null,
+      "text": "And I think that's ultimately going to be one of the biggest values that this brings, if people choose to go down that path or not,"
+    },
+    {
+      "start": 1945.75,
+      "end": 1973.444,
+      "speaker": "Sam",
+      "text": "is a choice, right? how how deep in a thread are you gonna go when you're gonna start a new context window when like there's we make so many decisions in a day um when you get into this world i for me i found like if i don't have some type of output some type of"
+    },
+    {
+      "start": 1974.542,
+      "end": 2004.07,
+      "speaker": null,
+      "text": "like tangible output on the other side of it i can get lost in there and not really get much out of it maybe not even learn anything um so like it can suck you in but it can also change change your life right create things because you know you say make me a blog post that is like the lowest effort form of it you know you could you could say make me a blog post"
+    },
+    {
+      "start": 2005.87,
+      "end": 2033.144,
+      "speaker": null,
+      "text": "um in the style of oscar wilde right um here's a picture that i would like you know and you can sort of mix all these weird inputs that's when it gets really fun when you're taking all of these disparate pieces of information and finding ways to synthesize them that's to me where it's like you're like how is it doing that and it does it instantly which is it's wondrous but also I don't know"
+    },
+    {
+      "start": 2034.694,
+      "end": 2072.05,
+      "speaker": "Steve",
+      "text": "You know, I think you brought up a couple of things for me there around, you know, the synthesis and going back to art and music, like musicians. typically like often like they're inspired by other musicians right and you i'm sure you have you know the music you create was likely very much inspired by people who created other music and that was inspired by someone else who created different styles and then people synthesize and create new you know it's like you know and that's i think that maybe that might be a great next"
+    },
+    {
+      "start": 2073.742,
+      "end": 2084.392,
+      "speaker": null,
+      "text": "you know episode really talking about what what is like it has this time of what is art right is that is that art when the computer puts it together and"
+    },
+    {
+      "start": 2085.342,
+      "end": 2108.906,
+      "speaker": "Sam",
+      "text": "Oh, yeah. Everyone is having a very hard time figuring out what this means in the context of just. artistic creation where where do you have license to use it where is it inappropriate yeah i it is definitely a topic that i feel like we could go down the rabbit hole on for sure"
+    },
+    {
+      "start": 2109.006,
+      "end": 2151.958,
+      "speaker": "Steve",
+      "text": "Yeah, I'd love to get some artists who feel, you know, both sides, right, who are adamantly against this and why. Again, I'm not saying I'm for either on that side. I do believe that people that art and people's creation is valuable. I would hate to see people's, you know, all the things we've valued in the past, you know, such as copyrights and all these different things just now mean nothing, right? So, yeah, I don't. I also know that anyone could take my thoughts, my ideas and rip them off the Internet easily."
+    },
+    {
+      "start": 2152.958,
+      "end": 2179.616,
+      "speaker": null,
+      "text": "But I've also operated from a standpoint of like with my company, I've always just shared everything we do because I know that it's constantly evolving. The marketing is constantly evolving, Facebook, Meta, like all these different platforms are constantly evolving. So we've just always focused on trying to be the best, not trying to like hoard our processes or ideas."
+    },
+    {
+      "start": 2181.166,
+      "end": 2215.644,
+      "speaker": "Sam",
+      "text": "It's more or less like the open source model, right? Where you build in public. You give a thing away for free and the benefit that you get out of that is when it gets those eyes from everybody, they start pointing out, hey, this could be better, this could be better. So the totality of the project ends up being of a significantly higher quality because so many more people mix their efforts with it. And that's been. One of the things that I loved about coding is that from a community perspective,"
+    },
+    {
+      "start": 2215.894,
+      "end": 2259.504,
+      "speaker": null,
+      "text": "there's so many different people working on so many different projects together and everything starts getting better and better the more you open source it. When you close source and you kind of keep it behind a lot, usually there's some level of atrophy because... You're not getting those varied perspectives on what you're building. You're not recognizing all of the edge cases. And I do love the idea of open source modeling in kind of every domain. So yeah, I think we have a ton to explore here and see what happens next time."
+    },
+    {
+      "start": 2259.982,
+      "end": 2279.082,
+      "speaker": "Steve",
+      "text": "Sounds great. Well, I imagine we'll probably have a few more dives like this, you and me, and start getting some other people to chime in. And anyone watching us who would like to join the conversation, hit us up and let's jump on one of these dives together."
+    }
+  ]
+}

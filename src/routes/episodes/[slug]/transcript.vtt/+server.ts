@@ -8,8 +8,8 @@ import { error } from '@sveltejs/kit';
 
 export const prerender = true;
 
-export const entries: EntryGenerator = async () =>
-  (await listPublishedEpisodes()).map((episode) => ({ slug: episode.slug }));
+export const entries: EntryGenerator = () =>
+  listPublishedEpisodes().map((episode) => ({ slug: episode.slug }));
 
 const two = (n: number) => String(n).padStart(2, '0');
 const stamp = (seconds: number) => {
@@ -21,8 +21,8 @@ const stamp = (seconds: number) => {
 const escape = (text: string) =>
   text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
-export const GET: RequestHandler = async ({ params }) => {
-  const result = await getEpisodeBySlug(params.slug);
+export const GET: RequestHandler = ({ params }) => {
+  const result = getEpisodeBySlug(params.slug);
   if (!result) {
     error(404, 'episode not found');
   }

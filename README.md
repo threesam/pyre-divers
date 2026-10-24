@@ -17,10 +17,11 @@ Beyond the page:
 - **Signup** — the email form posts to Listmonk's public API (`src/lib/subscribe.ts`,
   contract pinned by `test/subscribe.test.mjs`). Per-brand list; never cross-mailed.
 - **/feed.xml** — RSS with iTunes/Google Play namespaces (`src/routes/feed.xml/+server.ts`),
-  episodes from Postgres via drizzle (`src/lib/server/`).
+  episodes from `content/episodes/*.json` (read in `src/lib/server/queries.ts`).
 - **/episodes/[slug]** — per-episode pages: audio player, listen links, and the
-  full diarized transcript. Built from the db at prerender, like the feed and
-  `/sitemap.xml`; `PREVIEW_DRAFTS=1` includes unpublished rows in a local build.
+  full diarized transcript. Built from the episode files at prerender, like the feed and
+  `/sitemap.xml`; an episode shows once its `publishedAt` has passed, and
+  `PREVIEW_DRAFTS=1` includes future and undated ones in a local build.
 - **AEO/SEO** — PodcastSeries + WebSite JSON-LD on the page; `/llms.txt` and
   `/sitemap.xml` (prerendered routes), `static/robots.txt`, OG art in `static/`.
 - **Social kit** — launch assets (StreamYard overlay, banners for YT/FB/IG/X/
