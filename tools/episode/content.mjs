@@ -40,7 +40,9 @@ if (cmd === 'draft') {
   const path = fileFor(ep.slug);
   const prev = existsSync(path) ? read(path) : null;
   const paras = read(resolve(dirname(arg), ep.transcript ?? 'transcript.json'));
+  // over the old file, so a field set by hand (a videoUrl) survives a re-draft
   write(path, {
+    ...prev,
     slug: ep.slug,
     title: ep.title,
     description: ep.description,

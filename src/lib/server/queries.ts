@@ -40,8 +40,13 @@ const preview = () => env.PREVIEW_DRAFTS === '1';
 
 // newest first, undated drafts on top. `number` counts from the oldest — the
 // feed's <itunes:episode> and the page's json-ld episodeNumber both read it
-// here, so they agree.
-export function listPublishedEpisodes() {
+// here, so they agree. built once, on first use: one cutoff for the whole
+// build, so a build running across an episode's minute can't list it in the
+// feed but skip its page. (lazy, not at import, so env is read when a route asks)
+let published: ReturnType<typeof publish> | undefined;
+export const listPublishedEpisodes = () => (published ??= publish());
+
+function publish() {
   const now = Date.now();
   const rows = files
     // every field but the transcript, which only the episode page loads
