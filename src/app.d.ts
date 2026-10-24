@@ -9,6 +9,9 @@ declare global {
     // interface Platform {}
   }
 
+  // vite.config.js `define`: when this build started, in epoch ms
+  const BUILD_TIME: number;
+
   interface Window {
     // injected by the umami tag in app.html. OPTIONAL on purpose: it is a
     // third-party script, so ad-blockers, a failed request, or the ?test
