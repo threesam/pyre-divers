@@ -16,7 +16,7 @@ MCP (`svelte` server), not memory:
 
 ## The list
 
-Signups go through this site's `/subscribe` route (`src/routes/subscribe`), which adds the address with listmonk's admin API as the API user `pyre-signup`. Its key is `LISTMONK_SIGNUP_TOKEN` in Vercel (production and preview). That user can manage subscribers on the pyre divers list only. The list is **private** in listmonk, so listmonk's public signup API refuses it. A bot used that API to add 33 addresses in October 2026. Don't make the list public again. If signups fail, check the key first: listmonk loads API keys when it starts.
+Signups go through this site's `/subscribe` route (`src/routes/subscribe`), which adds the address with listmonk's admin API as the API user `pyre-signup`. Its key is `LISTMONK_SIGNUP_TOKEN` in Vercel (production and preview). Its role (`pyre signup`) can add subscribers to the pyre divers list and read every list. listmonk needs the read access to add the list to someone who is already on another one. It cannot touch settings, campaigns or lists. The list is **private** in listmonk, so listmonk's public signup API refuses it. A bot used that API to add 33 addresses in October 2026. Don't make the list public again. If signups fail, check the key first: listmonk loads API keys when it starts.
 
 ## Before a PR
 
