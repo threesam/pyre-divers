@@ -14,6 +14,10 @@ MCP (`svelte` server), not memory:
   changed, fix what it reports, and re-run until it comes back clean. Do this
   before `npm run check`, not instead of it.
 
+## The list
+
+Signups go through this site's `/subscribe` route (`src/routes/subscribe`), which adds the address with listmonk's admin API as the API user `pyre-signup`. Its key is `LISTMONK_SIGNUP_TOKEN` in Vercel (production and preview). That user can manage subscribers on the pyre divers list only. The list is **private** in listmonk, so listmonk's public signup API refuses it. A bot used that API to add 33 addresses in October 2026. Don't make the list public again. If signups fail, check the key first: listmonk loads API keys when it starts.
+
 ## Before a PR
 
 `npm run check` (lint + typecheck + format + tests) must be green.

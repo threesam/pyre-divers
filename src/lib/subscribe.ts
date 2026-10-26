@@ -1,9 +1,5 @@
 // the list (listmonk) — contract pinned by test/subscribe.test.mjs
-interface ListmonkConfig {
-  url: string;
-  list: string;
-}
-type SubscribeState = 'invalid' | 'early' | 'joined' | 'failed';
+type SubscribeState = 'invalid' | 'joined' | 'failed';
 interface SubscribeResult {
   state: SubscribeState;
   message: string;
@@ -12,10 +8,7 @@ type FetchLike = (
   url: string,
   init: { method: string; headers: Record<string, string>; body: string },
 ) => Promise<{ ok: boolean }>;
-export const LISTMONK: ListmonkConfig = {
-  url: 'https://mail.sixtom.com',
-  list: '5f4d8764-8e70-4e56-a7f2-4ac00157921d',
-};
+export const LISTMONK = { url: 'https://mail.sixtom.com' };
 // a signup from either form hides the episode page's bar in this browser,
 // and unsubscribing brings it back. Storage can throw (some private modes);
 // then the bar just shows again.
@@ -43,27 +36,19 @@ export function hasJoined(): boolean {
 }
 export async function subscribeFlow(
   email: string | null | undefined,
-  cfg: ListmonkConfig | null,
   fetchFn: FetchLike,
 ): Promise<SubscribeResult> {
   const addr = (email || '').trim();
   if (!addr || !addr.includes('@')) {
     return { state: 'invalid', message: 'needs a real email.' };
   }
-  if (!cfg || !cfg.url) {
-    return {
-      state: 'early',
-      message: 'you\u2019re early. list opens with episode one.',
-    };
-  }
   try {
-    // listmonk's public json api — caddy answers the preflight and scopes
-    // allow-origin to this site, so the response is readable: real states
-    const res = await fetchFn(`${cfg.url}/api/public/subscription`, {
+    // the site's own route adds it (src/routes/subscribe): the list takes no
+    // signups from listmonk's public api, where a bot had been filling it
+    const res = await fetchFn('/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // eslint-disable-next-line camelcase -- listmonk's wire format
-      body: JSON.stringify({ email: addr, list_uuids: [cfg.list] }),
+      body: JSON.stringify({ email: addr }),
     });
     if (!res.ok) {
       return { state: 'failed', message: 'didn\u2019t take. try again?' };
