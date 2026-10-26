@@ -6,12 +6,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { fade } from 'svelte/transition';
-  import {
-    LISTMONK,
-    hasJoined,
-    rememberJoined,
-    subscribeFlow,
-  } from '$lib/subscribe';
+  import { hasJoined, rememberJoined, subscribeFlow } from '$lib/subscribe';
 
   // the episode page's ask, for readers who came for one episode and aren't
   // on the list. Client-side only: whether this browser already joined lives
@@ -90,7 +85,7 @@
     // cleared first, so a retry that comes back with the same failure is
     // announced again
     message = '';
-    const res = await subscribeFlow(email, LISTMONK, fetch);
+    const res = await subscribeFlow(email, fetch);
     message = res.message;
     if (res.state === 'joined') {
       rememberJoined();

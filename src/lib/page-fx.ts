@@ -5,7 +5,7 @@
 // screen one, its Canvas2D fallback, and the risers on screen two. Every body
 // is "dressed" once — pose baked into cos/sin pairs — then drawn by whichever
 // renderer owns it.
-import { LISTMONK, rememberJoined, subscribeFlow } from './subscribe';
+import { rememberJoined, subscribeFlow } from './subscribe';
 
 /** Seeded PRNG. The same souls every load. */
 type Rand = () => number;
@@ -1838,7 +1838,7 @@ export function initPageFx(): void {
       }
       btn.setAttribute('aria-disabled', 'true');
       emailInput.readOnly = true;
-      const res = await subscribeFlow(emailInput.value, LISTMONK, fetch);
+      const res = await subscribeFlow(emailInput.value, fetch);
       btn.textContent = res.message;
       btn.removeAttribute('aria-disabled');
       emailInput.readOnly = false;
