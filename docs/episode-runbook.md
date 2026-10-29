@@ -190,6 +190,7 @@ Ep 5's music is sea foam (a mouth machine piece in the portal repo), as stems:
 drums without the "go to sleep" voice, and the music.
 
 ```sh
+~/.venvs/pyre-episode/bin/python $S/stems.py MMDIR STEMDIR   # MMDIR = the sea foam piece folder
 ~/.venvs/pyre-episode/bin/python -I $S/outro5.py STEMDIR $EP/work/seafoam-outro.wav   # prints MUSIC_IN HOLD OPEN BARS BPM
 ~/.venvs/pyre-episode/bin/python $K/pyre-lowpass-open.py $EP/work/seafoam-outro.wav $EP/outro-seafoam.wav 500 HOLD OPEN
 $T/mix.sh $EP $EP/clean-v2.wav $EP/outro-seafoam.wav BPM $EP/mix.wav BARS GAIN 0.5   # ep 5's second mix: mix-v2.wav
@@ -380,8 +381,8 @@ Each of these did its job once, for one episode:
   assemble.py should take the threshold head directly and stop asking for an
   ASCII tail; then `ascii-ends.sh`, `ascii6.py` and `$S/splice.sh` can go.
 - `$K/pyre-lowpass-open.py` and `$S/outro5.py`'s timing: the outro music fit to
-  the picture (step 7). The sea foam stems script (`stems.py`) only ever lived
-  in a session scratchpad; save it next to the piece.
+  the picture (step 7). The sea foam stems script is saved as `$S/stems.py`
+  (was only in a session scratchpad); it belongs next to the piece.
 - `final.sh`: add the concat `duration` line (step 8).
 - `card.py` from `origin/feat/episode-art` (step 9).
 - `$S/snap2.py`, `mkwords5.py`, `whirl_tall.py`, `calib.py`, `threshold5.sh`,
