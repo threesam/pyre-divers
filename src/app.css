@@ -296,8 +296,9 @@ section {
    screen: there the unit is the height, and a shorter scene clips it. */
 @media (max-width: 768px) and (orientation: portrait) {
   #join {
-    height: 72vh;
-    height: 72svh;
+    /* +3.5rem: the invitation line under the heading */
+    height: calc(72vh + 3.5rem);
+    height: calc(72svh + 3.5rem);
     --b: 0.45;
     /* the sky over the fire is the risers'; the platform row sits down by
        the logs, just over the signup, where nothing drifts across it */
@@ -450,6 +451,12 @@ section {
 }
 .pyre .ember {
   color: #f5b942;
+}
+.card p {
+  margin: 0;
+  color: #b7ad9d;
+  font-size: 0.95rem;
+  line-height: 1.55;
 }
 .card form {
   display: grid;

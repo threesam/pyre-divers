@@ -21,6 +21,8 @@
   // ~136px, a sixth of the screen, over the transcript. Wider screens fit the
   // whole form on one line, so they get it straight away.
   let expanded = $state(false);
+  // the ask, in one place: the one-liner and the field's label say it
+  const ASK = 'get a seat at the next live dive.';
   // the ember pulse when a listener crosses their first quarter (nudge)
   let lit = $state(false);
   // where focus came into the bar from: closing hands it back there
@@ -117,8 +119,7 @@
           <!-- replaced by the form on a tap, focus going to its field; the
                field's own label is the same words -->
           <button class="open" type="button" onclick={expand}
-            >get the next dive by email. <span aria-hidden="true">&rarr;</span
-            ></button
+            >{ASK}&nbsp;<span aria-hidden="true">&rarr;</span></button
           >
           <button class="x" type="button" aria-label="close" onclick={close}
             >×</button
@@ -126,7 +127,7 @@
         </div>
       {:else}
         <form novalidate onsubmit={join}>
-          <label for="subscribe-email">get the next dive by email.</label>
+          <label for="subscribe-email">{ASK}</label>
           <div class="fieldwrap">
             <input
               id="subscribe-email"
@@ -267,7 +268,7 @@
     padding: 0;
     text-align: left;
     font: inherit;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: #e7e2da;
     background: none;
     border: none;
