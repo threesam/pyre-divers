@@ -270,6 +270,7 @@ python3 $T/transcript.py $EP/publish   # transcript.json/.md, captions.srt (from
   ```
 
   Check its font path first: ep 4 had to edit it.
+
 - **mp3 URLs are write-once.** A re-cut gets a new filename; never put new bytes
   at an old URL, because apps cache them.
 
