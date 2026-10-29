@@ -229,7 +229,7 @@ $T/mix.sh $EP $EP/clean-v2.wav $EP/outro-seafoam.wav BPM $EP/mix.wav BARS 3.3 0.
 ## 8. final, verify, compare
 
 ```sh
-$EP/final-ep5.sh $EP/ep$N-edit-thr.mp4 $EP/ending/ep4-ending-window.mp4 $EP/mix.wav $EP/ep$N-final.mp4
+bash $EP/final-ep5.sh $EP/ep$N-edit-thr.mp4 $EP/ending/ep4-ending-window.mp4 $EP/mix.wav $EP/ep$N-final.mp4
 ```
 
 `final-ep5.sh` is `$T/final.sh` with a `duration` line for the edit in the
@@ -323,7 +323,7 @@ in `clips/final/`, then the threshold look in `clips/threshold/`.
    pause in `$EP/clean.wav` (ep 5 ran it before the v2 clean; on a fresh
    episode, point it at `clean-v2.wav`). "NO PAUSE" means pick another sentence edge.
 3. **Captions**: word times come from each host's own track:
-   `~/Code/Me/voicepipe/.venv/bin/python -I $S/transcribe_local.py $EP sam steve`
+   `mkdir -p $EP/tx && ~/Code/Me/voicepipe/.venv/bin/python -I $S/transcribe_local.py $EP sam steve`
    (faster-whisper on `aligned/<name>.wav` -> `tx/<name>.json`), then
    `python3 -I $S/txtools.py merge $EP` (-> `tx/words.json` on the edit
    timeline). `$S/mkwords5.py` writes `<slug>.words.json`. Re-text the words
