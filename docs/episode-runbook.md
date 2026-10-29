@@ -1,22 +1,25 @@
 # episode runbook
 
-How an episode goes from a StreamYard recording to live everywhere. Ep 1
-("first dive", September 2026) is the reference run: every step below is what
-actually made it, and its numbers are the defaults.
+How an episode goes from a StreamYard recording to live everywhere. Ep 5
+("blind spots", October 2026) is the reference run: every step below is what
+actually made it, and its numbers are the defaults. Stay on this page. If an
+episode needs something it doesn't say, do it, then write it in here.
+
+**The show is unedited.** No pauses tightened, nothing taken out of the middle.
+Only the dead air before the first word and after the last is trimmed.
 
 **What you decide per episode:** the raw recording, where the conversation starts
-and ends in it, the outro's BPM, and the episode's number, slug, title and
-description. Everything else is a default.
+and ends in it, the threshold levels, the outro music, and the episode's number,
+slug, title and description. Everything else is a default.
 
 ## once
 
 - **tools**: `/usr/local/bin/ffmpeg` (brew; the miniforge build is broken, it has
-  no openh264). python3 with numpy, pillow, opencv and mediapipe for
-  `ascii6.py`, which loads the two MediaPipe models that sit next to it
-  (selfie segmenter + BlazeFace, Apache-2.0). The voicepipe venv
+  no openh264). python3 with numpy, pillow, opencv and mediapipe (BlazeFace sits
+  in `tools/episode/`, Apache-2.0). The voicepipe venv
   (`~/Code/Me/voicepipe/.venv`) for faster-whisper. Node 24 with `npm ci`.
-  For the clean: a venv with `pip install pedalboard==0.9.25 numpy`, and FabFilter
-  Pro-Q 4, Pro-DS, Pro-C 3 and Pro-L 2 installed as VST3. FL Studio for the outro music.
+  For the audio: `~/.venvs/pyre-episode` (python 3.11, `pedalboard==0.9.25`,
+  numpy), and FabFilter Pro-Q 4, Pro-DS, Pro-C 3 and Pro-L 2 installed as VST3.
 - **speaker references**: 2–10 s of each host talking alone, as
   `assets/speakers/<Name>.wav` (16 kHz mono), named as the transcript shows the
   speaker: `Sam.wav`, `Steve.wav`. They're gitignored, because voices
@@ -26,198 +29,226 @@ description. Everything else is a default.
   as `https://media.pyredivers.com`, and `/opt/infra/.env` holds
   `OPENAI_API_KEY` and `PYRE_DEPLOY_HOOK`. Neither secret leaves the box.
 - **directories**: submit the feed to Apple and Spotify once (see
-  [distribution](#11-distribution)). After that they poll it.
+  [distribution](#12-distribution)). After that they poll it.
 
 ## the episode folder
 
 Everything for episode N lives in `assets/epN/`, which is gitignored because it
-runs to gigabytes. Below: `EP=assets/epN`, `RAW` = the StreamYard export,
-`T=tools/episode`, `N` = the episode number.
+runs to gigabytes. A full build needs about 7 GB free. Below:
+
+- `EP=assets/epN`, `RAW` = the StreamYard export, `N` = the episode number
+- `T=tools/episode`. Copy it to `$EP/t/` too: ep 5's helpers read it from there.
+- `S=assets/ep5/s`: ep 5's one-off helpers. Gitignored, so they exist only in
+  the main checkout. Copy them into the new episode's folder; they hard-code
+  ep 5's paths and numbers, so edit those first.
+- `K=~/Code/Me/portal/maschine/mouth-machine/sketch`: ep 4's one-offs for the
+  threshold head, the ending and the low-pass. They're in the portal repo, on
+  the `docs/mouth-machine-log` branch.
+
+The ep 5 helpers aren't in `tools/`. Each step names the one it needs, and the
+list at the end says what to promote.
 
 ## 1. record
 
 Recorded live on StreamYard, in one take. **Before recording, turn on local
-recordings** in the studio's settings: each host then gets a separate, uncompressed
-track. The regular export has both voices in one dual-mono mix, and ep 2 had to
-tell them apart from the transcript. It can't be switched on afterwards. Ep 1 wasn't broadcast; from ep 2 the show streams live. Either way, export the finished recording: 1920×1080, two
-panels, **Steve on the left, Sam on the right**. The name tags and the
-renderer's crops assume that layout. Ep 2 came out the other way round; `SWAP=1` on
-assemble.py swaps the panels back (and the ASCII clips' halves, below), so Sam stays on the right.
+recordings** in the studio's settings: each host then gets a separate,
+uncompressed track. It can't be switched on afterwards (ep 4 didn't have them).
+The show streams live; export the finished recording too.
 
-## 2. cut list: the whole conversation
+- `RAW` = `~/Downloads/Episode N.mp4`: 1920×1080, 30 fps, two panels.
+- The local tracks go in `$EP/local/` (`00;00;00_sam.wav`, `00;00;00_steve.wav`).
+- **Steve on the left, Sam on the right.** The name tags and the crops assume
+  it. Check it every episode: ep 2 came out the other way round, and `SWAP=1`
+  on assemble.py swaps the panels back.
+- The threshold look needs a face lit brighter than the wall behind it, from
+  the front. Side light splits the face down the middle at every level.
 
-The show is unedited: no pauses tightened, nothing taken out of the middle. So
-the cut list is one piece, from the first word to the last.
+## 2. cut list: one piece
+
+Write `keep.json` by hand as one interval, `[[HEAD, TAIL]]`, in raw seconds.
+Ep 5: `[[5.166, 2895.6]]`. Don't run `tighten.py`; eps 1 and 2 went out
+tightened, and that was a mistake.
 
 ```sh
 /usr/local/bin/ffmpeg -nostdin -hide_banner -i "$RAW" -vn -ac 1 \
   -af "silencedetect=noise=-37dB:d=0.15" -f null - 2>&1 | grep -o 'silence_.*' > $EP/silences.txt
 head -2 $EP/silences.txt; tail -2 $EP/silences.txt   # candidates for the first word's start and the last word's end
-echo "[[HEAD, TAIL]]" > $EP/keep.json                 # ep 3: [[1.0, 1959.9]]
 ```
 
-`HEAD` and `TAIL` are raw seconds. The silences are only candidates: a recording
-that starts or stops mid-talk has no silence at that end, and one with chatter
-before the show has an earlier one. Listen at both points before choosing. Put
-`HEAD` just before the first word. Put
-`TAIL` at least 1.5 s after the last word ends: the edit fades the voice out
-over its last 1.5 s, and a `TAIL` right on the last word buries it (ep 2's
-first pick left "Why not?" 7–12 dB down). Everything after this reads
+The silences are only candidates: a recording that starts or stops mid-talk has
+no silence at that end, and one with chatter before the show has an earlier one.
+Listen at both points before choosing. Put `HEAD` just before the first word.
+Put `TAIL` at least 1.5 s after the last word ends, so the fade doesn't bury it
+(ep 2's first pick left "Why not?" 7–12 dB down). Ep 5's mp4 ended only 0.65 s
+after the last word, so its clean used a 0.5 s end fade instead.
+
+Edit time = raw time − HEAD (ep 5: − 155/30). Everything after this reads
 `keep.json` as it is.
 
-Eps 1 and 2 went out with their pauses tightened (70 and 31 cuts). From ep 3
-there are none, and the script that made them is gone.
+## 3. align the local tracks
 
-## 3. custom video filtering: the ASCII head and tail
-
-```sh
-python3 $T/windows.py $EP        # which raw seconds make the edit's first 18 s and last 45 s
-$T/ascii-ends.sh $EP "$RAW"      # -> $EP/head-ascii.mp4, $EP/tail-ascii.mp4, rendered in parallel
-```
-
-The look is ep 1's: bold Menlo 6×12, light mode (`#e7e2da` paper, `#212614`
-ink), rooms at 45%, no ring. Every knob is an env var, documented at the top of
-`ascii6.py`.
-
-## 4. assemble the edit
+The local tracks run on their own clock. Ep 5's drifted about 135 ppm against
+the mp4, which is about 0.4 s by the end.
 
 ```sh
-python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 BPM   # ep 1: 69
+python3 -I $S/align2.py $EP "$RAW"        # band-limited GCC-PHAT on speech windows + a line fit -> align.json
+python3 -I $S/align_apply.py $EP "$RAW"   # Kaiser-sinc warp ($S/warp.py) -> $EP/aligned/<name>.wav, then re-measures
 ```
 
-From ep 2 the show opens on the whirlpool, no words: it flips, darkest cell first, into the
-ASCII, and the title waits for it (ep 2: 77 bpm, 5 bars of outro music + 1 fade bar):
+The re-measure should print a lag near 0 ms and near 0 ppm for both voices.
+Align on speech, band-limited to 150–3500 Hz; a plain waveform match locks onto
+pitch periods.
+
+## 4. the picture: threshold head and ending
+
+The head and the ending are the threshold look: darker than X percent is flat
+ink, brighter is clear, with the whirlpool behind the clear parts. It replaced
+ep 1–3's ASCII. X = 55 for the head and the ending.
 
 ```sh
-SW="split[a][b];[a]crop=960:1080:960:0[r];[b]crop=960:1080:0:0[l];[r][l]hstack"   # ep 2 only: panels swapped
-for c in head tail; do ffmpeg -nostdin -i $EP/$c-ascii.mp4 -vf "$SW" -crf 12 $EP/$c-ascii-swap.mp4; done
-INTRO=1 python3 $T/whirl.py $EP/head-ascii-swap.mp4 $EP/intro.mkv 116     # ~20 s
-SWAP=1 HEAD_ASCII=$EP/head-ascii-swap.mp4 TAIL_ASCII=$EP/tail-ascii-swap.mp4 \
-  INTRO=$EP/intro.mkv HOLD_M=2.5507 TITLE_IN=4.833 SECTION_M=4.1203 \
-  python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 77
+python3 $T/windows.py $EP     # head-range.txt, tail-range.txt: raw seconds of the edit's first 18 s and last 45 s
+$K/pyre-head-threshold.sh "$RAW" HEAD 18 $EP/head-thr.mp4 55      # ep 5: HEAD = 5.166
+INTRO=1 python3 $T/whirl.py $EP/head-thr.mp4 $EP/intro.mkv 116      # the opening whirlpool, flipping into it
 ```
 
-`HOLD_M` = the intro (116 frames) plus a bar of full ASCII, in bars. The head ASCII
-has to outlast HOLD_M + OPEN_M bars (17.3 s here) or it pops off mid-dissolve;
-assemble.py refuses a shorter one. `SECTION_M` ends
-the edit 2.75 s (whirl.py's wordmark frame 66) before the outro's last bar, so the
-closing "pyre divers" starts on its downbeat: bars = (show − music-in) / bar, with
-music-in snapped to a frame; pass the same number to `mix.sh` as BARS.
+Then the edit, in three moves:
 
-This takes the raw footage in the renderer's panel framing, cut by `keep.json`.
-It opens fully ASCII and dissolves to footage over 3 bars, with the wordmark and
-the name tags. The ASCII returns over the last 6 bars: fading in for 3, full
-for 3. The audio is loudnormed to −16 LUFS and becomes the clean's input. The body (30
-s to show − 45 s) is cached in `$EP/assemble-work/`, so re-running for a head or tail
-change takes about a minute.
+1. **assemble** the whole edit once, as ep 3 and 4 did (77 bpm,
+   `INTRO=$EP/intro.mkv HOLD_M=2.5507 TITLE_IN=4.833`). It still wants an ASCII
+   head and tail (`$T/ascii-ends.sh $EP "$RAW"`); both get replaced below. The
+   body (30 s to show − 45 s) is cached in `$EP/assemble-work/`.
 
-## 5. clean the audio, write the outro
+   ```sh
+   INTRO=$EP/intro.mkv HOLD_M=2.5507 TITLE_IN=4.833 \
+     python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 77
+   ```
+
+2. **the head**: re-render the first 30 s on the threshold head, with the paper
+   wordmark (ink doesn't read on the threshold's ink):
+
+   ```sh
+   HEAD_ASCII=$EP/head-thr.mp4 INTRO=$EP/intro.mkv HOLD_M=2.5507 TITLE_IN=4.833 \
+     WORDMARK=$EP/wordmark-paper.png python3 $K/pyre-head-only.py $T/assemble.py $EP "$RAW" $EP/head-thr-30.mp4 77
+   bash $S/splice.sh   # head-thr-30.mp4 + the edit's body, minus its last 45 s -> ep$N-edit-thr.mp4 (stream copy)
+   ```
+
+3. **the ending**: `$K/pyre-ending-window.sh` on the last 45 s of footage in the
+   show's framing. The threshold comes on over 8 bars with the whirlpool
+   already turning behind it, holds 8, then the footage ends, its ink fades,
+   and the wordmark comes in. The whirlpool is one layer from the first bar to
+   the last frame. `CRF=12`, since it gets encoded again. Ep 5 kept ep 4's
+   ending timing (`BAR_S=1.0545`, wordmark at the edit's frame count + 66) and
+   fit the music to the picture (step 7).
+
+Look at frames before moving on (step 8).
+
+## 5. transcribe
 
 ```sh
 /usr/local/bin/ffmpeg -nostdin -i $EP/ep$N-edit.mp4 -vn -c:a pcm_f32le $EP/edit.wav
 SHOW=$(python3 -c "import json; print(sum(b-a for a,b in json.load(open('$EP/keep.json'))))")
 python3 $T/audio.py - $EP/edit.wav $SHOW $N $EP/publish                  # transcription parts
 BOX=... SPEAKERS=assets/speakers $T/transcribe.sh $EP/publish           # ~7 min, ~$1
-python3 $T/clean.py $EP/edit.wav $EP/clean.wav $EP/publish              # ~3 min per pass
 ```
 
-- **Transcribe first**: the clean uses the diarized turns, and the edit has the
-  same timeline as everything after it, so this is also the episode's transcript.
-  Give the diarized text one read-through: ep 1's labels were right the whole way.
-- **`clean.py`** runs FabFilter without a DAW: Pedalboard hosts the VST3s and sets
-  every knob by name, from `clean.json`. Pro-Q 4 (light: rumble cut, −3 dB at
-  200 Hz, −2 dB at 1 kHz), Pro-DS (split band, 3–16 kHz), Pro-C 3 (opto, −24 dB,
-  2:1) and Pro-L 2 (−1 dBTP). It fits the limiter's gain to −13.5 LUFS, re-rendering
-  once if the first pass misses, and the output stays sample-aligned with the edit.
-  Steve's turns get a +6 dB low shelf at 220 Hz and −2.5 dB at 4.5 kHz: his mic runs
-  12–14 dB light at 100–200 Hz next to Sam's. The switch is a 50 ms crossfade between
-  two Pro-Qs, driven by the transcript.
-- To change the sound, A/B short clips at matched loudness (`loudnorm` each one)
-  before rendering the whole show, and have Sam pick blind.
-- Outro music at the episode's BPM: 6 bars under the ASCII ending, plus a tail
-  (ep 1: 69 bpm, 26.000 s total). Load the edit into FL's video player to line
-  it up. Render, trim to length, and save as `$EP/outro.wav`.
-- The FL projects live in
-  `~/Documents/Image-Line/FL Studio/Projects/me/actually trying/pyredivers/`.
-  Ep 1's clean was FL (`pyredivers_01.flp`), which was all EQ plus a limiter.
+`transcribe.sh` runs `gpt-4o-transcribe-diarize` on the box with the speaker
+references, so segments come back named. Read the labels through. Ep 5's came
+back with 43 of Sam's segments as "A": relabel them from the local tracks (the
+voice is on one track and not the other).
 
-## 6. mix
+## 6. clean the audio, per voice
 
 ```sh
-$T/mix.sh $EP $EP/clean.wav $EP/outro.wav BPM $EP/mix.wav
+~/.venvs/pyre-episode/bin/python -I $S/clean5.py $EP   # aligned/<name>.wav -> clean-v2.wav
 ```
 
-The music enters from silence on the first frame of the ASCII ending (ep 1 entered
-at 50%: pass `0.5` as the 8th arg, FROM), rises to 100% over those bars, sits +3.3 dB for balance, and goes through a limiter. Ep 1
-came out at −14.0 LUFS, −1.2 dBTP, and this script reproduces ep 1's shipped mix
-bit for bit.
+Each voice is cleaned on its own track, cropped to `keep.json`:
 
-## 7. the outro sequence
+- spectral noise reduction, 14 dB
+- a soft gate, −6 dB, 300 ms hold, 500 ms release
+- level to −16 LUFS
+- Pro-Q 4 "fuller", plus a 606 Hz notch on Steve
+- Pro-DS (split band, 3–16 kHz) and Pro-C 3 (opto, −24 dB, 2:1)
+
+Then the two are summed through Pro-L 2, fitted to −13.5 LUFS at −1 dBTP. The
+output has the same length and timeline as the edit.
+
+- To change the sound, A/B short clips at matched loudness (`loudnorm` each
+  one) before rendering the whole show, and have Sam pick blind.
+- No local tracks (ep 4)? `$T/clean.py` cleans the mixed edit audio, switching
+  Steve's EQ on and off from the diarized turns.
+
+## 7. outro music and mix
+
+The music comes in under the end of the talk. It starts at half level, and it
+starts muffled: a low-pass at 500 Hz holds until the last word, then opens to
+full over 2 bars. That keeps 10 dB or more between the last words and the
+music, and it isn't a level dip. The wordmark lands on the downbeat of the
+music's last bar.
+
+Ep 5's music is sea foam (a mouth machine piece in the portal repo), as stems:
+drums without the "go to sleep" voice, and the music.
 
 ```sh
-python3 $T/whirl.py $EP/ep$N-edit.mp4 $EP/whirl.mkv   # 195 frames in ~1 min; stills in $EP/whirl-frames/
+~/.venvs/pyre-episode/bin/python -I $S/outro5.py STEMDIR $EP/work/seafoam-outro.wav   # prints MUSIC_IN HOLD OPEN BARS BPM
+~/.venvs/pyre-episode/bin/python $K/pyre-lowpass-open.py $EP/work/seafoam-outro.wav $EP/outro-seafoam.wav 500 HOLD OPEN
+$T/mix.sh $EP $EP/clean-v2.wav $EP/outro-seafoam.wav BPM $EP/mix.wav BARS GAIN 0.5   # ep 5's second mix: mix-v2.wav
 ```
 
-The edit's last frame turns, darkest cell first, into the site's whirlpool, which
-is a port of `src/lib/page-fx.ts`. The whirlpool is drawn as `.` dots at 0.4×
-speed; at full speed it twinkled. The wordmark fades in black, holds 2 s, then
-everything fades to flat paper over 2 s. Look at `whirl-frames/` before moving
-on.
+- **`outro5.py`**: drums ×0.70, −5 dB at 3.2 kHz, a little room reverb. It
+  times the piece from the picture: the wordmark's first frame (the edit's
+  frame count + 66) is the downbeat of bar 16, and music-in is snapped to a
+  frame. The file runs to the picture's last frame, with a 1 s fade.
+- **The low-pass** is four plain one-pole `LowpassFilter`s in series.
+  Pedalboard's `LadderFilter` models an analogue filter and adds 1–4% harmonics,
+  which Sam heard as distortion.
+- **Measure the music per beat**, not by its file length: a file runs on with
+  reverb and then silence. Ep 3's ran 28.9 s, but the music stopped at 18.7 s.
+- **`mix.sh`**: music in at show − BARS bars, from FROM (0.5) to full over those
+  bars, then a limiter. Don't push either side into it; an ep 4 version did and
+  came out distorted.
 
-When the music runs on after the conversation, `WM0` moves the wordmark's first
-frame later, and the hold, the fade and the length follow it. The whirlpool
-turns until then. Put it on a downbeat:
+## 8. final, verify, compare
 
 ```sh
-WM0=167 python3 $T/whirl.py $EP/ep$N-edit.mp4 $EP/whirl.mkv   # ep 3: 296 frames
+assets/ep5/final-ep5.sh $EP/ep$N-edit-thr.mp4 ENDING.mp4 $EP/mix.wav $EP/ep$N-final.mp4
 ```
 
-`WM0` = (music-in + bars × bar) × 24 − the edit's frame count, where bars is how
-many bars of music play before that downbeat (bar 6 starts 5 bars in). Ep 3: the
-music came in 2.75 bars before the end (`SECTION_M=2.7672`,
-`mix.sh ... 77 mix.wav 2.75 -0.7`), so its second hit lands as the edit ends, and
-the wordmark starts on the downbeat of its last bar, bar 6:
-(1950.2917 + 5 × 3.1169) × 24 − 47014 = 167.
-
-Measure the music per beat before choosing, and don't trust the file's length.
-Ep 3's `outro.wav` ran 28.9 s, but the music stopped at bar 7 (18.7 s); the rest
-was reverb, then silence. Left in, that silence is 8 s of dead air at the end of
-the mp3. Before mixing, trim the file so it ends on the picture's last frame,
-with a 1 s fade: its length is the picture's end minus music-in (ep 3:
-1971.25 − 1950.2917 = 20.958 s).
-
-## 8. final + verify
-
-```sh
-$T/final.sh $EP/ep$N-edit.mp4 $EP/whirl.mkv $EP/mix.wav $EP/ep$N-final.mp4
-```
+`final-ep5.sh` is `$T/final.sh` with a `duration` line for the edit in the
+concat list. Without it the join had a 508-tick step and the pts check failed.
 
 It fails loudly unless the frame count is right, the pts step is one value
 throughout (no gaps, no dupes), and a full decode is clean. It also prints the
-loudness. This is the file for YouTube and the Drive folder.
+loudness. This is the file for YouTube, Spotify and the Drive folder.
+
+A new mix on the same picture doesn't need a re-render: copy the video stream
+and encode the new mix the way `final.sh` does (aac 320k, padded to the picture).
+That's how ep 5's `ep5-final-v2.mp4` was made from `mix-v2.wav`.
+
+- **Compare frames to the last episode before shipping**: the same moments
+  (2.5, 5.5, 13, 17, 26 s and the ending), side by side, into `$EP/sheets/`.
+  For "is this the same frame", diff PNG pixels, not `ffmpeg -f md5`.
+- **No burned-in transcript on the episode.** Captions only go on the clips.
+- **Don't build extra previews.** One render per change, then the comparison.
 
 ## 9. publish kit
 
 ```sh
-SHOW=$(python3 -c "import json; print(sum(b-a for a,b in json.load(open('$EP/keep.json'))))")
 python3 $T/audio.py $EP/mix.wav - $SHOW $N $EP/publish "title"
-scp $EP/publish/pyre-divers-$(printf %03d $N).mp3 $BOX:/opt/media/
-curl -sI https://media.pyredivers.com/pyre-divers-$(printf %03d $N).mp3   # 200, audio/mpeg, content-length, accept-ranges
-python3 $T/transcript.py $EP/publish                                    # transcript.json/.md, captions.srt (from step 5)
+python3 $T/transcript.py $EP/publish   # transcript.json/.md, captions.srt (from step 5)
 ```
 
-- **`audio.py`** writes two kinds of file, and `-` for either input skips it:
-  - The podcast mp3: one static gain to −16 LUFS (Apple's spec), 44.1 kHz stereo,
-    128k CBR, tagged, with the cover embedded.
-  - The transcription parts (step 5): the conversation without music, split at a
-    pause so each part is at most 1380 s.
+- **`audio.py`** makes the podcast mp3: one static gain to −16 LUFS (Apple's
+  spec), 44.1 kHz stereo, 128k CBR, tagged, with the cover embedded. With `-` as
+  the mix it makes the transcription parts instead (step 5).
+- **The cards**: `pyre-divers-NNN-cover.jpg` and `pyre-divers-NNN-outro.jpg`
+  (the email uses the outro card). `card.py` makes them; it's on
+  `origin/feat/episode-art`, not master.
 - **mp3 URLs are write-once.** A re-cut gets a new filename; never put new bytes
   at an old URL, because apps cache them.
-- **`transcribe.sh`** (step 5) runs `gpt-4o-transcribe-diarize` on the box with the
-  speaker references, so segments come back named.
 
-Then write `$EP/publish/episode.json` (ep 1's is the template: `slug`, `title`,
-`description`, `audioUrl`, `durationSeconds`, `publishAt`, `transcript`), and:
+Then write `$EP/publish/episode.json` (`slug`, `title`, `description`,
+`audioUrl`, `durationSeconds`, `publishAt`, `transcript`), and:
 
 ```sh
 node $T/content.mjs draft $EP/publish/episode.json   # writes content/episodes/<slug>.json
@@ -225,103 +256,134 @@ PREVIEW_DRAFTS=1 npm run build
 # read .svelte-kit/output/prerendered/pages/episodes/<slug>.html, feed.xml, sitemap.xml
 ```
 
-A build only shows an episode once its `publishedAt` has passed, so a scheduled
-one stays off the site until then. **The file itself is public from the moment
-it's pushed** (this repo is public): title, description and transcript. Push it
-the night before, not the week before. **The slug is permanent once
-published**: it's the feed guid and the URL.
+**The file is public from the moment it's pushed** (this repo is public):
+title, description and transcript. Push it the night before, not the week
+before. **The slug is permanent once published**: it's the feed guid and the URL.
 
 ## 10. publish
 
-Commit the file and merge it to master (a PR, like every change). That's all:
-the `publishAt` time is the schedule. A merge before that time builds the site
-without the episode. The box fires the deploy hook every day at 11:01 UTC
-(`/opt/infra/pyre-publish.sh` in the infra repo, log in
-`/var/log/pyre-publish.log`), so an episode set for the usual Wednesday 11:00
-UTC slot goes out a minute after it. Any other time waits for the next 11:01
-build, unless you fire the hook yourself. To go live right now instead:
+1. The mp3 and both cards to the box:
 
-```sh
-node $T/content.mjs publish <slug>   # publishedAt = now; commit and merge it
-```
+   ```sh
+   scp $EP/publish/pyre-divers-$(printf %03d $N){.mp3,-cover.jpg,-outro.jpg} $BOX:/opt/media/
+   curl -sI https://media.pyredivers.com/pyre-divers-$(printf %03d $N).mp3   # 200, audio/mpeg, content-length, accept-ranges
+   ```
 
-About a minute after the build the episode page, the homepage's "latest dive"
-link, the feed item (numbered, with `<podcast:transcript>` pointing at
-`/episodes/<slug>/transcript.vtt`), the sitemap entry and the `llms.txt` line
-are live — all of it from the file, nothing per-episode to add. Check `https://pyredivers.com/feed.xml`
-for the item and `https://pyredivers.com/episodes/<slug>`.
+2. Commit `content/episodes/<slug>.json` and merge it to master (a PR, like
+   every change). Master deploys pyredivers.com in about 40 s. A build only
+   shows an episode once its `publishedAt` has passed. The box rebuilds every
+   day at 11:01 UTC, so an episode set for the usual Wednesday 11:00 UTC slot
+   goes out a minute after it. To go live now instead (ep 5 did):
 
-## 11. distribution
+   ```sh
+   node $T/content.mjs publish <slug>   # publishedAt = now; commit and merge it
+   ```
+
+After the build the episode page, the homepage's "latest dive" link, the feed
+item (numbered, with `<podcast:transcript>`), the sitemap entry and the
+`llms.txt` line are live, all from the file. Check
+`https://pyredivers.com/feed.xml` and `https://pyredivers.com/episodes/<slug>`.
+
+## 11. clips
+
+Ep 5 cut 13. There's no per-episode cap any more. Each one is 4:5 with captions
+in `clips/final/`, then the threshold look in `clips/threshold/`.
+
+1. **Pick** 30–60 s that stand alone from `transcript.md`. Keep them clear of
+   anything the feed would suppress: no profanity.
+2. **Cut points come from the sound**, never from whisper word times. Word times
+   are off by 0.1–0.3 s, and whisper invents words in silence.
+   `python3 -I $S/snap2.py $EP A B` snaps a rough in and out to the nearest
+   pause in `clean.wav`. "NO PAUSE" means pick another sentence edge.
+3. **Captions**: `$S/mkwords5.py` writes `<slug>.words.json`. Re-text the words
+   from `publish/captions.srt` (whisper mishears names and phrases), keeping
+   whisper's timings. The cache is keyed by the output name, so delete it when
+   a range changes.
+4. **The whirlpool**: `$S/whirl_tall.py` makes one tall whirlpool
+   (`clips/whirl/whirl-full.mkv`) for both the top band and the footage window.
+   It has to be one continuous pool, centred behind the wordmark; two crops
+   turning separately looked wrong. `Scss` derives from the canvas size, so pin
+   it (1542) when you change the canvas.
+5. **Levels** are per episode and per person: the cameras and the light change.
+   `$S/calib.py` measures how much of each face (BlazeFace's box) is clear at
+   each level. Pick the level that keeps the clear share of ep 4's approved
+   clips. Ep 5: Steve 71, Sam 48. Check the panel order.
+6. **Render**: `$S/render1.sh SLUG A B` runs `$S/clip5.py` on the final mp4,
+   then `$S/threshold5.sh` with the levels. `FADE_OUT=0.08` for a clip with no
+   silence after its last word.
+
+## 12. distribution
+
+Ep 5's order: site (step 10), YouTube, email, LinkedIn, Spotify video.
 
 - **Apple and Spotify** (once, ever): in Apple Podcasts Connect, add a show from
   the feed URL `https://pyredivers.com/feed.xml`. In Spotify for Creators, add a
-  podcast via RSS; a code goes to `sam@pyredivers.com`. Apple reviews a new show
-  in about 1–5 days, Spotify in minutes. After that, both pick up new episodes
-  from the feed on their own. Put the show links in `SocialStones`, and each
-  episode's `spotifyUrl` and `applePodcastsUrl` in its manifest.
-- **YouTube**: once the show streams, the live stream is already a video on
-  the channel, unedited. Decide per episode whether the finished cut replaces
-  it, sits beside it, or the stream stays the YouTube version. The podcast
-  feed gets the finished audio either way. For an upload:
-  1. Upload `ep$N-final.mp4` in Studio.
-  2. Add the title, and a description with chapters (from `transcript.md`).
-  3. Upload `publish/captions.srt` as the captions.
-  4. Add a thumbnail and schedule it. The thumbnail is the wordmark on paper
-     from the episode's own ending, about 5 s after the conversation stops:
+  podcast via RSS; a code goes to `sam@pyredivers.com`. After that, both pick up
+  new episodes from the feed on their own.
+- **YouTube** (Studio):
+  1. Upload `ep$N-final.mp4` (or the latest `-vN`).
+  2. Title, and a description with chapters (from `transcript.md`; ep 5's is
+     `publish/youtube.txt`).
+  3. `publish/captions.srt` as the captions. The upload lands as a draft: open
+     it and publish it, or only the auto captions go public.
+  4. The thumbnail: the wordmark on paper from the episode's own ending, about
+     5 s after the conversation stops:
      `ffmpeg -ss $(echo "$SHOW + 5" | bc) -i $EP/ep$N-final.mp4 -frames:v 1 -vf scale=1280:720 -q:v 2 $EP/publish/thumbnail-paper.jpg`
-  5. Then put `youtubeUrl` in the manifest, run `content.mjs draft`, and merge
-     the change.
+  5. Playlist "pyre divers", not made for kids, AI use: No.
+  6. Then set `youtubeUrl` in `content/episodes/<slug>.json` and merge it in a PR.
 - **email**: in listmonk (`mail.sixtom.com`), the list is "pyre divers" and mail
-  goes from `fire@pyredivers.com` through Resend. Draft it, Sam approves, send.
-- **LinkedIn**: Wednesday is the drop (the best clip plus the link). Clips fill
-  the off days, 4 per episode at most (see content-engine's AGENTS.md). Pick
-  30–60 s that stand alone from `transcript.md`, set the cut points on sentence
-  edges from the `diarized-part*.json` segment times, then:
+  goes from `fire@pyredivers.com` through Resend. Clone the previous campaign as
+  a draft (`publish/email-draft.sql`). People's names are lowercase and bold
+  (**sam**, **steve**), "claude" is always lowercase, AI and platform names keep
+  their capitals. Sam approves the text, then a separate yes to send.
+- **LinkedIn**: through Studio (content-engine), with one threshold clip as the
+  video and the episode link in the body.
+- **Spotify video**: after the feed has delivered the episode to Spotify, in
+  Spotify for Creators: the episode → Details → Upload video, the final mp4.
+  Explicit: Yes, to match the feed. 18+: No. Thumbnail: `thumbnail-paper.jpg`.
 
-  ```sh
-  python3 $T/clip.py $EP/ep$N-final.mp4 START END $EP/clips/1-name.mp4   # ~5 min each
-  ```
-
-  That gives a 4:5 clip in the episode's paper and ink, with word-timed
-  lowercase captions (fillers dropped). Keep the clips clear of anything the
-  feed would suppress: no profanity.
-
-## costs and times (ep 1)
-
-| step                       | wall time                               | cost               |
-| -------------------------- | --------------------------------------- | ------------------ |
-| ASCII head + tail          | a few min (not timed)                   | —                  |
-| assemble (first run)       | ~20 min (the body re-encode; not timed) | —                  |
-| transcribe + clean (ep 2)  | ~7 min + ~6 min                         | $0.68              |
-| FL outro music             | ≤1 h (cap)                              | —                  |
-| mix, outro, final + verify | ~10 min                                 | —                  |
-| transcription              | ~6.5 min                                | $0.76 (~$0.02/min) |
-| media hosting              | —                                       | the box, ~38 MB/ep |
-
-## gotchas that cost time on ep 1
+## gotchas
 
 - **ffmpeg in scripts**:
   - Always pass `-nostdin`, or a heredoc'd script gets eaten.
   - `aselect` silently keeps all the audio; cut audio with `atrim` and `concat`.
   - This build has no `drawtext` and no `soxr`.
+  - Every `maskedmerge` input has to be `gbrp`: with rgb24 and a grey mask the
+    whole picture quietly turns grey.
 - **stream-copy cuts overshoot** by a frame or two (a keyframe plus a forward
   P-frame). Count packets and cut with `-frames:v N`; never trust `-to`.
-  `final.sh` asserts the pts step for exactly this reason.
 - **`gpt-4o-transcribe-diarize` has hard limits**: 1400 s of audio and 25 MB per
-  request. The box's old solve-for-x worker posts whole episodes and can't pass
-  either limit; it isn't part of this flow. Output tokens are most of the cost,
-  so the $0.006/min list estimate is about 3× low.
-- **new DNS records**: the Mac's router resolver held the old `*.pyredivers.com`
-  answer for a while after `media` was added, even though public resolvers had
-  the new one within 60 s. A local build's enclosure HEAD check fails until the
-  cache clears; Vercel's builds are unaffected.
+  request. Output tokens are most of the cost, so the $0.006/min list estimate
+  is about 3× low.
+- **Plugin latency**: pedalboard streaming with `reset=False` doesn't compensate
+  it. Measure it with an impulse, drop that many samples, and flush the tail.
+- **Don't tone-match to an older episode**: fitting ep 2's EQ to ep 1's tone came
+  out thin every time, and blind, Sam picked the raw.
 - **Caddy's `Caddyfile` is a single-file bind mount.** An editor that swaps
   inodes (`sed -i`) leaves the running container on the old file. Recreate it
   with `docker compose up -d --no-deps caddy`.
 - **Headless captures of the site can't show the vortex**: without a GPU the site
-  draws its static fallback. That's why `whirl.py` re-implements the sim rather
-  than recording it.
-- **Don't tone-match to ep 1** (ep 2): fitting ep 2's EQ to ep 1's finished
-  tone came out thin in every version, and blind, Sam picked the raw. Ep 2 was
-  recorded better (a 5 dB quieter floor), so the defaults in `clean.json` are light.
-- **Disk**: every full render is about 1 GB. Delete intermediates as you go.
+  draws its static fallback. That's why `whirl.py` re-implements the sim.
+- **Disk**: every full-length float wav or render is about 1 GB. Delete
+  intermediates as you go.
+
+## to promote into tools/episode
+
+Each of these did its job once, for one episode:
+
+- `$S/align2.py`, `align_apply.py`, `warp.py`, `sig.py`: local-track alignment
+  (step 3).
+- `$S/clean5.py`: the per-voice clean, as the default `clean.py` when local
+  tracks exist (step 6).
+- `$K/pyre-head-threshold.sh`, `pyre-head-only.py`, `pyre-ending-window.sh`,
+  `pyre-whirl-knobs.py`: the threshold head and ending (step 4). With them,
+  assemble.py should take the threshold head directly and stop asking for an
+  ASCII tail; then `ascii-ends.sh`, `ascii6.py` and `$S/splice.sh` can go.
+- `$K/pyre-lowpass-open.py` and `$S/outro5.py`'s timing: the outro music fit to
+  the picture (step 7). The sea foam stems script (`stems.py`) only ever lived
+  in a session scratchpad; save it next to the piece.
+- `final.sh`: add the concat `duration` line (step 8).
+- `card.py` from `origin/feat/episode-art` (step 9).
+- `$S/snap2.py`, `mkwords5.py`, `whirl_tall.py`, `calib.py`, `threshold5.sh`,
+  `clip5.py` (made by `mkclip5.py` from `clip.py` with the fat title band), and
+  `render1.sh`: the clips (step 11).
