@@ -38,12 +38,14 @@ runs to gigabytes. A full build needs about 7 GB free. Below:
 
 - `EP=assets/epN`, `RAW` = the StreamYard export, `N` = the episode number
 - `T=tools/episode`. Copy it to `$EP/t/` too: ep 5's helpers read it from there.
-- `S=assets/ep5/s`: ep 5's one-off helpers. Gitignored, so they exist only in
-  the main checkout. Copy them into the new episode's folder; they hard-code
-  ep 5's paths and numbers, so edit those first.
-- `K=~/Code/Me/portal/maschine/mouth-machine/sketch`: ep 4's one-offs for the
-  threshold head, the ending and the low-pass. They're in the portal repo, on
-  the `docs/mouth-machine-log` branch.
+- `S=assets/ep5/s`: ep 5's one-off helpers, plus `assets/ep5/final-ep5.sh`
+  (step 8). Gitignored, so they exist only in the main checkout. Copy them into
+  the new episode's folder; they hard-code ep 5's paths and numbers, so edit
+  those first.
+- `K=~/Code/Me/portal.worktrees/mouth-log/maschine/mouth-machine/sketch`: ep 4's
+  one-offs for the threshold head, the ending and the low-pass. They're on the
+  portal repo's `docs/mouth-machine-log` branch, checked out in that worktree
+  (the main portal checkout is on another branch).
 
 The ep 5 helpers aren't in `tools/`. Each step names the one it needs, and the
 list at the end says what to promote.
@@ -127,6 +129,7 @@ Then the edit, in three moves:
    wordmark (ink doesn't read on the threshold's ink):
 
    ```sh
+   python3 -c "from PIL import Image; im=Image.open('$T/brand/wordmark-ink.png'); p=Image.new('RGBA',im.size,(232,226,216,255)); p.putalpha(im.split()[3]); p.save('$EP/wordmark-paper.png')"
    HEAD_ASCII=$EP/head-thr.mp4 INTRO=$EP/intro.mkv HOLD_M=2.5507 TITLE_IN=4.833 \
      WORDMARK=$EP/wordmark-paper.png python3 $K/pyre-head-only.py $T/assemble.py $EP "$RAW" $EP/head-thr-30.mp4 77
    bash $S/splice.sh   # head-thr-30.mp4 + the edit's body, minus its last 45 s -> ep$N-edit-thr.mp4 (stream copy)
@@ -139,6 +142,19 @@ Then the edit, in three moves:
    the last frame. `CRF=12`, since it gets encoded again. Ep 5 kept ep 4's
    ending timing (`BAR_S=1.0545`, wordmark at the edit's frame count + 66) and
    fit the music to the picture (step 7).
+
+   ```sh
+   # the last 45 s in show framing, 24 fps; TS = raw time of the edit's last 45 s (tail-range.txt) − 2
+   /usr/local/bin/ffmpeg -nostdin -ss TS -i "$RAW" -filter_complex \
+     "[0:v]trim=2.0:47.0,setpts=PTS-STARTPTS,split=2[gl][gr];[gl]crop=843:940:57:30,scale=960:1080[pl];[gr]crop=843:940:1017:30,scale=960:1080[pr];[pl][pr]hstack,fps=24,format=yuv420p[v];[0:a]atrim=2.0:47.0,asetpts=PTS-STARTPTS[a]" \
+     -map "[v]" -map "[a]" -r 24 -t 45 -c:v libx264 -preset faster -crf 12 -c:a pcm_s24le $EP/tail-plain.mov
+   mkdir -p $EP/ending
+   CRF=12 sh $K/pyre-ending-window.sh $EP/tail-plain.mov $EP/tail-ascii.mp4 $EP/outro.wav "$PWD" $EP/ending
+   # -> $EP/ending/ep4-ending-window.mp4 (the name is hard-coded); tail-ascii.mp4 is only read for the paper colour
+   ```
+
+   `outro.wav` here is ep 4's 24-bar outro (`assets/ep4/outro.wav`, 26.7 s): it
+   sets the ending's length. The episode's own music goes in at the mix (step 7).
 
 Look at frames before moving on (step 8).
 
@@ -193,7 +209,7 @@ drums without the "go to sleep" voice, and the music.
 ~/.venvs/pyre-episode/bin/python $S/stems.py MMDIR STEMDIR   # MMDIR = the sea foam piece folder
 ~/.venvs/pyre-episode/bin/python -I $S/outro5.py STEMDIR $EP/work/seafoam-outro.wav   # prints MUSIC_IN HOLD OPEN BARS BPM
 ~/.venvs/pyre-episode/bin/python $K/pyre-lowpass-open.py $EP/work/seafoam-outro.wav $EP/outro-seafoam.wav 500 HOLD OPEN
-$T/mix.sh $EP $EP/clean-v2.wav $EP/outro-seafoam.wav BPM $EP/mix.wav BARS GAIN 0.5   # ep 5's second mix: mix-v2.wav
+$T/mix.sh $EP $EP/clean-v2.wav $EP/outro-seafoam.wav BPM $EP/mix.wav BARS 3.3 0.5   # ep 5's second mix: mix-v2.wav
 ```
 
 - **`outro5.py`**: drums ×0.70, −5 dB at 3.2 kHz, a little room reverb. It
@@ -206,13 +222,14 @@ $T/mix.sh $EP $EP/clean-v2.wav $EP/outro-seafoam.wav BPM $EP/mix.wav BARS GAIN 0
 - **Measure the music per beat**, not by its file length: a file runs on with
   reverb and then silence. Ep 3's ran 28.9 s, but the music stopped at 18.7 s.
 - **`mix.sh`**: music in at show − BARS bars, from FROM (0.5) to full over those
-  bars, then a limiter. Don't push either side into it; an ep 4 version did and
+  bars, +3.3 dB (GAIN; ep 5 used the default, measured from `mix-v2.wav`),
+  then a limiter. Don't push either side into it; an ep 4 version did and
   came out distorted.
 
 ## 8. final, verify, compare
 
 ```sh
-assets/ep5/final-ep5.sh $EP/ep$N-edit-thr.mp4 ENDING.mp4 $EP/mix.wav $EP/ep$N-final.mp4
+$EP/final-ep5.sh $EP/ep$N-edit-thr.mp4 $EP/ending/ep4-ending-window.mp4 $EP/mix.wav $EP/ep$N-final.mp4
 ```
 
 `final-ep5.sh` is `$T/final.sh` with a `duration` line for the edit in the
@@ -244,7 +261,15 @@ python3 $T/transcript.py $EP/publish   # transcript.json/.md, captions.srt (from
   the mix it makes the transcription parts instead (step 5).
 - **The cards**: `pyre-divers-NNN-cover.jpg` and `pyre-divers-NNN-outro.jpg`
   (the email uses the outro card). `card.py` makes them; it's on
-  `origin/feat/episode-art`, not master.
+  `origin/feat/episode-art`, not master:
+
+  ```sh
+  git show origin/feat/episode-art:tools/episode/card.py > $EP/t/card.py
+  python3 $EP/t/card.py $EP/publish/pyre-divers-NNN-cover.jpg 3000x3000 "title"
+  python3 $EP/t/card.py $EP/publish/pyre-divers-NNN-outro.jpg 1280x720 "title"
+  ```
+
+  Check its font path first: ep 4 had to edit it.
 - **mp3 URLs are write-once.** A re-cut gets a new filename; never put new bytes
   at an old URL, because apps cache them.
 
@@ -295,7 +320,8 @@ in `clips/final/`, then the threshold look in `clips/threshold/`.
 2. **Cut points come from the sound**, never from whisper word times. Word times
    are off by 0.1–0.3 s, and whisper invents words in silence.
    `python3 -I $S/snap2.py $EP A B` snaps a rough in and out to the nearest
-   pause in `clean.wav`. "NO PAUSE" means pick another sentence edge.
+   pause in `$EP/clean.wav` (ep 5 ran it before the v2 clean; on a fresh
+   episode, point it at `clean-v2.wav`). "NO PAUSE" means pick another sentence edge.
 3. **Captions**: `$S/mkwords5.py` writes `<slug>.words.json`. Re-text the words
    from `publish/captions.srt` (whisper mishears names and phrases), keeping
    whisper's timings. The cache is keyed by the output name, so delete it when
@@ -309,9 +335,11 @@ in `clips/final/`, then the threshold look in `clips/threshold/`.
    `$S/calib.py` measures how much of each face (BlazeFace's box) is clear at
    each level. Pick the level that keeps the clear share of ep 4's approved
    clips. Ep 5: Steve 71, Sam 48. Check the panel order.
-6. **Render**: `$S/render1.sh SLUG A B` runs `$S/clip5.py` on the final mp4,
-   then `$S/threshold5.sh` with the levels. `FADE_OUT=0.08` for a clip with no
-   silence after its last word.
+6. **Render**: `cd $EP && sh s/render1.sh SLUG A B` (it uses paths relative to
+   the episode folder) runs `s/clip5.py` on the final mp4, then
+   `s/threshold5.sh` with the levels. The fade-out is 0.02 s; a clip with no
+   silence after its last word needs 0.08, which `render1.sh` sets by slug
+   (ep 5: `branded-island`), so add the new slug there.
 
 ## 12. distribution
 
