@@ -149,12 +149,12 @@ Then the edit, in three moves:
      "[0:v]trim=2.0:47.0,setpts=PTS-STARTPTS,split=2[gl][gr];[gl]crop=843:940:57:30,scale=960:1080[pl];[gr]crop=843:940:1017:30,scale=960:1080[pr];[pl][pr]hstack,fps=24,format=yuv420p[v];[0:a]atrim=2.0:47.0,asetpts=PTS-STARTPTS[a]" \
      -map "[v]" -map "[a]" -r 24 -t 45 -c:v libx264 -preset faster -crf 12 -c:a pcm_s24le $EP/tail-plain.mov
    mkdir -p $EP/ending
-   CRF=12 sh $K/pyre-ending-window.sh $EP/tail-plain.mov $EP/tail-ascii.mp4 $EP/outro.wav "$PWD" $EP/ending
+   CRF=12 sh $K/pyre-ending-window.sh $EP/tail-plain.mov $EP/tail-ascii.mp4 assets/ep4/outro.wav "$PWD" $EP/ending
    # -> $EP/ending/ep4-ending-window.mp4 (the name is hard-coded); tail-ascii.mp4 is only read for the paper colour
    ```
 
-   `outro.wav` here is ep 4's 24-bar outro (`assets/ep4/outro.wav`, 26.7 s): it
-   sets the ending's length. The episode's own music goes in at the mix (step 7).
+   The music here is ep 4's 24-bar outro (`assets/ep4/outro.wav`, 26.7 s): it
+   only sets the ending's length. The episode's own music goes in at the mix (step 7).
 
 Look at frames before moving on (step 8).
 
@@ -206,7 +206,7 @@ Ep 5's music is sea foam (a mouth machine piece in the portal repo), as stems:
 drums without the "go to sleep" voice, and the music.
 
 ```sh
-~/.venvs/pyre-episode/bin/python $S/stems.py MMDIR STEMDIR   # MMDIR = the sea foam piece folder
+mkdir -p STEMDIR && ~/.venvs/pyre-episode/bin/python $S/stems.py MMDIR STEMDIR   # MMDIR = the sea foam piece folder
 ~/.venvs/pyre-episode/bin/python -I $S/outro5.py STEMDIR $EP/work/seafoam-outro.wav   # prints MUSIC_IN HOLD OPEN BARS BPM
 ~/.venvs/pyre-episode/bin/python $K/pyre-lowpass-open.py $EP/work/seafoam-outro.wav $EP/outro-seafoam.wav 500 HOLD OPEN
 $T/mix.sh $EP $EP/clean-v2.wav $EP/outro-seafoam.wav BPM $EP/mix.wav BARS 3.3 0.5   # ep 5's second mix: mix-v2.wav
@@ -322,7 +322,11 @@ in `clips/final/`, then the threshold look in `clips/threshold/`.
    `python3 -I $S/snap2.py $EP A B` snaps a rough in and out to the nearest
    pause in `$EP/clean.wav` (ep 5 ran it before the v2 clean; on a fresh
    episode, point it at `clean-v2.wav`). "NO PAUSE" means pick another sentence edge.
-3. **Captions**: `$S/mkwords5.py` writes `<slug>.words.json`. Re-text the words
+3. **Captions**: word times come from each host's own track:
+   `~/Code/Me/voicepipe/.venv/bin/python -I $S/transcribe_local.py $EP sam steve`
+   (faster-whisper on `aligned/<name>.wav` -> `tx/<name>.json`), then
+   `python3 -I $S/txtools.py merge $EP` (-> `tx/words.json` on the edit
+   timeline). `$S/mkwords5.py` writes `<slug>.words.json`. Re-text the words
    from `publish/captions.srt` (whisper mishears names and phrases), keeping
    whisper's timings. The cache is keyed by the output name, so delete it when
    a range changes.
@@ -335,8 +339,8 @@ in `clips/final/`, then the threshold look in `clips/threshold/`.
    `$S/calib.py` measures how much of each face (BlazeFace's box) is clear at
    each level. Pick the level that keeps the clear share of ep 4's approved
    clips. Ep 5: Steve 71, Sam 48. Check the panel order.
-6. **Render**: `cd $EP && sh s/render1.sh SLUG A B` (it uses paths relative to
-   the episode folder) runs `s/clip5.py` on the final mp4, then
+6. **Render**: `(cd $EP && sh s/render1.sh SLUG A B)` (it uses paths relative to
+   the episode folder; the subshell keeps you at the repo root) runs `s/clip5.py` on the final mp4, then
    `s/threshold5.sh` with the levels. The fade-out is 0.02 s; a clip with no
    silence after its last word needs 0.08, which `render1.sh` sets by slug
    (ep 5: `branded-island`), so add the new slug there.
