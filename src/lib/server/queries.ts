@@ -23,6 +23,8 @@ interface EpisodeFile {
   applePodcastsUrl: string | null;
   // ponytail: no episode has one yet; the page shows a player when it does
   videoUrl?: string | null;
+  // set by hand in the file; absent = explicit, like the show
+  explicit?: boolean;
   publishedAt: string | null;
   segments: Segment[];
 }
@@ -59,6 +61,7 @@ function publish() {
       spotifyUrl: file.spotifyUrl,
       applePodcastsUrl: file.applePodcastsUrl,
       videoUrl: file.videoUrl ?? null,
+      explicit: file.explicit ?? true,
       publishedAt:
         file.publishedAt === null ? null : new Date(file.publishedAt),
     }))

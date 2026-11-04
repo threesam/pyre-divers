@@ -90,8 +90,12 @@ export const GET: RequestHandler = async () => {
         { name: 'itunes:episode', objects: { _text: String(episode.number) } },
         { name: 'itunes:episodeType', objects: { _text: 'full' } },
         // spotify reads explicit per episode and does not inherit the
-        // channel flag (ep 1 showed "explicit: no" there), so repeat it here
-        { name: 'itunes:explicit', objects: { _text: 'true' } },
+        // channel flag (ep 1 showed "explicit: no" there), so repeat it here.
+        // a clean episode says so (ep 6)
+        {
+          name: 'itunes:explicit',
+          objects: { _text: String(episode.explicit) },
+        },
         // the transcript the apps show in sync (podcasting 2.0 namespace,
         // read by apple, pocket casts, overcast, fountain…)
         {
