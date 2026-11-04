@@ -1,0 +1,620 @@
+{
+  "slug": "token-maxing",
+  "title": "token maxing",
+  "description": "token maxing. Sam and Steve on running out of usage, cheaper models behind good review gates, going from tasker to guide, local models catching up to the labs, and why looping agents is like leaving the house with the lights on.",
+  "audioUrl": "https://media.pyredivers.com/pyre-divers-006.mp3",
+  "durationSeconds": 2594,
+  "youtubeUrl": "https://www.youtube.com/watch?v=L5_jzT_Wxo4",
+  "spotifyUrl": null,
+  "applePodcastsUrl": null,
+  "explicit": false,
+  "publishedAt": "2026-11-04T11:00:00Z",
+  "segments": [
+    {
+      "start": 4.02,
+      "end": 6.37,
+      "speaker": "Sam",
+      "text": "Cool. Hey, Steve, how's it going?"
+    },
+    {
+      "start": 6.72,
+      "end": 33.58,
+      "speaker": "Steve",
+      "text": "It's going good, Sam. It's Thursday. Week's almost over. Yeah, it's going good. This was a good, like I told my wife last night, I said this is a good AI week. So it always feels good when it's last time we were talking, we're talking about how you can get beat down and feel. so frustrated or like things are not moving uh this things are feeling like opposite opposite of that this week so excited about that so"
+    },
+    {
+      "start": 33.58,
+      "end": 35.98,
+      "speaker": "Sam",
+      "text": "What's been going well for you this week?"
+    },
+    {
+      "start": 38.48,
+      "end": 75.332,
+      "speaker": "Steve",
+      "text": "getting more and more clear with how to uh help so my so one of the biggest challenges i've been facing is running out of usage i've been i've been sharing that with you you've been coming up with some great tips on auto compacting the conversations conserving tokens like so it's not using the full million i think is how you described it um so that seems to have really helped on the claude side, claude code so i feel like i can make any anything right now like and before I was saying that I was doing too much at"
+    },
+    {
+      "start": 75.332,
+      "end": 75.482,
+      "speaker": "Sam",
+      "text": "Yeah."
+    },
+    {
+      "start": 75.482,
+      "end": 96.782,
+      "speaker": "Steve",
+      "text": "once and I think it was because it was it was just using up too many tokens so so that's better my biggest bottleneck right now is just my computer RAM and disk space so I know I know I need to get another one or start using the other ones right here"
+    },
+    {
+      "start": 97.524,
+      "end": 135.468,
+      "speaker": null,
+      "text": "as well the other thing is getting more clarity using ChatGPT too, bringing that into the mix. GrokBot, I'm finding is wanting to use up way too much usage like it's promoting itself a lot so I'm starting to actually wonder if I even need GrokBot. And I could just do it all in my own system, which I've been calling cortex, you know, I've been talking about. So that's what's happening. It's allowed me to get things done faster."
+    },
+    {
+      "start": 135.968,
+      "end": 166.71,
+      "speaker": null,
+      "text": "And the final thing is I've been getting over my hurdle of just like producing and releasing something like that fear. I had this project, an audio book that I've been. It's like I was just like so this the prompts started becoming okay I want this thing done Friday like let's just let's let's get it to production do whatever it takes like that's you know within reason but let's let's let's get this thing done and it's ready to you know someone could buy it tomorrow so"
+    },
+    {
+      "start": 168.31,
+      "end": 213.032,
+      "speaker": "Sam",
+      "text": "Tomorrow's Friday. Nice. Yeah. Easy, right? Make no mistakes. um yeah no the the usage thing i'm like seeing this everywhere and i think it's because like so there was a anthropic for example had a like a period of time where they're giving you an extra 50 usage you as a consumer you have no idea how much you're using right uh especially like you have to like constantly check like usage to sort of get some idea of where you're at um and then they were giving you an extra 50% and then they backed it off and they were only giving you an extra 25%, I think, right? And eventually they're just going to give you whatever the normal amount is."
+    },
+    {
+      "start": 213.132,
+      "end": 252.152,
+      "speaker": null,
+      "text": "So like, it feels like you're being squeezed a little bit, especially if you get used to kind of pushing it up right to the edge. And I had that hard this week. I was, you know. I was accidentally doing code reviews with Opus Max. So I think I burned through like 40% of my weekly budget in two days. Not great. Realized that because decently, you know."
+    },
+    {
+      "start": 253.908,
+      "end": 278.058,
+      "speaker": null,
+      "text": "OCD with with checking that though I guess I let it lapse for one day I looked at the wrong times especially when you have stuff working overnight and you didn't even realize so that being said you know the next the next two days I think I've only used maybe 10% each day partly auto compacting partly switching to you know sonnet"
+    },
+    {
+      "start": 278.676,
+      "end": 319.868,
+      "speaker": null,
+      "text": "and like high reasoning extra high reasoning and the rationality there is if you have a system through your harness that has really robust review that it's going to run through like you don't need to use a super high level thing because it has a checklist and it's like either yes or no for a lot of these things So I don't think there's been any real noticeable dip in code quality. It's been passing all the same gates. The people who are authoring it have not complained. So then you really do wonder, like as time goes on, right?"
+    },
+    {
+      "start": 319.968,
+      "end": 348.814,
+      "speaker": null,
+      "text": "Like, are we going to be able to just use sort of... less expensive lower reasoning models to get similar output right like do we always need to be maxing frontier intelligence like and i think for me i'm starting to wonder you know what tasks actually require that maybe strategic thinking to some degree maybe the kind of stuff that you actually wouldn't want to auto compact right like because you just"
+    },
+    {
+      "start": 349.716,
+      "end": 383.066,
+      "speaker": null,
+      "text": "you you want to give it the full context like clean it so it's only the relevant stuff in there um but yeah i mean i haven't i haven't messed around too much with uh GrokBot but i'm mostly on free tiers for a lot of these things i mean i uh dots through uh OpenAI would be the only one that i have and i have the pro account so i've i've used it but i haven't like how do you how do you think you got to a point where you're like maxing out that that subscription"
+    },
+    {
+      "start": 383.616,
+      "end": 415.994,
+      "speaker": "Steve",
+      "text": "Yeah. So on the claude code side, definitely because having multiple agents running. So I'm not doing sub-agent driven stuff anymore. And that's the other thing, I started asking the questions like, hey, what's draining the resources? And I started asking all of them, and then I started asking. That's when today is like, man, do I even need GrokBot? So I went to chat to ask that specific question because it's been working on the whole."
+    },
+    {
+      "start": 416.788,
+      "end": 440.688,
+      "speaker": null,
+      "text": "architecture piece of like what's what do I have currently and what do I have missing so hey claude code tell us everything that you we have so far and give it to ChatGPT to analyze it as a chief AI, uh, AI officer, you know, a CAIO, and a CTO like look at it what what's missing and what's"
+    },
+    {
+      "start": 441.46,
+      "end": 473.262,
+      "speaker": null,
+      "text": "not working and also having GrokBot because like GrokBot also knows it's supposed to have solved this problem already and it kept not giving it to me every day I say hey we got to be managing the usage every single day so so what you're what you're pointing out is that there's nothing and they don't want you to really know right they don't want you to know how much you're consuming because they want you to be consumers and and to consume more and more and more And it will though, I'm finding now, you mentioned using different models,"
+    },
+    {
+      "start": 473.512,
+      "end": 506.848,
+      "speaker": null,
+      "text": "some of my rules are too strict because what I have it do is test, like part of the upper level instructions are, hey, test this feature to see if we really need. opus or can we go with a lower model and then it will run it through a test and see like 18 you know 17 out of 20 times it was right or oh it was wrong on this I need to train it now to understand that I don't want to sacrifice quality on very specific features that would"
+    },
+    {
+      "start": 507.54,
+      "end": 538.992,
+      "speaker": null,
+      "text": "put people's lives at stake and when I say that that's because at the top of our mission is lives transformed right and lives are at stake so so I find that if I keep going back I need to go to the top right and give it the mission vision purpose core values let it know what's the most important things where I don't want to skip like skimp on quality I'm okay with increased cost to a degree like I want to see it so I can make an intelligent choice and then now it can do the work"
+    },
+    {
+      "start": 541.396,
+      "end": 575.194,
+      "speaker": "Sam",
+      "text": "Yeah, I mean, a lot of it too is having those gates in place, right? Like, I mean, yeah, they want you to use as much of this as possible. Sometimes the subagents are fine because it's like... If I'm running a review, that's where it all comes from for me as the subagents because I'm running one that's looking at accessibility, like can someone with a screen reader use this effectively? Are there any contrast issues, right? Like there's a whole checklist there. There's security review. There's just a general code review. Like is this logical?"
+    },
+    {
+      "start": 576.404,
+      "end": 620.782,
+      "speaker": null,
+      "text": "um you know and then i'll run a separate to actually drive it you know a lot of that stuff can happen in parallel so then then it's a speed thing you run the sub agents the issue you run into is like um if you are doing what i'm doing which is these recursive passes like look at this feature Okay. Is it good? Oh, you found some issues? Fix those issues. Now look at it again. Like I probably don't need to keep running the security review over and over and over again when I'm changing a button color or some trivial UI change. And I think it's gotten better at filtering out steps, but then you like run the risk of."
+    },
+    {
+      "start": 622.1,
+      "end": 666.146,
+      "speaker": null,
+      "text": "accidentally dropping the ball so you like it's a it's a delicate balance because these these systems are not deterministic at all they you kind of don't always know what you're going to get with it um there's some packages that have recently come out that seemed like they might be able to mitigate some level of the despair that we we sort of run into um one of them i think it's called harness squared out of google and what that does effectively is you install a package and it's going to start looking at what you're doing right Um, and we've typically tried to put rules in like an agent's file or a claude file,"
+    },
+    {
+      "start": 666.296,
+      "end": 686.046,
+      "speaker": null,
+      "text": "finding you want less and less of that. You use something like this agent squared, and then it's going to analyze sort of the patterning that you're, you're getting towards like over time and then automatically adjusting the harness to help optimize whatever you're doing. Right. And I'm sure like to some degree."
+    },
+    {
+      "start": 686.964,
+      "end": 728.468,
+      "speaker": null,
+      "text": "you've done this this dance a number of times where you're asking it to kind of do the same thing over and over again like if i ask you to do a thing three times it'd be cool if you just remember to always do that so i think that type of self-learning at the individual level is is the thing that we really wanted from the agents file um this just was too manual of a process like go in there I mean, yes, you could have claude write your file for you, but still very good practice to read what it's writing there, knowing that that's a system level prompt and it's being passed in all the time. Like I looked in there and it was like."
+    },
+    {
+      "start": 729.972,
+      "end": 741.322,
+      "speaker": null,
+      "text": "Half the stuff in there were super specific edge cases that did not apply to anything really. It wasn't a systems level thinking, so it shouldn't have been a systems level prompt."
+    },
+    {
+      "start": 741.572,
+      "end": 742.022,
+      "speaker": "Steve",
+      "text": "Sure."
+    },
+    {
+      "start": 742.772,
+      "end": 785.162,
+      "speaker": "Sam",
+      "text": "So that like, you know, how do you how do you keep eyes on the right thing? How do you keep monitoring? fresh without burning too much your usage these are like the new set of challenges bottlenecks that we're running into now um but yeah i don't i the the promise of GrokBot was to sort of bring ai to knowledge workers and knowledge workers You shouldn't need to care about what's happening under the hood, but as soon as you start maxing out $200 a month plans, you're like, well, maybe I do actually care a little bit."
+    },
+    {
+      "start": 786.004,
+      "end": 812.704,
+      "speaker": "Steve",
+      "text": "yeah yeah i mean for sure and then i mean i've had to up it i have to increase my uh cap right because it's it's friday and i got stuff that needs to be done before the end of the day and i still want to work on saturday and sunday i still want to be cooking stuff right so um so with claude i'm at 47 percent of my seven day allotment right and that normally by this point i'm either captain"
+    },
+    {
+      "start": 812.596,
+      "end": 839.266,
+      "speaker": null,
+      "text": "capped out or I'm at so I think it was really probably the auto compact I'm not even sure when it happened like how it even got in there it may have come through GrokBot telling and I think it probably was GrokBot telling claude code how to like changing to change its own files right But that was through my getting, you know, being very using very strong language with Grot."
+    },
+    {
+      "start": 839.266,
+      "end": 842.816,
+      "speaker": "Sam",
+      "text": "Oh, easy now, easy now. They're going to remember things."
+    },
+    {
+      "start": 842.816,
+      "end": 867.336,
+      "speaker": "Steve",
+      "text": "Oh, yeah. Oh, you want to hear something crazy? I, you know, I was irritated with claude code because, you know, it wasn't using logic. And I said, why is my logic better than yours right now? And it started doing its thing and then it just stopped. You know, it's one example because whatever. But then, I"
+    },
+    {
+      "start": 867.336,
+      "end": 868.486,
+      "speaker": "Sam",
+      "text": "Mm-hmm. Mm"
+    },
+    {
+      "start": 868.486,
+      "end": 868.536,
+      "speaker": "Steve",
+      "text": "don't"
+    },
+    {
+      "start": 868.536,
+      "end": 868.736,
+      "speaker": "Sam",
+      "text": "-hmm"
+    },
+    {
+      "start": 868.736,
+      "end": 908.712,
+      "speaker": "Steve",
+      "text": "know. Who knows? So the thing that this takes me back to is actually a team meeting today that I had. And one of my team members, she's very much used to being a tasker, like here's the linear SOP, here do this and now we asked her to move from a role of tasker to a role of a guide, right, where on journeys there are no straight linear paths. We go through, we go forward, we go back, we go sideways."
+    },
+    {
+      "start": 909.492,
+      "end": 951.742,
+      "speaker": null,
+      "text": "And so she was looking for clarity and looking for certainty through a linear process. And that will never happen in a customer support role, right? And so today we talked all about really just understanding the journey and understanding the wants, needs and desires and pain of the person on the journey, right? Because now you can be a guide. So I think that, you know, these systems are all designed in very linear, like they've been designed in linear processes and coding, I think, right? I'm not a coder, but I think that's what's happened."
+    },
+    {
+      "start": 952.642,
+      "end": 993.58,
+      "speaker": null,
+      "text": "And I think what we what we're seeing is that we have to really program them in human. dynamics and dynamics of living organism organisms and how the universe in general operates and it's not in a linear model it's in that recursive model like you're talking about right and I've seen some things talking about neuro I don't know it's maybe you know it's called like more of a neuro programming perspective but you know modeled after the human brain and nervous system And so I'm curious what you've seen in that area and what this brings up for you, too."
+    },
+    {
+      "start": 995.68,
+      "end": 1023.572,
+      "speaker": "Sam",
+      "text": "So, I mean. In programming, I'd say probably the most common is like declarative, this idea that you just have control flow and it's like if this and that and it's sort of like everything just listed out in a row, which kind of fits that linear model, right? But there's really specific problems where that's impossible."
+    },
+    {
+      "start": 1026.364,
+      "end": 1070.188,
+      "speaker": null,
+      "text": "one of them is pathfinding so like if you had a maze right you wouldn't be able to say like uh if you know this doesn't work do this throughout the whole maze like how do you keep track of that you wouldn't be able to move through this on a like And the best way that I've found to do it is the recursive model where you kind of program instructions for how it can react to any specific path that it's given. But then for it to also keep track of its memory, right? So it knows like, oh, yeah, when I made the left here, that was a dead end. Don't do that again, right? There has to be some level of."
+    },
+    {
+      "start": 1070.716,
+      "end": 1092.616,
+      "speaker": null,
+      "text": "you do this thing but then you also keep track of the thing you did and what the result was which fits the same like neural like neural nets like it's all the same thing you're you're brute forcing through a lot of this um and because you know you get a stooped up gpu you can run millions of computations right you're gonna you're gonna be able to"
+    },
+    {
+      "start": 1093.628,
+      "end": 1136.544,
+      "speaker": null,
+      "text": "try out all these different possibilities you're going to be able to learn um but really it is still just that brute brute force um attacking of things and the problem is there's no there's always like a learning that you can take from that right sometimes you just have to get to the end and I do wonder how it is like the main thing that seems to be coming up for people is if your job is the task, you're kind of in trouble right now. And there are things where you didn't think it was italic. I didn't think coding was the task, but it turns out it is."
+    },
+    {
+      "start": 1137.744,
+      "end": 1173.208,
+      "speaker": null,
+      "text": "It's something that is incredibly easy to automate, not in the declarative model of this end, but in the recursive neural net more like it. And you would never have been able to anticipate that until this technology came out. And then you're like, well, OK, like we keep running this game like five years from now, what else is something that we think, right, is not the task, but it turns out it is and then it gets automated. I do think it's interesting. It does require people."
+    },
+    {
+      "start": 1174.268,
+      "end": 1189.168,
+      "speaker": null,
+      "text": "to either change your mindset or it just allows people that have a growth perspective to sort of rise in this tide. I don't know, what are your thoughts there?"
+    },
+    {
+      "start": 1190.568,
+      "end": 1196.268,
+      "speaker": "Steve",
+      "text": "I think you know what I'm going to say, Sam. I think it all comes back to our beliefs."
+    },
+    {
+      "start": 1197.212,
+      "end": 1198.112,
+      "speaker": "Sam",
+      "text": "Yeah, sure."
+    },
+    {
+      "start": 1198.112,
+      "end": 1241.094,
+      "speaker": "Steve",
+      "text": "Right. You want to hear a wild conversation I was having today with my team? You know, I'm a chiropractor, right? You know this. So I think about the nervous system all day long. Like so many opportunities. I see the world through a neurological lens. And I was just having on a coaching call with a client who You know, what we do is we help people express their ideas and beliefs to other people, right? So that those people are open to it and will consider it and if it all makes sense and they believe that person, they now adopt those as their beliefs. And the reason I bring that up is..."
+    },
+    {
+      "start": 1241.98,
+      "end": 1264.98,
+      "speaker": null,
+      "text": "Well, one, this nervous system, we don't really think about it very much until there's a problem with it. We just assume that it's working and we don't think about our digestive system, digesting our lunch, all these different things. And there's this principle, and I wonder how some of this correlates into computer science, right? There's a seven-year principle, and you've probably heard it, that we have a brand new body every seven years."
+    },
+    {
+      "start": 1265.756,
+      "end": 1266.106,
+      "speaker": "Sam",
+      "text": "Oh,"
+    },
+    {
+      "start": 1266.156,
+      "end": 1305.844,
+      "speaker": "Steve",
+      "text": "yeah. Because all the cells in our body currently at the moment, because they all have different lifespans, seven years from now, neither one of us will have the same cells that make up our body, a brand new body, which is pretty amazing. It's a very empowering message that I've shared for years because people live in a deterministic, fatalistic gene theory as their dominant view of how health and life works. And now the thing is, and I always tell this story, I said, you know, I actually wasn't totally honest with you. There's a part of you that doesn't change and that is what, Sam, or doesn't replace itself."
+    },
+    {
+      "start": 1306.694,
+      "end": 1308.744,
+      "speaker": "Sam",
+      "text": "Yeah, probably your programming."
+    },
+    {
+      "start": 1308.994,
+      "end": 1312.894,
+      "speaker": "Steve",
+      "text": "Yeah, well, yes and no, the hardware."
+    },
+    {
+      "start": 1314.172,
+      "end": 1314.172,
+      "speaker": "Sam",
+      "text": "Yeah,"
+    },
+    {
+      "start": 1314.172,
+      "end": 1314.622,
+      "speaker": "Steve",
+      "text": "it's"
+    },
+    {
+      "start": 1314.622,
+      "end": 1315.222,
+      "speaker": "Sam",
+      "text": "yeah."
+    },
+    {
+      "start": 1315.222,
+      "end": 1357.248,
+      "speaker": "Steve",
+      "text": "complex right the the brain and the spinal cord the neural tissue that is actually what we are and I tell people we have this we have this meat suit built around it our organs our muscles all the cells and and we are actually it's all there just to support your nervous system which is there for to support the expression of consciousness Right. And then depending upon what you think about consciousness, if consciousness is just a product of randomness or you believe there's a God and a higher, you know, it all depends on beliefs. Right. So then ultimately it's about I believe it's a couple of things."
+    },
+    {
+      "start": 1357.298,
+      "end": 1382.61,
+      "speaker": null,
+      "text": "One, how our AI works will depend upon what we believe. and if we want it to work well for us I think we need to really help it understand fully what we believe and then the other piece is the task piece well what if what if this whole part you know we're talking about this is all just part of the tasks and maybe we're just in the matrix"
+    },
+    {
+      "start": 1384.26,
+      "end": 1425.844,
+      "speaker": "Sam",
+      "text": "Yes, Steve. I mean, like the... I'd always, always gravitated towards the receiver like theory of consciousness that your body is just like an antenna and that would imply that humans are just nodes just sort of experiencing consciousness together. Which is exactly what we're building. But like this is sort of like this, we've had this for a while, right? Like we built machines in the industrial age and then the universe was a machine. And you know, now we have computers and now it's a simulation, right?"
+    },
+    {
+      "start": 1426.194,
+      "end": 1460.156,
+      "speaker": null,
+      "text": "We kind of use whatever is the most current version of our understanding of. Stuff or whatever is the most advanced realization of our technology to describe in a way the indescribable, which probably is just an extension of belief. So, yeah, well then. Because there's different ways to think about like it kind of sucks in that in that world that these AIs are gated to these labs, right,"
+    },
+    {
+      "start": 1460.306,
+      "end": 1473.256,
+      "speaker": null,
+      "text": "like anthropic or OpenAI to a degree because now you have a smaller subset of people that are influencing the thinking that then gets disseminated out to folks who engage with it."
+    },
+    {
+      "start": 1475.506,
+      "end": 1478.1,
+      "speaker": "Steve",
+      "text": "Well Okay, challenge you a bit there."
+    },
+    {
+      "start": 1478.45,
+      "end": 1478.85,
+      "speaker": "Sam",
+      "text": "Sure."
+    },
+    {
+      "start": 1478.85,
+      "end": 1522.516,
+      "speaker": "Steve",
+      "text": "Wouldn't you say that's how it's always been? The control of information and so certain people have access to the ability to control information exchange on various levels through power and force, you know, so I've always seen this, the internet as the as the thing that actually levels the playing field as much as possible which is why I also think it's highly controlled and because it it unleashes something that one of the most powerful technologies available which is the free exchange of ideas and information"
+    },
+    {
+      "start": 1524.668,
+      "end": 1549.268,
+      "speaker": "Sam",
+      "text": "Yeah, that's kind of the genie out of the bottle thing, right? Like the whole web being here, I was like just a bunch of random index pages. And then Web 2 was when you had these centralized companies that started forming and you had a login and like they controlled all of your data. There's been this half-hearted effort."
+    },
+    {
+      "start": 1550.524,
+      "end": 1580.014,
+      "speaker": null,
+      "text": "I shouldn't say half-hearted. The folks who are working on it are definitely very into it. But the Web3 was the blockchain technology decentralization of the web where that kind of hopefully reverses the trend where now you would potentially own all of your data and you have like a wallet that you interact with now, right? So you can imagine a world where Instead of you being the free product on Facebook,"
+    },
+    {
+      "start": 1580.064,
+      "end": 1622.594,
+      "speaker": null,
+      "text": "you go into a marketplace and you spend like one thousandth of a penny's worth of something to like view content. So then you get a ton of views on your site and then that person just by getting the views gets however much value out of that transferred to them. I think. That technology is so obtuse, so difficult to understand that so few people actually decided to work on it. But I think what's happening with AI is, yes, to your point, like there have always been control structures in place."
+    },
+    {
+      "start": 1623.394,
+      "end": 1653.65,
+      "speaker": null,
+      "text": "They're just becoming more and more difficult to actually implement. Um, because you can't necessarily track or control every behavior. People are very clever, creative, find ways around things. And I think we're going to get to a point where everyone has a local model running on their phone that's as powerful as Opus is right now. And you're like."
+    },
+    {
+      "start": 1654.908,
+      "end": 1697.932,
+      "speaker": null,
+      "text": "it might be that thing where it's uh you know when was the last time your iPhone changed right like we're on like whatever version of it and it's like there was a point where there were updates that were happening but then after it kind of like I think we might get to that point where it's like well who cares if my intelligence is a little bit smarter like it doesn't really matter I actually almost feel like we might we might be there already Um, the fact that open source models can, like if you have a GPU to run them, you can do effectively what you're doing at a sonnet level already. Um, like I don't, I don't know what that means once."
+    },
+    {
+      "start": 1699.548,
+      "end": 1734.466,
+      "speaker": null,
+      "text": "technology or hardware requirements start coming down which will inevitably happen in the next few years so everyone's running local models you're actually not tapping into a centralized authority that lords over it i don't i think the utopian ideal is as much a possibility as it's ever been we'll see then it's it is very exciting it is very odd that yeah"
+    },
+    {
+      "start": 1737.866,
+      "end": 1757.224,
+      "speaker": null,
+      "text": "i don't know this is this weird thing where it's i guess it is a belief right where if you believe that this is just the way it is and it always has been Then it'll continue to be that but if enough people believe that things can change it will change so I don't know"
+    },
+    {
+      "start": 1759.474,
+      "end": 1803.652,
+      "speaker": "Steve",
+      "text": "I mean, I'm an eternal optimist, right? So that's one of my belief systems, right, that I have. So yeah, I believe, you know, I believe. life is programmed to thrive right that's my ultimate belief system so then that would follow through like in a lot of other systems so then I just always looking for the interference what's stopping that so that because that's my belief system like everything I do at least and what I see what comes to me I see it as moving towards something or interference interfering with it I, you know, as you're talking about where this is going to go, like right now it's a valuable resource,"
+    },
+    {
+      "start": 1803.902,
+      "end": 1845.296,
+      "speaker": null,
+      "text": "right? And I mean, not the average person isn't spending $500 plus a month on AI, right? So however, I keep hearing more and more like a friend here, she's studying for the nursing boards. She's using AI to help her, you know, study for making flashcards, everything. So then all these other things that existed like board testing and review, like it goes away. So things are going away. People are seeing utility in it, right, for day-to-day life more and more. They'll keep moving towards that."
+    },
+    {
+      "start": 1845.788,
+      "end": 1867.338,
+      "speaker": null,
+      "text": "My concern is this, just like oil and fuel, that because that's the model that the world revolves around, that, you know, and we look at how long it's taken us to embrace solar or other energy sources, right? Not necessarily because we couldn't do it."
+    },
+    {
+      "start": 1868.092,
+      "end": 1908.738,
+      "speaker": null,
+      "text": "but because it threatened the entire you know the ecosystem you know the global ecosystem built upon power control all these things again these are my belief systems and so even though that cost might be nil for this technology what does that mean as the world is built around it Right. Again, the ecosystem built around it, does it continue just to be gated as much as possible and people become bandits when they have it on their own CPUs and anyway."
+    },
+    {
+      "start": 1909.188,
+      "end": 1943.344,
+      "speaker": "Sam",
+      "text": "Of course, we're in like a weird. So like the reason agentic coding, I think got popularized was because of cursor. And what was cool about Cursor, it acted the same way that a normal coding environment would, but you had little agents that you could decide to run. And you had the ability to choose which model it was going to use under the hood. And at first it was just, you know, the different GPT models, Anthropic."
+    },
+    {
+      "start": 1944.444,
+      "end": 1974.72,
+      "speaker": null,
+      "text": "they'd slip Grok in there every while they had a proprietary model um and eventually you could start running the open source ones and there's always been this tension between closed and open source in general i don't think there's ever been a point where The open source version of the thing has been this close to the closed source version."
+    },
+    {
+      "start": 1975.22,
+      "end": 1975.52,
+      "speaker": "Steve",
+      "text": "Hmm"
+    },
+    {
+      "start": 1978.812,
+      "end": 1993.962,
+      "speaker": "Sam",
+      "text": "as easy to because normally you get like the open source something like so i pay a company they might white glove implement the whole system for me i don't really have to think about it but if i want to self-host it myself well now i have to know about i"
+    },
+    {
+      "start": 1993.962,
+      "end": 1994.312,
+      "speaker": "Steve",
+      "text": "Sure."
+    },
+    {
+      "start": 1994.312,
+      "end": 2001.412,
+      "speaker": "Sam",
+      "text": "have to know about containers and virtual machines and like all this stuff right but that's gone i don't need to know anything now"
+    },
+    {
+      "start": 2001.462,
+      "end": 2045.798,
+      "speaker": "Steve",
+      "text": "So you know what's interesting, it goes back to that conversation, I think. think from last week or last episode where we were talking about the companies that will thrive are the ones that are innovating and providing value right so and and they're you know ease ease of use uh innovation maybe we didn't and we probably said innovation i don't know the but like we're paying for innovation at this point too which makes sense like we want them to innovate in that model i don't mind paying them for something that's going to make my my life easier in the mission that i have with my company is myself to be able to help that be more fully expressed so that make i don't know What are your thoughts?"
+    },
+    {
+      "start": 2050.347,
+      "end": 2066.047,
+      "speaker": null,
+      "text": "It's an altruistic way of viewing it that do the companies embrace I mean right now they kind of have to embrace it They have to innovate are they just racing to the top of it I mean they're racing to the top of a never-ending race at the moment it seems"
+    },
+    {
+      "start": 2067.097,
+      "end": 2103.911,
+      "speaker": "Sam",
+      "text": "So if we if we know that these models the open source versions which are It's all effectively the same thing. At the end of the day, it's just what we're actually renting from Anthropic or from OpenAI is their compute, like their GPUs that they just have running. That's mostly what it is. And it feels like if the price of that stuff comes down, the underlying neural networks that exist. You kind of just don't need it anymore. What is that like?"
+    },
+    {
+      "start": 2106.211,
+      "end": 2144.963,
+      "speaker": "Steve",
+      "text": "Yeah, it's the commoditization of it versus, so now everyone can access it because it doesn't cost much to produce the thing that's necessary to run it on our own. It's supply and demand right to that play so then oh and in fact I actually saw this recently a gentleman So it was an Instagram reel. This guy's crying. He's a groom. He's opening a present from his bride and it was a video game card,"
+    },
+    {
+      "start": 2145.063,
+      "end": 2163.171,
+      "speaker": null,
+      "text": "one that normally costs thousands of dollars but now is like $10,000 because they're not able to produce enough, right? And so... I mean, we're going to run into that, both real and created supply chain issues."
+    },
+    {
+      "start": 2165.321,
+      "end": 2197.679,
+      "speaker": "Sam",
+      "text": "I think like if the because all the companies are like Google used to have the, you know, don't be evil tagline, like the whole purpose is for them to provide value. I don't know with the speed of development that's happening, like, I feel like there has to be like a terminal velocity, like a maximum value provided by this particular structure. Like I, or it just becomes."
+    },
+    {
+      "start": 2199.467,
+      "end": 2236.691,
+      "speaker": null,
+      "text": "so commoditized that it's like a public utility and i think we talked about that last week where it's just like you're dialing intelligence at that point and it's like okay like what does the meter say for like how much i use because this stuff is so fundamental for the people who are using it and adoption is it's we're gonna reach a point where like We've probably hit the maximum or close to the maximum number of people who don't have a moral opposition to AI."
+    },
+    {
+      "start": 2237.341,
+      "end": 2276.941,
+      "speaker": null,
+      "text": "And then the folks who do have a moral opposition to AI are going to start falling behind the other people who are just like leapfrogging over and over and over again. they're gonna have the market pressure to use AI but then they're gonna have the open source alternative which is probably morally better like when you really think about it like you have your own GPU you're not like you're incentivized to be efficient and then they start using that I think like there's there's probably people in America that don't have electricity and they're like cool with that right but"
+    },
+    {
+      "start": 2276.941,
+      "end": 2320.025,
+      "speaker": "Steve",
+      "text": "Well, yeah, but you know, you bring it up something for me in terms of that, you talk about people with the moral challenges that they're already consuming it. They're, they're, I mean, if they're on social media, if they're on YouTube, if they're watching TV, if they're, I mean, they are, they're consuming it. Right, so at this point, if someone really, you know, they can choose not to consume it at high quantities, but they can't choose to no longer consume it. It's kind of a lot like the natural health food movement, right? I eat organic most of the time."
+    },
+    {
+      "start": 2321.291,
+      "end": 2364.801,
+      "speaker": null,
+      "text": "However, if I go to a restaurant, there's very high probability that they don't have organic options unless it's specifically an organic. Now, I can choose, right, I can make a choice. I can choose to go to an organic restaurant where that practices all these different principles that I live my life most of the time by. But the reality is it's not a high enough value of mine. to make the choice to say nope I'm not going over there because they don't you know they don't have the only organic so I think that's a piece of that conversation that I'm not hearing many people talk about that it's it's now impossible if you want to live in society not to consume AI"
+    },
+    {
+      "start": 2365.901,
+      "end": 2387.095,
+      "speaker": "Sam",
+      "text": "Yeah, and even if, right, because you'll have. A lot of the outrage, right, at least that I'm hearing is around like art, music, right? And you're like, yeah, like if you're just having it generate the thing for you and you're going to pass it off as art or something like that."
+    },
+    {
+      "start": 2387.691,
+      "end": 2412.291,
+      "speaker": null,
+      "text": "um that's weird if you have it iterate with you throughout the process and you're still putting the effort in you're still moving up against constraints those are like two fundamentally different things but the target to your point is going to be some evil evil social media company right that's going to be serving it to people and you want them to see it it's it's like this weird thing where like you said like"
+    },
+    {
+      "start": 2413.323,
+      "end": 2443.451,
+      "speaker": null,
+      "text": "when things hit a certain threshold of usership like everybody knows somebody at this point who's using ai who they don't think is a terrible person so like at i think the the moral outrage is really just outrage that once the overton window moves like people are just gonna it's gonna be normalized So then afterwards the debate, which there will always be some debate,"
+    },
+    {
+      "start": 2443.551,
+      "end": 2483.403,
+      "speaker": null,
+      "text": "will probably be like open source versus closed source or like the whole token maxing nonsense that people were doing where they're like posting like insane numbers of like look how much I spent and you're like, yeah, okay, well, how much money did you make doing that, right? How much value did you provide? I think we're going to kind of fall back in to this idea that like you probably should turn your lights off when you leave the house, right? So it's going to be the same thing if you probably shouldn't have agents running 24-7 if what they're doing isn't actually high value in some way. It's a transition period. I don't..."
+    },
+    {
+      "start": 2485.131,
+      "end": 2492.481,
+      "speaker": null,
+      "text": "I think it's interesting that people have such strong opinions on something without any of us really even knowing what it is yet."
+    },
+    {
+      "start": 2494.031,
+      "end": 2538.537,
+      "speaker": "Steve",
+      "text": "Yeah. So this takes me back to some of our original discussions as we were discussing this project and starting to have a podcast, and that was bringing on guests. I feel like this is the perfect time to bring on two guests, two specific ones. One, an artist who's a graphic designer who's now embracing AI. So I'd like to hear from her, her perspective. And then I'd love to have an artist who is not for it, because that would be an interesting conversation for sure. And then, oh, there's one other, oh,"
+    },
+    {
+      "start": 2538.687,
+      "end": 2571.633,
+      "speaker": null,
+      "text": "the moral aspect, the people who, you know, because, you know, at the end of the day, you know, there should be the moral application of it, just like no one wants to live next to a nuclear reactor necessarily, right? I get why no one wants to live next to a data center. And now they're popping up everywhere. So yeah, I think that's a very real conversation that we should entertain and understand."
+    },
+    {
+      "start": 2572.783,
+      "end": 2575.433,
+      "speaker": "Sam",
+      "text": "You know, there's some people in here. Let's do it. I'm in."
+    },
+    {
+      "start": 2575.833,
+      "end": 2577.483,
+      "speaker": "Steve",
+      "text": "Cool. Awesome."
+    },
+    {
+      "start": 2578.783,
+      "end": 2579.833,
+      "speaker": "Sam",
+      "text": "All right. We'll see you next time."
+    },
+    {
+      "start": 2579.833,
+      "end": 2581.883,
+      "speaker": "Steve",
+      "text": "Thanks, Sam. Appreciate it. Bye."
+    },
+    {
+      "start": 2581.883,
+      "end": 2582.383,
+      "speaker": "Sam",
+      "text": "See you soon."
+    }
+  ]
+}
