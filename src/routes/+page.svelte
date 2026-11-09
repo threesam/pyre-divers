@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Splash from '$lib/components/Splash.svelte';
-  import SocialStones from '$lib/components/SocialStones.svelte';
-  import Sitters from '$lib/components/Sitters.svelte';
+  import Splash from '#lib/components/Splash.svelte';
+  import SocialStones from '#lib/components/SocialStones.svelte';
+  import Sitters from '#lib/components/Sitters.svelte';
   import { resolve } from '$app/paths';
   import {
     FEED,
@@ -10,8 +10,8 @@
     SAME_AS,
     SITE,
     jsonLdScript,
-  } from '$lib/links';
-  import { SCENE_W } from '$lib/page-fx';
+  } from '#lib/links.ts';
+  import { SCENE_W } from '#lib/page-fx.ts';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();

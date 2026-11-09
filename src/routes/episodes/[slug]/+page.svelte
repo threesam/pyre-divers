@@ -10,8 +10,8 @@
   import { tick } from 'svelte';
   import { afterNavigate } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import SubscribeBar from '$lib/components/SubscribeBar.svelte';
-  import { FEED, HOSTS, ORGANIZATION, SITE, jsonLdScript } from '$lib/links';
+  import SubscribeBar from '#lib/components/SubscribeBar.svelte';
+  import { FEED, HOSTS, ORGANIZATION, SITE, jsonLdScript } from '#lib/links.ts';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -166,7 +166,10 @@
         [i]?.scrollIntoView({ block: 'center' });
     }
   }
-  afterNavigate(({ to, type }) => {
+
+  afterNavigate(({ to, type, shallow }) => {
+    if (shallow && type === 'goto') return;
+
     if (to) {
       cue(to.url, type !== 'popstate');
     }
@@ -282,12 +285,14 @@
 </svelte:head>
 
 <main class="episode">
-  <a class="back" href={resolve('/')}>&larr; back to the fire</a>
+  <a class="back" href={resolve('/')}>← back to the fire</a>
 
   <!-- the length up front: the native player reads 0:00 / 0:00 until it
        loads, and preload stays none (the file is ~40MB) -->
   <p class="kicker">
-    no. {data.number}{#if minutes}&nbsp;· {minutes} min{/if}
+    no. {data.number}{#if minutes}
+      · {minutes} min
+    {/if}
   </p>
   <h1>{episode.title}</h1>
   <p class="desc">{episode.description}</p>
