@@ -1,8 +1,8 @@
 // llms.txt, prerendered from the episode files so every published episode is listed with
 // its page, audio and transcript — the static file only knew the show existed.
-import { FEED, SHOW, SITE } from '$lib/links';
+import { FEED, SHOW, SITE } from '#lib/links.ts';
 import type { RequestHandler } from './$types';
-import { listPublishedEpisodes } from '$lib/server/queries';
+import { listPublishedEpisodes } from '#lib/server/queries.ts';
 
 export const prerender = true;
 

@@ -6,7 +6,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { fade } from 'svelte/transition';
-  import { hasJoined, rememberJoined, subscribeFlow } from '$lib/subscribe';
+  import { hasJoined, rememberJoined, subscribeFlow } from '#lib/subscribe.ts';
 
   // the episode page's ask, for readers who came for one episode and aren't
   // on the list. Client-side only: whether this browser already joined lives

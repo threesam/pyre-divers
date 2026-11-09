@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { FLAME_BASE, FLAME_X, LOGS, SEAT } from '$lib/page-fx';
-  import { SITTERS } from '$lib/sitters';
+  import { FLAME_BASE, FLAME_X, LOGS, SEAT } from '#lib/page-fx.ts';
+  import { SITTERS } from '#lib/sitters.ts';
   import { resolve } from '$app/paths';
 
   // The people on the logs. The logs and the seated bodies are canvas
