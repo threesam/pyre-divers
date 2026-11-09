@@ -10,8 +10,8 @@ export default defineConfig({
       // crawler follows (<link rel=alternate>, robots.txt) — name them
       prerender: {
         entries: ['*', '/feed.xml', '/sitemap.xml'],
-        // /episodes/[slug] legitimately builds zero pages until the podcast
-        // db env lands — entries() enumerates from it at build time
+        // /episodes/[slug] builds zero pages while no episode is live yet —
+        // entries() enumerates the published files at build time
         handleUnseenRoutes: 'ignore',
       },
     }),
