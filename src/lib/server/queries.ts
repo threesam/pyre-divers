@@ -3,7 +3,7 @@
 // episode is live once its publishedAt has passed when the site builds, so a
 // scheduled one goes out with the first build after its time: the box fires the
 // deploy hook daily at 11:01 UTC, right after the usual Wednesday slot.
-import { env } from '$env/dynamic/private';
+import { PREVIEW_DRAFTS } from '$app/env/private';
 
 interface Segment {
   start: number;
@@ -38,7 +38,7 @@ const files = Object.values(
 
 // PREVIEW_DRAFTS=1 builds unscheduled and future episodes too, so a page and
 // its feed item can be read locally before they go out. never set on vercel.
-const preview = () => env.PREVIEW_DRAFTS === '1';
+const preview = () => PREVIEW_DRAFTS === '1';
 
 // newest first, undated drafts on top. `number` counts from the oldest — the
 // feed's <itunes:episode> and the page's json-ld episodeNumber both read it
@@ -75,6 +75,7 @@ function publish() {
         (b.publishedAt?.getTime() ?? Infinity) -
         (a.publishedAt?.getTime() ?? Infinity),
     );
+
   return rows.map((row, i) => ({ ...row, number: rows.length - i }));
 }
 

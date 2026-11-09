@@ -1,5 +1,5 @@
 import type { Actions } from './$types';
-import { LISTMONK } from '$lib/subscribe';
+import { LISTMONK } from '#lib/subscribe.ts';
 import { fail } from '@sveltejs/kit';
 
 export const actions: Actions = {

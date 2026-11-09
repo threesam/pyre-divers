@@ -1,8 +1,7 @@
-import { EMAIL, joinList } from '$lib/server/signup';
-import { LISTMONK } from '$lib/subscribe';
+import { EMAIL, joinList } from '#lib/server/signup.ts';
+import { LISTMONK } from '#lib/subscribe.ts';
+import { LISTMONK_SIGNUP_TOKEN } from '$app/env/private';
 import type { RequestHandler } from './$types';
-import { env } from '$env/dynamic/private';
-import { json } from '@sveltejs/kit';
 
 // both signup forms post here; the rest of the site is static
 export const prerender = false;
@@ -16,23 +15,27 @@ export const POST: RequestHandler = async ({ request, url, fetch }) => {
   // posting here (umami's seat-joined count falls behind the list's growth),
   // put a proof-of-work check in front, such as altcha
   if (request.headers.get('origin') !== url.origin) {
-    return json({ ok: false }, { status: 403 });
+    return Response.json({ ok: false }, { status: 403 });
   }
-  const sent = (await request.json().catch(() => ({}))) as { email?: unknown };
+
+  const sent = (await request.json().catch(() => ({}))) as {
+    email?: unknown;
+  };
   const email =
     typeof sent.email === 'string' ? sent.email.trim().toLowerCase() : '';
+
   if (email.length > MAX_EMAIL || !EMAIL.test(email)) {
-    return json({ ok: false }, { status: 400 });
+    return Response.json({ ok: false }, { status: 400 });
   }
   const ok = await joinList(
     email,
     {
       url: LISTMONK.url,
       user: 'pyre-signup',
-      token: env.LISTMONK_SIGNUP_TOKEN ?? '',
+      token: LISTMONK_SIGNUP_TOKEN,
       list: LIST_ID,
     },
     fetch,
   ).catch(() => false);
-  return json({ ok }, { status: ok ? 200 : 502 });
+  return Response.json({ ok }, { status: ok ? 200 : 502 });
 };
