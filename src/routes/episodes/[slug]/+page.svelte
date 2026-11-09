@@ -198,25 +198,16 @@
         image: OG_IMAGE,
         author: HOSTS,
         publisher: ORGANIZATION,
-        associatedMedia: [
-          episode.audioUrl && {
-            '@type': 'AudioObject',
-            contentUrl: episode.audioUrl,
-            encodingFormat: 'audio/mpeg',
-            duration,
-          },
-          // only the video this page plays: google indexes a VideoObject
-          // only where the video is on the page, so the youtube link isn't one
-          episode.videoUrl && {
-            '@type': 'VideoObject',
-            name: episode.title,
-            description: episode.description,
-            contentUrl: episode.videoUrl,
-            thumbnailUrl: OG_IMAGE,
-            uploadDate: episode.publishedAt,
-            duration,
-          },
-        ].filter(Boolean),
+        // ponytail: audio only. a VideoObject needs the video on this page and
+        // its own thumbnail; add one when an episode ships videoUrl + a still
+        associatedMedia: episode.audioUrl
+          ? {
+              '@type': 'AudioObject',
+              contentUrl: episode.audioUrl,
+              encodingFormat: 'audio/mpeg',
+              duration,
+            }
+          : undefined,
         partOfSeries: {
           '@type': 'PodcastSeries',
           '@id': `${SITE}/#podcast`,
