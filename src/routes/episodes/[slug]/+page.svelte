@@ -178,14 +178,6 @@
     cueAt = -1;
   }
 
-  // the youtube full episode, when there is one: its id gives the embed and
-  // the thumbnail google wants on a VideoObject (hqdefault always exists;
-  // maxresdefault doesn't for every upload)
-  const youtubeId = $derived(
-    episode.youtubeUrl
-      ? new URL(episode.youtubeUrl).searchParams.get('v')
-      : null,
-  );
   const duration = $derived(
     episode.durationSeconds ? isoDuration(episode.durationSeconds) : undefined,
   );
@@ -216,15 +208,16 @@
             encodingFormat: 'audio/mpeg',
             duration,
           },
-          youtubeId && {
+          // only the video this page plays: google indexes a VideoObject
+          // only where the video is on the page, so the youtube link isn't one
+          episode.videoUrl && {
             '@type': 'VideoObject',
             name: episode.title,
             description: episode.description,
-            thumbnailUrl: `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
+            contentUrl: episode.videoUrl,
+            thumbnailUrl: OG_IMAGE,
             uploadDate: episode.publishedAt,
             duration,
-            url: episode.youtubeUrl,
-            embedUrl: `https://www.youtube.com/embed/${youtubeId}`,
           },
         ].filter(Boolean),
         partOfSeries: {
