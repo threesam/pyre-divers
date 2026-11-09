@@ -3,11 +3,24 @@
   import SocialStones from '#lib/components/SocialStones.svelte';
   import Sitters from '#lib/components/Sitters.svelte';
   import { resolve } from '$app/paths';
-  import { FEED, HOSTS, SAME_AS } from '#lib/links.ts';
+  import {
+    FEED,
+    HOSTS,
+    ORGANIZATION,
+    SAME_AS,
+    SITE,
+    jsonLdScript,
+  } from '#lib/links.ts';
   import { SCENE_W } from '#lib/page-fx.ts';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
+
+  // what search shows: the names and the subject, which the wordmark alone
+  // can't say. the rest of the page keeps the show's own voice.
+  const TITLE = "pyre divers — a podcast with Sam D'Angelo and Steve Tullius";
+  const DESCRIPTION =
+    'a podcast. two builders, live and unedited, on AI and building with the ones who jumped before they were ready. new dives every wednesday.';
 
   // the planned first dive, shown only until an episode is published
   const LAUNCH = { iso: '2026-09-23', text: 'september 23' };
@@ -18,56 +31,62 @@
     data.latest ? resolve('/episodes/[slug]', { slug: data.latest.slug }) : '',
   );
 
-  const jsonLdTag = 'script';
+  // one graph: the site, the show, who makes it. hosts and the organization
+  // come from #lib/links.ts so the episode pages name them the same way.
   const jsonLd = $derived(
-    `<${jsonLdTag} type="application/ld+json">` +
-      `{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": "https://pyredivers.com/#website",
-      "url": "https://pyredivers.com/",
-      "name": "pyre divers",
-      "description": "two builders, live and unedited. conversations with the ones who jumped before they were ready.",
-      "inLanguage": "en"
-    },
-    {
-      "@type": "PodcastSeries",
-      "@id": "https://pyredivers.com/#podcast",
-      "name": "pyre divers",
-      "url": "https://pyredivers.com/",
-      "image": ["https://pyredivers.com/podcast-cover.jpg", "https://pyredivers.com/og.jpg"],
-      "description": "live, unpolished conversations with the ones who jumped before they were ready. two builders, one fire.",
-      "startDate": "${data.startDate ?? LAUNCH.iso}",
-      "inLanguage": "en",
-      "genre": ["technology", "entrepreneurship", "philosophy"],
-      "webFeed": "${FEED}",
-      "sameAs": ${JSON.stringify(SAME_AS)},
-      "author": ${JSON.stringify(HOSTS)}
-    }
-  ]
-}` +
-      `</${jsonLdTag}>`,
+    jsonLdScript({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebSite',
+          '@id': `${SITE}/#website`,
+          url: `${SITE}/`,
+          name: 'pyre divers',
+          description: DESCRIPTION,
+          inLanguage: 'en',
+          publisher: { '@id': ORGANIZATION['@id'] },
+        },
+        ORGANIZATION,
+        {
+          '@type': 'PodcastSeries',
+          '@id': `${SITE}/#podcast`,
+          name: 'pyre divers',
+          url: `${SITE}/`,
+          image: [`${SITE}/podcast-cover.jpg`, `${SITE}/og.jpg`],
+          description:
+            'live, unpolished conversations with the ones who jumped before they were ready. two builders, one fire.',
+          startDate: data.startDate ?? LAUNCH.iso,
+          inLanguage: 'en',
+          genre: ['technology', 'entrepreneurship', 'philosophy'],
+          webFeed: FEED,
+          sameAs: SAME_AS,
+          author: HOSTS,
+          publisher: { '@id': ORGANIZATION['@id'] },
+        },
+      ],
+    }),
   );
 </script>
 
 <svelte:head>
-  <title>pyre divers</title>
-  <meta
-    name="description"
-    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. new dives every wednesday."
+  <title>{TITLE}</title>
+  <!-- the wordmark is the largest paint and waits on this face (display:
+       block, see app.css), so fetch it with the html, not after the css -->
+  <link
+    rel="preload"
+    href="/fonts/pyre-display.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
   />
-  <link rel="canonical" href="https://pyredivers.com/" />
+  <meta name="description" content={DESCRIPTION} />
+  <link rel="canonical" href="{SITE}/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="pyre divers" />
-  <meta property="og:title" content="pyre divers" />
-  <meta
-    property="og:description"
-    content="two builders, live and unedited. conversations with the ones who jumped before they were ready. new dives every wednesday."
-  />
-  <meta property="og:url" content="https://pyredivers.com/" />
-  <meta property="og:image" content="https://pyredivers.com/og.jpg" />
+  <meta property="og:title" content={TITLE} />
+  <meta property="og:description" content={DESCRIPTION} />
+  <meta property="og:url" content="{SITE}/" />
+  <meta property="og:image" content="{SITE}/og.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta
@@ -76,19 +95,17 @@
   />
   <meta property="og:locale" content="en_US" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="pyre divers" />
-  <meta
-    name="twitter:description"
-    content="two builders, live and unedited. new dives every wednesday."
-  />
-  <meta name="twitter:image" content="https://pyredivers.com/og.jpg" />
+  <meta name="twitter:site" content="@pyredivers" />
+  <meta name="twitter:title" content={TITLE} />
+  <meta name="twitter:description" content={DESCRIPTION} />
+  <meta name="twitter:image" content="{SITE}/og.jpg" />
   <link
     rel="alternate"
     type="application/rss+xml"
     title="pyre divers"
-    href="https://pyredivers.com/feed.xml"
+    href={FEED}
   />
-  <!-- eslint-disable-next-line svelte/no-at-html-tags -- build-time json-ld; the one interpolation is an iso date -->
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -- json-stringified + `<`-escaped, not raw html -->
   {@html jsonLd}
 </svelte:head>
 

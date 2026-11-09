@@ -6,6 +6,10 @@ export default defineConfig({
   plugins: [
     sveltekit({
       adapter: adapter(),
+      // every page's css is ~13-20KB raw: inline it, so first paint doesn't
+      // wait on a stylesheet round trip and the wordmark's font is found in the
+      // html itself (lighthouse's render-blocking + dependency-chain audits)
+      inlineStyleThreshold: 24 * 1024,
       // feed.xml and sitemap.xml aren't linked from any page the prerender
       // crawler follows (<link rel=alternate>, robots.txt) — name them
       prerender: {

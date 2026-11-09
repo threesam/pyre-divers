@@ -11,7 +11,7 @@
   import { afterNavigate } from '$app/navigation';
   import { resolve } from '$app/paths';
   import SubscribeBar from '#lib/components/SubscribeBar.svelte';
-  import { FEED, HOSTS, SITE } from '#lib/links.ts';
+  import { FEED, HOSTS, ORGANIZATION, SITE, jsonLdScript } from '#lib/links.ts';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -181,51 +181,69 @@
     cueAt = -1;
   }
 
-  // escape `<` so stray episode text can't close the json-ld script element —
-  // json never legitimately contains a raw `<`. (solve-for-x pattern.)
-  function jsonLdScript(value: object) {
-    return JSON.stringify(value).replace(/</g, '\\u003c');
-  }
+  const duration = $derived(
+    episode.durationSeconds ? isoDuration(episode.durationSeconds) : undefined,
+  );
 
   const episodeJsonLd = $derived({
     '@context': 'https://schema.org',
-    '@type': 'PodcastEpisode',
-    '@id': canonicalUrl,
-    name: episode.title,
-    description: episode.description,
-    url: canonicalUrl,
-    datePublished: episode.publishedAt,
-    episodeNumber: data.number,
-    duration: episode.durationSeconds
-      ? isoDuration(episode.durationSeconds)
-      : undefined,
-    inLanguage: 'en',
-    image: OG_IMAGE,
-    author: HOSTS,
-    associatedMedia: episode.audioUrl
-      ? {
-          '@type': 'AudioObject',
-          contentUrl: episode.audioUrl,
-          encodingFormat: 'audio/mpeg',
-          duration: episode.durationSeconds
-            ? isoDuration(episode.durationSeconds)
-            : undefined,
-        }
-      : undefined,
-    partOfSeries: {
-      '@type': 'PodcastSeries',
-      '@id': `${SITE}/#podcast`,
-      name: 'pyre divers',
-      url: `${SITE}/`,
-      webFeed: FEED,
-    },
+    '@graph': [
+      {
+        '@type': 'PodcastEpisode',
+        '@id': canonicalUrl,
+        name: episode.title,
+        description: episode.description,
+        url: canonicalUrl,
+        datePublished: episode.publishedAt,
+        episodeNumber: data.number,
+        duration,
+        inLanguage: 'en',
+        image: OG_IMAGE,
+        author: HOSTS,
+        publisher: ORGANIZATION,
+        // ponytail: audio only. a VideoObject needs the video on this page and
+        // its own thumbnail; add one when an episode ships videoUrl + a still
+        associatedMedia: episode.audioUrl
+          ? {
+              '@type': 'AudioObject',
+              contentUrl: episode.audioUrl,
+              encodingFormat: 'audio/mpeg',
+              duration,
+            }
+          : undefined,
+        partOfSeries: {
+          '@type': 'PodcastSeries',
+          '@id': `${SITE}/#podcast`,
+          name: 'pyre divers',
+          url: `${SITE}/`,
+          webFeed: FEED,
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'pyre divers',
+            item: `${SITE}/`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: episode.title,
+            item: canonicalUrl,
+          },
+        ],
+      },
+    ],
   });
 </script>
 
 <svelte:window onhashchange={() => cue(new URL(location.href))} />
 
 <svelte:head>
-  <title>{episode.title} — pyre divers</title>
+  <title>{episode.title} — pyre divers podcast, ep. {data.number}</title>
   <meta name="description" content={episode.description} />
   <link rel="canonical" href={canonicalUrl} />
   <!-- article, not video.episode: this is an audio episode with its transcript -->
@@ -252,6 +270,7 @@
     <meta property="og:audio:type" content="audio/mpeg" />
   {/if}
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@pyredivers" />
   <meta name="twitter:title" content={episode.title} />
   <meta name="twitter:description" content={episode.description} />
   <meta name="twitter:image" content={OG_IMAGE} />
@@ -262,8 +281,7 @@
     href={FEED}
   />
   <!-- eslint-disable-next-line svelte/no-at-html-tags -- json-stringified + `<`-escaped, not raw html -->
-  {@html `<script type="application/ld+json">${jsonLdScript(episodeJsonLd)}<` +
-    `/script>`}
+  {@html jsonLdScript(episodeJsonLd)}
 </svelte:head>
 
 <main class="episode">
