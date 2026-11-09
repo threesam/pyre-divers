@@ -18,11 +18,36 @@ export const SHOW: Record<
 /** every listing, for json-ld sameAs */
 export const SAME_AS = Object.values(SHOW);
 
+// json-ld nodes, inlined whole on every page that names them: google reads
+// each page's graph on its own, so a bare {"@id"} pointing at the home page
+// would lose the name. the profile links are the ones on the hosts' cards
+// (src/lib/sitters.ts).
 export const HOSTS = [
   {
     '@type': 'Person',
-    name: "Salvatore D'Angelo",
+    '@id': `${SITE}/#sam`,
+    name: "Sam D'Angelo",
+    alternateName: ["Salvatore D'Angelo", 'threesam'],
     url: 'https://threesam.com',
+    sameAs: ['https://threesam.com', 'https://linkedin.com/in/threesam'],
   },
-  { '@type': 'Person', name: 'Steve Tullius' },
+  {
+    '@type': 'Person',
+    '@id': `${SITE}/#steve`,
+    name: 'Steve Tullius',
+    url: 'https://waitlistworkshops.com',
+    sameAs: [
+      'https://waitlistworkshops.com',
+      'https://www.linkedin.com/in/drtullius/',
+    ],
+  },
 ];
+
+export const ORGANIZATION = {
+  '@type': 'Organization',
+  '@id': `${SITE}/#organization`,
+  name: 'pyre divers',
+  url: `${SITE}/`,
+  logo: `${SITE}/podcast-cover.jpg`,
+  sameAs: SAME_AS,
+};
