@@ -181,9 +181,6 @@
   const duration = $derived(
     episode.durationSeconds ? isoDuration(episode.durationSeconds) : undefined,
   );
-  const title = $derived(
-    `${episode.title} — pyre divers podcast, ep. ${data.number}`,
-  );
 
   const episodeJsonLd = $derived({
     '@context': 'https://schema.org',
@@ -252,7 +249,7 @@
 <svelte:window onhashchange={() => cue(new URL(location.href))} />
 
 <svelte:head>
-  <title>{title}</title>
+  <title>{episode.title} — pyre divers podcast, ep. {data.number}</title>
   <meta name="description" content={episode.description} />
   <link rel="canonical" href={canonicalUrl} />
   <!-- article, not video.episode: this is an audio episode with its transcript -->
