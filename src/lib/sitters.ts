@@ -23,7 +23,7 @@ export const SITTERS: Sitter[] = [
   {
     name: 'sam',
     full: "Salvatore D'Angelo",
-    head: '/sitters/sam.png',
+    head: '/sitters/sam.webp',
     w: 204,
     h: 5.8,
     log: 0,
@@ -36,7 +36,7 @@ export const SITTERS: Sitter[] = [
   {
     name: 'steve',
     full: 'Steve Tullius',
-    head: '/sitters/steve.png',
+    head: '/sitters/steve.webp',
     w: 219,
     h: 6.4,
     log: 1,

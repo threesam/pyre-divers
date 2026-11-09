@@ -64,6 +64,15 @@
 
 <svelte:head>
   <title>{TITLE}</title>
+  <!-- the wordmark is the largest paint and waits on this face (display:
+       block, see app.css), so fetch it with the html, not after the css -->
+  <link
+    rel="preload"
+    href="/fonts/pyre-display.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
+  />
   <meta name="description" content={DESCRIPTION} />
   <link rel="canonical" href="{SITE}/" />
   <meta property="og:type" content="website" />
