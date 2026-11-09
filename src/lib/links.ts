@@ -18,6 +18,11 @@ export const SHOW: Record<
 /** every listing, for json-ld sameAs */
 export const SAME_AS = Object.values(SHOW);
 
+/** a json-ld script element for {@html}. `<` is escaped so no string in it
+ * can close the element; json never legitimately holds a raw `<`. */
+export const jsonLdScript = (value: object) =>
+  `<script type="application/ld+json">${JSON.stringify(value).replace(/</g, '\\u003c')}</script>`;
+
 // json-ld nodes, inlined whole on every page that names them: google reads
 // each page's graph on its own, so a bare {"@id"} pointing at the home page
 // would lose the name. the profile links are the ones on the hosts' cards

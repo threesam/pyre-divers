@@ -11,7 +11,7 @@
   import { afterNavigate } from '$app/navigation';
   import { resolve } from '$app/paths';
   import SubscribeBar from '$lib/components/SubscribeBar.svelte';
-  import { FEED, HOSTS, ORGANIZATION, SITE } from '$lib/links';
+  import { FEED, HOSTS, ORGANIZATION, SITE, jsonLdScript } from '$lib/links';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -178,12 +178,6 @@
     cueAt = -1;
   }
 
-  // escape `<` so stray episode text can't close the json-ld script element —
-  // json never legitimately contains a raw `<`. (solve-for-x pattern.)
-  function jsonLdScript(value: object) {
-    return JSON.stringify(value).replace(/</g, '\\u003c');
-  }
-
   // the youtube full episode, when there is one: its id gives the embed and
   // the thumbnail google wants on a VideoObject (hqdefault always exists;
   // maxresdefault doesn't for every upload)
@@ -303,8 +297,7 @@
     href={FEED}
   />
   <!-- eslint-disable-next-line svelte/no-at-html-tags -- json-stringified + `<`-escaped, not raw html -->
-  {@html `<script type="application/ld+json">${jsonLdScript(episodeJsonLd)}<` +
-    `/script>`}
+  {@html jsonLdScript(episodeJsonLd)}
 </svelte:head>
 
 <main class="episode">

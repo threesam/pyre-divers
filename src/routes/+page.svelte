@@ -3,7 +3,14 @@
   import SocialStones from '$lib/components/SocialStones.svelte';
   import Sitters from '$lib/components/Sitters.svelte';
   import { resolve } from '$app/paths';
-  import { FEED, HOSTS, ORGANIZATION, SAME_AS, SITE } from '$lib/links';
+  import {
+    FEED,
+    HOSTS,
+    ORGANIZATION,
+    SAME_AS,
+    SITE,
+    jsonLdScript,
+  } from '$lib/links';
   import { SCENE_W } from '$lib/page-fx';
   import type { PageProps } from './$types';
 
@@ -26,9 +33,8 @@
 
   // one graph: the site, the show, who makes it. hosts and the organization
   // come from $lib/links so the episode pages name them the same way.
-  // `<` escaped so nothing in a string can close the script tag.
   const jsonLd = $derived(
-    JSON.stringify({
+    jsonLdScript({
       '@context': 'https://schema.org',
       '@graph': [
         {
@@ -58,7 +64,7 @@
           publisher: { '@id': ORGANIZATION['@id'] },
         },
       ],
-    }).replace(/</g, '\\u003c'),
+    }),
   );
 </script>
 
@@ -100,7 +106,7 @@
     href={FEED}
   />
   <!-- eslint-disable-next-line svelte/no-at-html-tags -- json-stringified + `<`-escaped, not raw html -->
-  {@html `<script type="application/ld+json">${jsonLd}<` + `/script>`}
+  {@html jsonLd}
 </svelte:head>
 
 <main>
