@@ -32,7 +32,7 @@
   );
 
   // one graph: the site, the show, who makes it. hosts and the organization
-  // come from $lib/links so the episode pages name them the same way.
+  // come from #lib/links.ts so the episode pages name them the same way.
   const jsonLd = $derived(
     jsonLdScript({
       '@context': 'https://schema.org',
