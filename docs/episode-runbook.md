@@ -68,7 +68,7 @@ The show streams live; export the finished recording too.
 ## 2. cut list: one piece
 
 Write `keep.json` by hand as one interval, `[[HEAD, TAIL]]`, in raw seconds.
-Ep 5: `[[5.166, 2895.6]]`. Don't run `tighten.py`; eps 1 and 2 went out
+Ep 5: `[[5.166, 2895.6]]`; ep 7: `[[1.9, 1780.5]]`. Don't run `tighten.py`; eps 1 and 2 went out
 tightened, and that was a mistake.
 
 ```sh
@@ -100,6 +100,38 @@ python3 -I $S/align_apply.py $EP "$RAW"   # Kaiser-sinc warp ($S/warp.py) -> $EP
 The re-measure should print a lag near 0 ms and near 0 ppm for both voices.
 Align on speech, band-limited to 150–3500 Hz; a plain waveform match locks onto
 pitch periods.
+
+## 3b. the look: four tones, the whole time (from ep 7)
+
+From ep 7 the footage carries the look for the whole show, not just the head
+and the ending, so the backgrounds stop mattering. Every frame goes to four
+tones: ink `#212614`, slate `#4a5560`, gray `#b9b7b2`, paper `#e7e2da`. Any
+tone can be a hole onto a video underneath (`BAND=file`, 0 = ink … 3 = paper).
+
+```sh
+SS=900 DUR=8 python3 $T/look4.py "$RAW" $EP/look-test.mp4 3=$EP/under/reel.mp4   # one test stretch first
+python3 $T/look4.py "$RAW" $EP/raw-look.mp4 3=$EP/under/reel.mp4                 # then the whole raw (~4 GB)
+```
+
+- **Cutoffs are per person**: `THR_L` (Steve, left) and `THR_R` (Sam, right),
+  three luma cutoffs each. Put the top one near that face's median luma, so
+  the face splits across gray and paper. A cutoff below the face turns it into
+  one flat blob, or a hole. Measure the face boxes on a few frames before
+  picking. Ep 7: Steve `30,95,175` (face median ~165), Sam `65,100,128`
+  (~135).
+- **Holes**: paper is the safe one, since faces keep their ink and slate
+  features. A hole in gray cuts through faces. Several holes at once work
+  (`2=a.mp4 3=b.mp4`), but they get busy.
+- **The underlay loops** for the whole show. Ep 7's is `under/reel.mp4`, 111 s of
+  Deana's nature clips (no people), each scaled to cover 1920×1080 at 30 fps and
+  joined with the concat demuxer. Ask her before any of her footage ships.
+- The audio is copied untouched, and the timeline is the raw's, so
+  `keep.json` and everything after it still apply.
+
+In step 4, pass `$EP/raw-look.mp4` as the raw to assemble.py,
+`pyre-head-only.py` and the `tail-plain.mov` cut. The head threshold
+(`pyre-head-threshold.sh`) still reads the plain raw: the show opens on the
+two-tone flip, then dissolves into the four tones.
 
 ## 4. the picture: threshold head and ending
 
@@ -398,8 +430,11 @@ Ep 5's order: site (step 10), YouTube, email, LinkedIn, Spotify video.
   with `docker compose up -d --no-deps caddy`.
 - **Headless captures of the site can't show the vortex**: without a GPU the site
   draws its static fallback. That's why `whirl.py` re-implements the sim.
-- **Disk**: every full-length float wav or render is about 1 GB. Delete
-  intermediates as you go.
+- **Disk**: every full-length float wav or render is about 1 GB, and
+  `raw-look.mp4` is about 4 more. Before a build, `/archive` the last shipped
+  episode's intermediates to the SeaGate (edit mp4s, `work/`,
+  `assemble-work/`, the full-length wavs). Keep its final, `clips/`,
+  `publish/`, `local/` and scripts.
 
 ## to promote into tools/episode
 
