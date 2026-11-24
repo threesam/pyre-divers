@@ -123,8 +123,8 @@ python3 $T/look4.py "$RAW" $EP/raw-look.mp4 3=$EP/under/reel.mp4                
   features. A hole in gray cuts through faces. Several holes at once work
   (`2=a.mp4 3=b.mp4`), but they get busy.
 - **The underlay loops** for the whole show. Ep 7's is `under/reel.mp4`, 111 s of
-  Deana's nature clips (no people), each scaled to cover 1920×1080 at 30 fps and
-  joined with the concat demuxer. Ask her before any of her footage ships.
+  nature clips from a friend's archive (no people), each scaled to cover 1920×1080 at 30 fps and
+  joined with the concat demuxer. Get the owner's OK before any of it ships.
 - The audio is copied untouched, and the timeline is the raw's, so
   `keep.json` and everything after it still apply.
 
