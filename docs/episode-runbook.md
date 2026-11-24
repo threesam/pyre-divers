@@ -128,6 +128,15 @@ python3 $T/look4.py "$RAW" $EP/raw-look.mp4 3=$EP/under/reel.mp4                
 - The audio is copied untouched, and the timeline is the raw's, so
   `keep.json` and everything after it still apply.
 
+- **~52 min** for a 30-min raw on the Intel Mac (0.57x). The raw is variable
+  frame rate, so the output has a few dozen fewer frames at the same duration:
+  check sync on stills, not frame counts.
+- **The ending's threshold runs on the four tones**, so pick X between them:
+  gray sits at luma ~183, right where a 71 would cut and flicker. Ep 7 used
+  `X=50 XR=50` (ink + slate go ink; gray + paper become the whirlpool window).
+- **A face's paper share moves with the light.** Ep 7's Sam ran 30–67 % hole
+  across the show at 128. Measure it per minute before the full render.
+
 In step 4, pass `$EP/raw-look.mp4` as the raw to assemble.py,
 `pyre-head-only.py` and the `tail-plain.mov` cut. The head threshold
 (`pyre-head-threshold.sh`) still reads the plain raw: the show opens on the
@@ -156,6 +165,10 @@ Then the edit, in three moves:
    INTRO=$EP/intro.mkv HOLD_M=2.5507 TITLE_IN=4.833 \
      python3 $T/assemble.py $EP "$RAW" $EP/ep$N-edit.mp4 77
    ```
+
+   Eps 6–7 ran at 69 bpm (`HOLD_M=2.389`, held 8.31 s), and there the dissolve
+   ends at 18.74 s: run `windows.py $EP 20.5` so the head outlasts it, and
+   render the threshold head 20.5 s long too.
 
 2. **the head**: re-render the first 30 s on the threshold head, with the paper
    wordmark (ink doesn't read on the threshold's ink):
@@ -233,6 +246,10 @@ starts muffled: a low-pass at 500 Hz holds until the last word, then opens to
 full over 2 bars. That keeps 10 dB or more between the last words and the
 music, and it isn't a level dip. The wordmark lands on the downbeat of the
 music's last bar.
+
+Find the last word from the clean audio's energy (100 ms frames above −45 dB),
+not from the diarized json: ep 7's diarization dropped the closing "Peace.",
+1.9 s after its last segment.
 
 Ep 5's music is sea foam (a mouth machine piece in the portal repo), as stems:
 drums without the "go to sleep" voice, and the music.
