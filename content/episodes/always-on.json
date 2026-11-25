@@ -1,0 +1,650 @@
+{
+  "slug": "always-on",
+  "title": "always on",
+  "description": "always on. Sam and Steve on Anthropic going public, subscriptions versus API billing, moving a test suite onto a Mac mini, why models on your own hardware let you trace their chain of thought, a bot that watches Black Friday prices, and why your old laptop should become your always-on box.",
+  "audioUrl": "https://media.pyredivers.com/pyre-divers-007.mp3",
+  "durationSeconds": 1788,
+  "youtubeUrl": null,
+  "spotifyUrl": null,
+  "applePodcastsUrl": null,
+  "explicit": false,
+  "publishedAt": "2026-11-25T11:00:00Z",
+  "segments": [
+    {
+      "start": 0,
+      "end": 2.7,
+      "speaker": "Steve",
+      "text": "Yeah, I thought maybe we're going live but probably not here."
+    },
+    {
+      "start": 4.95,
+      "end": 9,
+      "speaker": "Sam",
+      "text": "I think we're live now. Hey, Steve, how's it going?"
+    },
+    {
+      "start": 9.5,
+      "end": 14.45,
+      "speaker": "Steve",
+      "text": "Good good. What's up, Sam good to see you again. Saw you earlier today. It was fun"
+    },
+    {
+      "start": 15.45,
+      "end": 45.368,
+      "speaker": "Sam",
+      "text": "Yes. And it's been a minute since we've done one of these. So happy to get back into it. If I'm a little out of breath, it's because down put a target on my back for running so i had to try and run my fastest mile today which was not that fast but pretty quick it's not bad under under nine under nine minutes um i'm still sweating it's been like 30 minutes but i'll live"
+    },
+    {
+      "start": 46.548,
+      "end": 65.248,
+      "speaker": "Steve",
+      "text": "Yeah, I ran my first, I don't know if I did a whole mile, but I got out there and ran this week. It felt great, so I got to make it a daily thing here. I thought about the time on the mile, and I was like, oh, yeah, I wonder how low I could get it. I don't know how low I even want to get it, but yeah, it's a good thing."
+    },
+    {
+      "start": 66.498,
+      "end": 98.762,
+      "speaker": "Sam",
+      "text": "I was talking with Buddy and he was saying like, and he did a he did an iron man and he was saying like the way to train for it is just to do like five to ten percent more distance each week and if you just keep scaling it up like that chance of injury goes down because that was like my problem i overdid it immediately it was like yes this feels so good let me do it four days in a row and then Got shin splints and was sitting on a bike for like three weeks, so don't don't do that"
+    },
+    {
+      "start": 99.112,
+      "end": 113.012,
+      "speaker": "Steve",
+      "text": "Yeah, yeah, no, I after that mile I I was doing something I forget what and I felt my Calf cramping up and it's like okay. Yeah, I need to I need to do this ease into this"
+    },
+    {
+      "start": 114.262,
+      "end": 137.954,
+      "speaker": "Sam",
+      "text": "Yeah But it's it's cool I actually like doing that because I did see you do that run on Strava and it becomes like a weird community based thing even though we're not all running together but the community element is really helpful to stay consistent in any type of way."
+    },
+    {
+      "start": 138.704,
+      "end": 166.41,
+      "speaker": "Steve",
+      "text": "Well, the fact, so when Abby told me that you guys. saw that I was running or she knew that I was running before I told her right to like there was like that inspired me like oh that's cool like you know now I it's like it's a positive feedback it's the dopamine uh rush from like the the feedback loop being completed you know a loop that I didn't even know or realize was going to be um a thing right"
+    },
+    {
+      "start": 167.31,
+      "end": 191.498,
+      "speaker": "Sam",
+      "text": "Yeah, it's like a net new thing, right? Like it used to be. You just run and you'd be tired. You didn't tell anyone about it. And then it just, you know, I think it's pretty cool in Austin, the idea of run clubs are really like they're everywhere all times of day all over the city suburbs. They have things that are like very active here."
+    },
+    {
+      "start": 192.084,
+      "end": 192.184,
+      "speaker": "Steve",
+      "text": "Yeah"
+    },
+    {
+      "start": 192.184,
+      "end": 216.626,
+      "speaker": "Sam",
+      "text": "um so this feels like first step right to just start um but yeah starting community element obviously feeds into this like situation where you know i don't know if you saw today that Anthropic IPO'd um so so public company now very"
+    },
+    {
+      "start": 216.626,
+      "end": 217.076,
+      "speaker": "Steve",
+      "text": "Wow."
+    },
+    {
+      "start": 217.076,
+      "end": 254.198,
+      "speaker": "Sam",
+      "text": "very curious to see how the climate changes right like the subscriptions um the community of like folks who are using this stuff are like what are we do we stay what we're doing like are these subscriptions going to go away are we all going to be forced API billing did we get our own hardware run our own models right a lot of uncertainty with what for them is i guess a really big deal but you're like how does this change sort of what's going on right now i"
+    },
+    {
+      "start": 255.148,
+      "end": 260.048,
+      "speaker": "Steve",
+      "text": "Very interesting. Yeah, I didn't see that today. How did it do?"
+    },
+    {
+      "start": 262.398,
+      "end": 264.398,
+      "speaker": "Sam",
+      "text": "think it did pretty well"
+    },
+    {
+      "start": 265.108,
+      "end": 265.208,
+      "speaker": "Steve",
+      "text": "Yeah,"
+    },
+    {
+      "start": 265.208,
+      "end": 276.408,
+      "speaker": "Sam",
+      "text": "I don't really know much about these things, but I think I was like opening it 86 bucks to share and now it's like 112. Who knows how it all shakes out."
+    },
+    {
+      "start": 277.108,
+      "end": 298.924,
+      "speaker": "Steve",
+      "text": "yeah, it's all going to be, it's, yeah, it's going to be interesting as they'll have the AI wars and the AI bust too. Probably, you know, I would imagine similar to the tech crash. that this is potentially setting us up for that. So better take advantage of it right now."
+    },
+    {
+      "start": 300.374,
+      "end": 341.43,
+      "speaker": "Sam",
+      "text": "No, for sure. It's really curious too, right? Like as different people are, so if you will use Anthropic as the example, if you are a 150 or less organization, you can still use the subscription model. versus if you are above 150 person then you're pushing that API billing so the mindset that you have is totally different in those two different scenarios right like you want cost efficiency if you're above that threshold and then if you're below it you want usage efficiency which don't always shake out to the same thing um"
+    },
+    {
+      "start": 342.484,
+      "end": 386.762,
+      "speaker": null,
+      "text": "I know you and me are both in that. How do we not kneecap ourselves and blows for our weekly usage in two days, which lately hasn't, it's been, it seems like it's been easier to stay within those bounds. But at the same time. you know we're running personal plans they give you like 20x usage what happens if that goes away like i'm sure you've run the usage command and you're like wow i spent like what would have been ten thousand dollars this week that's weird um subscription goes away and then all of a sudden we have to like rapidly figure out how to maintain velocity in a totally different cost structure."
+    },
+    {
+      "start": 387.412,
+      "end": 423.012,
+      "speaker": "Steve",
+      "text": "Right. Yeah, I don't imagine they could, if they did that, that they could survive. I mean, I don't know. It doesn't seem like that model would be sustainable, you know, to put everyone onto that type of model. I think they got to find ways to make it cheaper, you have to do what they're doing. Yeah, if I, if my company was paying for, you know, just the token usage, you know, the API billing, they would not, it would not be good right now. Like I, you"
+    },
+    {
+      "start": 423.012,
+      "end": 423.812,
+      "speaker": "Sam",
+      "text": "Not know, good."
+    },
+    {
+      "start": 423.812,
+      "end": 454.912,
+      "speaker": "Steve",
+      "text": "now it would force me to be way more specific, which probably is good, right? To be very specific. Okay, this week building this, completing this, finalizing this. Making sure it's everything is all about efficiency like you're sharing but I just wouldn't be I wouldn't be I wouldn't be in constant development mode. Let's put it that way like yeah there's always development happening at this point."
+    },
+    {
+      "start": 454.912,
+      "end": 492.806,
+      "speaker": "Sam",
+      "text": "Right. And it's like we've spent the better part of a year sort of. recreating the five percent of the SaaS products that have been in our ecosystems um and then you know you you run that long enough and you're like wait am i now reliant on this tool like am i doing the same vendor lock-in i'm just like locked in to a different you know like in this case Anthropic um And how does that feel? It probably doesn't feel too good. So I don't know. Personally,"
+    },
+    {
+      "start": 493.056,
+      "end": 536.926,
+      "speaker": null,
+      "text": "like, I've been wanting to make the shift into the open source, open weight models on my own hardware. Definitely a hacker at heart and want to like get deep into that. I like I started. I guess in an adjacent fashion by taking a Mac mini and remoting into it. So it's kind of like a node on my network and I just have that running, you know, automated reviews, including running all of the testing, which is."
+    },
+    {
+      "start": 537.684,
+      "end": 567.246,
+      "speaker": null,
+      "text": "it was kind of like a thing that i had to do right because one of the thing when you accelerate development right there's last year we did um just at Made In we did like almost 300 PRs and then we've done more than 300 last week So this step change of the amount of code we're pushing, you know, a lot of that includes the nice to haves like automated testing, things that ensure reliability over time."
+    },
+    {
+      "start": 567.746,
+      "end": 568.296,
+      "speaker": "Steve",
+      "text": "All right."
+    },
+    {
+      "start": 568.446,
+      "end": 600.538,
+      "speaker": "Sam",
+      "text": "And not free, right? You have to run all those tests and you push. almost 400 PRs out in a week means you have to run the testing suite that many times at least and then even more as you're pushing up to those PRs over time so we were watching our GitHub usage just skyrocket with the velocity acceleration so that being said all that being said"
+    },
+    {
+      "start": 601.268,
+      "end": 634.49,
+      "speaker": null,
+      "text": "moved all of our testing suite to the Mac mini and what would have cost us like maybe $500 this month and mind you it was zero a year ago right like we weren't even doing this but up to 500 and then as we keep growing keeps getting more and more it's like an obvious like scaling problem and now it's zero literally zero right cost of electricity um maybe you amortize the hardware right to run it on but now that i'm in the box"
+    },
+    {
+      "start": 635.38,
+      "end": 648.98,
+      "speaker": null,
+      "text": "directly running the testing suite i'm also doing that thing that you showed me where you like can tell it to just drive you know a feature and then screen capture the process so"
+    },
+    {
+      "start": 648.98,
+      "end": 649.38,
+      "speaker": "Steve",
+      "text": "Yeah."
+    },
+    {
+      "start": 649.38,
+      "end": 690.082,
+      "speaker": "Sam",
+      "text": "now people are seeing like oh this is the feature that just dropped right there's 400 PRs coming through in a week like you don't know what any of this stuff is right it just turns into words so Yeah, like this moving to your own hardware thing, the barrier to entry has never been lower, obviously. So I just my feeling is as time goes on, I feel like AI is becoming a deeply personal thing. It just makes sense that if you can run stuff on your own hardware, as opposed to sending it up to the cloud and now that's being filtered through some other company. It just feels philosophically more aligned."
+    },
+    {
+      "start": 691.532,
+      "end": 736.234,
+      "speaker": "Steve",
+      "text": "Yeah, I think at least for me and I think a lot of other people, it's understanding the mechanics, like what are the tools, what are the mechanics, because I think, and this goes back to like the SaaS companies too, it's just believing that you are dependent upon them. Right. It's belief systems that I believe I need this because it gives me perceived safety, security, all these things, real or not. I believe I need to like right now, like because I haven't explored the mechanics and the truth of what."
+    },
+    {
+      "start": 736.884,
+      "end": 777.254,
+      "speaker": null,
+      "text": "these things are fully like just the just the definition and here's how it works moving over to my own model doing it all locally there's fear right just because Yeah. again I haven't and it goes back to anything in life really I mean that's the rest we that's why we do things or don't do things I guess for those people out there who might be listening to this and think about, okay, what, why would they want to do that right now? Why would they want to get a Mac mini and do this?"
+    },
+    {
+      "start": 778.354,
+      "end": 785.104,
+      "speaker": null,
+      "text": "Is it to save on these processes? That would be a main reason why they would want to do it."
+    },
+    {
+      "start": 786.854,
+      "end": 830.896,
+      "speaker": "Sam",
+      "text": "Um... I can tell you why I like it outside of the philosophical piece that I just mentioned. Like if you're running it on your hardware, right, like a lot of things in the spirit of making it easy for folks who are using these tools, right, gets abstracted. So one of the things... I think is one of the main contributors to why these coding agents became so useful in the past year is this idea of chain of thought. So you prompt and behind the scenes, it's like, oh, well, you know, what is this person asking for? What do I have access? It starts internally sort of prompting itself."
+    },
+    {
+      "start": 832.916,
+      "end": 876.47,
+      "speaker": null,
+      "text": "So maybe gather context, see what it has access to, tools that it can use, and then it spits out an answer for you. Now, a lot of times in Claude Code, you'll see that where it's just like you see kind of, you know, topically like what it's thinking about as it goes through. But if you're using something like chat. um or uh like the code feature in the desktop app it doesn't it'll just show you the answer right like it abstracts all of it prompts input and then you get an output um when you're running it on your own that uh"
+    },
+    {
+      "start": 877.32,
+      "end": 902.206,
+      "speaker": null,
+      "text": "chain of thought is something that you can actually trace right so you could you could say something where you're like actually i want to log the chain of thought for the prompting that i'm doing you could potentially use that in a very transparent way to help your system learn you just have more hooks into the entire cycle of what's happening instead of becoming more and more entrenched"
+    },
+    {
+      "start": 902.932,
+      "end": 934.176,
+      "speaker": null,
+      "text": "into the vendor and having a lot of it be abstract now for most people like it probably doesn't matter it's probably is better for them to have it abstracted right because at the end of the day they're just trying to change the button color and they don't really care what the model is thinking behind the scenes i imagine as time goes on with um the ease of being able to set up what on the outside seems like a scary system"
+    },
+    {
+      "start": 935.726,
+      "end": 978.66,
+      "speaker": null,
+      "text": "people are going to want to dive deeper um they are going to want to tweak personalities they're going to want to be able to try out different models right like how many do we have access to like if we're just talking Anthropic it's three base models with different reasoning in there effort levels there's thousands of open source open weight models that are all tuned to different problem sets so like depending on your business you get to pick things that are more efficient will get you to the answer you're looking for faster And then maybe from that vantage point, you sprinkle on the frontier intelligence, right, from Claude."
+    },
+    {
+      "start": 978.71,
+      "end": 1012.788,
+      "speaker": null,
+      "text": "You use Opus Max, Fable, whatever to like help figure out what to do. And then you, you know, delegate that out to your own models to actually implement it. Now, if you're thinking about, if you're the type of business that has a ton of PII and you have customer emails. social security numbers like anything like that then the case for pushing the you know models on your own hardware is even stronger because now you're not sending all that data up to the cloud or there isn't even the opportunity to do it right"
+    },
+    {
+      "start": 1016.212,
+      "end": 1041.262,
+      "speaker": "Steve",
+      "text": "Yeah, it just makes you wonder where the next step is for all this. It seems more and more people are going to start doing this. I'm getting ads for computer. I don't know what the brand is. I can't recall. I should know it because I've said it so many times. I don't necessarily trust it because I just feel like it's probably very gimmicky at this point. I could be wrong."
+    },
+    {
+      "start": 1041.812,
+      "end": 1064.412,
+      "speaker": null,
+      "text": "but like AI like AI computer computers with AI look locally you know in the in the hardware already or in the software already right so pre pre shipped something it seems like it's probably for people who think this is what like they're just getting started I don't know have you have you been seeing ads like this"
+    },
+    {
+      "start": 1066.162,
+      "end": 1100.882,
+      "speaker": "Sam",
+      "text": "I haven't. i haven't seen ads for it but like i can imagine the persona that they're targeting there and it's the person who is like kind of skeptical about security whatever it may be so it's like a really easy value prop that like all of the data stays on your own system but for non-technical folks who don't really want to like don't want to plug anything in debug see why things not working it seems scary like I totally understand having it all set up for you and you just run it I"
+    },
+    {
+      "start": 1101.132,
+      "end": 1101.532,
+      "speaker": "Steve",
+      "text": "I think"
+    },
+    {
+      "start": 1101.532,
+      "end": 1101.832,
+      "speaker": "Sam",
+      "text": "just that, yeah"
+    },
+    {
+      "start": 1101.832,
+      "end": 1111.332,
+      "speaker": "Steve",
+      "text": "yeah, yeah, it's like a do, you know, it's like a done for you. Like, here you go out of the box. Next time I see it, I'll click on it and I'll send it over to you too."
+    },
+    {
+      "start": 1113.172,
+      "end": 1135.522,
+      "speaker": "Sam",
+      "text": "Yeah, like I the goalposts keeps changing for people, you know, it's like we're all trying to figure out how to use AI and now we're trying to figure out what's the best model and now we're trying to figure out cloud versus local, you know, the advice that I'd give folks this week is entirely different than a month ago."
+    },
+    {
+      "start": 1136.628,
+      "end": 1152.628,
+      "speaker": "Steve",
+      "text": "Yeah, maybe we talked about that some of the tools that we're still using do we still find them useful Are you still using GrokBot? I'm still using GrokBot not as much as I did initially, but I'm still finding it very useful How about you?"
+    },
+    {
+      "start": 1152.628,
+      "end": 1169.196,
+      "speaker": "Sam",
+      "text": "Uh, yeah, I mean, it sends me notifications every day that I probably leave unread for the most part. I have it doing stupid things like. tell me when this Dyson air wrap goes on sales so I you"
+    },
+    {
+      "start": 1169.196,
+      "end": 1169.746,
+      "speaker": "Steve",
+      "text": "That's cool."
+    },
+    {
+      "start": 1169.746,
+      "end": 1176.396,
+      "speaker": "Sam",
+      "text": "know yeah you know like I have a shopping list for Deana and I'm just like yeah check the prices and"
+    },
+    {
+      "start": 1176.396,
+      "end": 1176.896,
+      "speaker": "Steve",
+      "text": "That's smart,"
+    },
+    {
+      "start": 1176.896,
+      "end": 1177.296,
+      "speaker": "Sam",
+      "text": "let's figure out"
+    },
+    {
+      "start": 1177.296,
+      "end": 1177.496,
+      "speaker": "Steve",
+      "text": "man."
+    },
+    {
+      "start": 1177.496,
+      "end": 1177.596,
+      "speaker": "Sam",
+      "text": "when"
+    },
+    {
+      "start": 1177.596,
+      "end": 1178.246,
+      "speaker": "Steve",
+      "text": "That's"
+    },
+    {
+      "start": 1178.246,
+      "end": 1178.296,
+      "speaker": "Sam",
+      "text": "a to"
+    },
+    {
+      "start": 1178.296,
+      "end": 1178.346,
+      "speaker": "Steve",
+      "text": "good"
+    },
+    {
+      "start": 1178.346,
+      "end": 1178.596,
+      "speaker": "Sam",
+      "text": "pull the"
+    },
+    {
+      "start": 1178.596,
+      "end": 1178.646,
+      "speaker": "Steve",
+      "text": "tip."
+    },
+    {
+      "start": 1178.646,
+      "end": 1178.896,
+      "speaker": "Sam",
+      "text": "trigger"
+    },
+    {
+      "start": 1181.364,
+      "end": 1192.364,
+      "speaker": "Steve",
+      "text": "I mean, honestly, that's a good one. I got my, yeah, I have my Abby's list has been sent to me, so I should just, I'm going to ask Grok to create a bot to handle that."
+    },
+    {
+      "start": 1193.114,
+      "end": 1197.564,
+      "speaker": "Sam",
+      "text": "do a little uh you know an interview of"
+    },
+    {
+      "start": 1197.564,
+      "end": 1198.214,
+      "speaker": "Steve",
+      "text": "I'm going to do an interview."
+    },
+    {
+      "start": 1198.214,
+      "end": 1204.764,
+      "speaker": "Sam",
+      "text": "abby and be like be like you know what's her shoe size sure like all all the you know different"
+    },
+    {
+      "start": 1205.684,
+      "end": 1205.934,
+      "speaker": "Steve",
+      "text": "There things you go"
+    },
+    {
+      "start": 1205.934,
+      "end": 1242.056,
+      "speaker": "Sam",
+      "text": "that you wanted to filter on when it's actually checking um yeah you know we got black friday it's basically here most most brands are on sale now uh so it's go time find the deals find the you know i think you can tell it to look for discount codes and test them out there's tons of opportunity there um because that's the thing that i just i i can't like i have zero desire to do i felt like i you know bargain shopping even just shopping in general i just wanted to be over with"
+    },
+    {
+      "start": 1243.356,
+      "end": 1254.906,
+      "speaker": "Steve",
+      "text": "Yeah, that's a great way to make sure you get it, make sure it's at the lowest price and why not, right? So super easy. I just put in the message to Grok to take care of that. So thank you."
+    },
+    {
+      "start": 1255.668,
+      "end": 1261.118,
+      "speaker": "Sam",
+      "text": "an easy one don't don't give the credit away either you know yeah"
+    },
+    {
+      "start": 1261.118,
+      "end": 1261.368,
+      "speaker": "Steve",
+      "text": "Yeah, no."
+    },
+    {
+      "start": 1261.368,
+      "end": 1262.718,
+      "speaker": "Sam",
+      "text": "and say a thousand"
+    },
+    {
+      "start": 1262.718,
+      "end": 1266.868,
+      "speaker": "Steve",
+      "text": "Yeah, I'll take off credit. Yeah, she won't listen to this full episode for sure."
+    },
+    {
+      "start": 1267.918,
+      "end": 1268.268,
+      "speaker": "Sam",
+      "text": "percent"
+    },
+    {
+      "start": 1269.868,
+      "end": 1302.99,
+      "speaker": "Steve",
+      "text": "Yeah, I did find so today you're talking about running clubs. You and Matt were at the Crunchy Moms thing and I got to come today. you know Victor was there too uh which I need to do more of like there's no reason why I have to sit in my office anymore as much as I do well I mean some meetings yeah they they need that level of you know just I don't know quietness and comfort whatever but um it's like you know it's like AI Builders Club kind of too like everyone's just building"
+    },
+    {
+      "start": 1303.956,
+      "end": 1320.056,
+      "speaker": null,
+      "text": "of talking conversing because there's so much that happens in between the prompts but that was that was pretty cool I bet I bet there's gonna be more and more of that popping up where and maybe you're already seeing a lot more because you're you're already doing it on a regular basis every day"
+    },
+    {
+      "start": 1321.206,
+      "end": 1362.446,
+      "speaker": "Sam",
+      "text": "Yeah, you know, at Maven, I think I've onboarded 25 people so far. and the range of questions is wild um that being said i mean the the gap between zero and one on that is just like people fundamentally don't understand at the beginning that you're like i know that you're asking me this question and i know that i know the answer but you could also just you could also just throw it directly at the model that you just signed up for And it's going to tell you a way more detailed answer than I'm going to give you, you know?"
+    },
+    {
+      "start": 1365.496,
+      "end": 1371.946,
+      "speaker": null,
+      "text": "Oh man, I'm getting a call right now. And now it's gone."
+    },
+    {
+      "start": 1372.146,
+      "end": 1376.546,
+      "speaker": "Steve",
+      "text": "It might be one of those items for sale reaching"
+    },
+    {
+      "start": 1376.546,
+      "end": 1378.096,
+      "speaker": "Sam",
+      "text": "They're like, go now."
+    },
+    {
+      "start": 1378.846,
+      "end": 1379.496,
+      "speaker": "Steve",
+      "text": "out to you."
+    },
+    {
+      "start": 1381.096,
+      "end": 1382.546,
+      "speaker": "Sam",
+      "text": "Out of stock, out of stock."
+    },
+    {
+      "start": 1383.7,
+      "end": 1421.766,
+      "speaker": "Steve",
+      "text": "Yeah, I did find, you know, the drive over to the coffee shop today, I was still able to work primarily because I had Grok, because Grok has its own computers open. So that was, and I had my, because I'm using my laptop primarily for Claude Code, it was in my, it was closed and in my. bag so I couldn't rely on Claude Code I but I could still use Codex because Codex is working off of one of Grok's Grokbots computers right so Nice."
+    },
+    {
+      "start": 1421.766,
+      "end": 1445.356,
+      "speaker": null,
+      "text": "that yeah so that's that's how I'm managing usage a lot too but also that was a that was a use case where okay I'm in transit so now I can have I could just I do what I do love about Grok is I can just simply I can just tell it what what what to do and it it can do pretty much anything except it can't communicate with Claude Code when I have my laptop off no this"
+    },
+    {
+      "start": 1446.856,
+      "end": 1490.816,
+      "speaker": "Sam",
+      "text": "is this is the main it's the main thing everyone wants to solve as soon as you become any type of power user and then they've they've released all kinds of dumb consumer products for this where it's like a little hand that you can like close your laptop but not all the way and it like stays on um you go and you find an old computer boot a backup preferably connect directly to um with whatever you know computer is your main driver and then just get it all set up right it's like how fast can i get Claude downloaded on this computer so that i can then tell Claude to make it awesome"
+    },
+    {
+      "start": 1495.444,
+      "end": 1527.674,
+      "speaker": null,
+      "text": "I'm really curious, like find the minimum specs that it takes to run Claude Code and then you can find something super cheap on eBay, use something called tmux and you can start connecting them, all of them together as sort of nodes in a network. So like one of them goes down, but other ones are still up and running. And then you just remote in through your phone to like all the different sessions on all the different devices and you can use them as needed. It's fun and"
+    },
+    {
+      "start": 1527.674,
+      "end": 1528.174,
+      "speaker": "Steve",
+      "text": "Yeah, I"
+    },
+    {
+      "start": 1528.174,
+      "end": 1528.424,
+      "speaker": "Sam",
+      "text": "easy."
+    },
+    {
+      "start": 1528.424,
+      "end": 1569.864,
+      "speaker": "Steve",
+      "text": "do. Yeah, I mean, I need to have a laptop here. I have it set up. I just haven't put Claude Code on it and need to do that to set that up because this one also it gets. it gets bogged down and I need a new laptop anyway to just to really handle the processing needs now but yeah if this one is if this one's cooking three different things at once then it could it could really interfere with like StreamYard for sure right here and interrupt actual you know productivity that I'm supposed to be very productive in you know I"
+    },
+    {
+      "start": 1569.864,
+      "end": 1573.964,
+      "speaker": "Sam",
+      "text": "Did you did I am I remembering wrong you had a Mac mini already or no"
+    },
+    {
+      "start": 1574.714,
+      "end": 1617.544,
+      "speaker": "Steve",
+      "text": "don't have the Mac mini yeah okay yeah considering that I'm right now my plan is get a new MacBook Pro you know top of the line that can meet my requirements for Claude Code and you know all the different building and also you know so I can travel with that and I travel pretty regularly and then my old Mac MacBook Pro it's about four years old I think I would then use that one you know clean it out like strip it and then use that to build also that was my plan I figured being mobile just makes more sense for me versus it's"
+    },
+    {
+      "start": 1617.544,
+      "end": 1618.094,
+      "speaker": "Sam",
+      "text": "investing still it's"
+    },
+    {
+      "start": 1618.094,
+      "end": 1619.444,
+      "speaker": "Steve",
+      "text": "in a back meeting, you know."
+    },
+    {
+      "start": 1621.094,
+      "end": 1665.252,
+      "speaker": "Sam",
+      "text": "either way one of them is going to become your stay-at-home always-on device so i mean it's up to you like i i understand the impulse to get the new computer they're they're nice they're so nice the the battery life you get is insane And, you know, if you're going to plug your old one in anyway, like battery doesn't matter. You can have it monitor memory usage, everything, make sure it doesn't crash. Like you said, strip everything out. So, yeah, you just want a little something that's always on that you can always pop into."
+    },
+    {
+      "start": 1666.004,
+      "end": 1710.212,
+      "speaker": null,
+      "text": "And that becomes the game changer because then you can there's no there's no ideas that are ever lost. Right. Like tons of stuff that you would do just normally don't actually take up that much. Right. So like summarize everything on my email slack, everything like that, scan through my video transcripts, look for this like it can handle that very easily. You're running issues mostly in the code generation, running a testing suite. Those are like pretty intense on the machine. So, yeah, I mean, yeah, agreed. Get the new shiny laptop, take it with you everywhere."
+    },
+    {
+      "start": 1711.012,
+      "end": 1716.362,
+      "speaker": null,
+      "text": "Even if, weirdly, the computer you're using now will probably be your workhorse."
+    },
+    {
+      "start": 1717.78,
+      "end": 1733.43,
+      "speaker": "Steve",
+      "text": "yeah I know right I think it'll be fine because what ends up causing the slowdown too is everything else slack zoom fathom right it's all that that's really causing the problem it's all of it all at the same time so"
+    },
+    {
+      "start": 1733.43,
+      "end": 1733.73,
+      "speaker": "Sam",
+      "text": "Yeah."
+    },
+    {
+      "start": 1733.73,
+      "end": 1744.68,
+      "speaker": "Steve",
+      "text": "then if the other computer can be the thing that I can have a long battery actually where now it makes sense doing more remote work versus staying at home and doing it"
+    },
+    {
+      "start": 1746.868,
+      "end": 1747.218,
+      "speaker": "Sam",
+      "text": "Cool."
+    },
+    {
+      "start": 1747.618,
+      "end": 1759.768,
+      "speaker": "Steve",
+      "text": "Yeah. Awesome. Well, I think we should get that guest on next time. How about we after this week commit to inviting a couple people see if we get that guest on."
+    },
+    {
+      "start": 1760.568,
+      "end": 1766.418,
+      "speaker": "Sam",
+      "text": "I think we at least give it a shot. We definitely didn't since last time, but yeah."
+    },
+    {
+      "start": 1766.418,
+      "end": 1769.968,
+      "speaker": "Steve",
+      "text": "I believe we can do it."
+    },
+    {
+      "start": 1770.518,
+      "end": 1771.418,
+      "speaker": "Sam",
+      "text": "Best of the time."
+    },
+    {
+      "start": 1772.18,
+      "end": 1776.03,
+      "speaker": "Steve",
+      "text": "Yes. All right. Well, until next time. I'll see ya."
+    }
+  ]
+}
